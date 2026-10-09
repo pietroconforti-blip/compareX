@@ -222,181 +222,143 @@ const categoryIcons: Record<Category, string> = {
   streaming: "🎬",
 };
 
+
+function normalizeSearchText(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/€/g, " euro ");
+}
+
+const categoryKeywords: Record<Category, string[]> = {
+  housing: [
+    "house", "housing", "room", "bedroom", "apartment",
+    "flat", "rent", "accommodation", "dorm", "student residence",
+    "casa", "stanza", "camera", "appartamento", "affitto",
+    "alloggio", "monolocale", "wohn", "zimmer", "wohnung", "miete"
+  ],
+  mobile: [
+    "mobile", "phone", "telephone", "cellphone", "sim",
+    "tariff", "phone plan", "mobile plan", "data plan",
+    "abbonamento", "telefonia", "cellulare", "telefono",
+    "tariffa", "gb", "handy", "mobilfunk"
+  ],
+  transport: [
+    "transport", "public transport", "metro", "subway",
+    "tram", "bus", "u-bahn", "travel pass", "transport pass",
+    "trasporti", "trasporto", "abbonamento trasporti",
+    "mezzi pubblici", "autobus", "treno", "jahreskarte"
+  ],
+  gym: [
+    "gym", "fitness", "workout", "gym membership",
+    "palestra", "allenamento", "fitnessstudio"
+  ],
+  streaming: [
+    "streaming", "netflix", "disney+", "spotify", "youtube premium",
+    "movies", "series", "film", "serie tv", "musica in streaming"
+  ]
+};
+
 function detectCategories(text: string): Category[] {
-  const t = text.toLowerCase();
+  const t = normalizeSearchText(text);
 
-  const detected: Category[] = [];
+  const detected = (Object.keys(categoryKeywords) as Category[])
+    .filter(category =>
+      categoryKeywords[category].some(keyword => t.includes(keyword))
+    );
+
+  // "Abbonamento" da solo indica probabilmente un piano mobile.
+  // Se viene nominato un servizio specifico, evitiamo questa deduzione.
+  const explicitMobile = [
+    "mobile", "phone", "telephone", "cellphone", "sim",
+    "tariff", "phone plan", "mobile plan", "data plan",
+    "telefonia", "cellulare", "telefono", "tariffa", "gb",
+    "handy", "mobilfunk"
+  ].some(keyword => t.includes(keyword));
+
+  const explicitOtherSubscription = [
+    "netflix", "disney+", "spotify", "youtube premium",
+    "streaming", "palestra", "gym", "fitness",
+    "trasporti", "mezzi pubblici", "transport pass"
+  ].some(keyword => t.includes(keyword));
 
   if (
-    t.includes("room") ||
-    t.includes("housing") ||
-    t.includes("apartment") ||
-    t.includes("wohnung") ||
-    t.includes("dorm") ||
-    t.includes("accommodation") ||
-    t.includes("student residence")
-  ) {
-    detected.push("housing");
-  }
-
-  if (
-    t.includes("phone") ||
-    t.includes("mobile") ||
-    t.includes("sim") ||
-    t.includes("tariff") ||
-    t.includes("telefon")
+    t.includes("abbonamento") &&
+    !explicitMobile &&
+    !explicitOtherSubscription &&
+    !detected.includes("mobile")
   ) {
     detected.push("mobile");
-  }
-
-  if (
-    t.includes("transport") ||
-    t.includes("public transport") ||
-    t.includes("metro") ||
-    t.includes("subway") ||
-    t.includes("tram") ||
-    t.includes("bus") ||
-    t.includes("u-bahn")
-  ) {
-    detected.push("transport");
-  }
-
-  if (
-    t.includes("gym") ||
-    t.includes("fitness") ||
-    t.includes("workout")
-  ) {
-    detected.push("gym");
-  }
-
-  if (
-    t.includes("netflix") ||
-    t.includes("streaming") ||
-    t.includes("movies") ||
-    t.includes("series")
-  ) {
-    detected.push("streaming");
   }
 
   return detected;
 }
 
 function extractBudgetNumbers(text: string): number[] {
-  const matches = text.match(
-    /(?:under|below|less than|max(?:imum)?|up to|below)\s*€?\s*(\d+(?:[.,]\d+)?)|€\s*(\d+(?:[.,]\d+)?)/gi
+  const normalized = normalizeSearchText(text);
+  const matches = normalized.match(
+    /(?:under|below|less than|up to|maximum|max|under|sotto|meno di|massimo|max|fino a|bis zu|unter)\\s*€?\\s*\\d+(?:[.,]\\d+)?|€\\s*\\d+(?:[.,]\\d+)?|\\d+(?:[.,]\\d+)?\\s*(?:euro|eur|€)/gi
   );
 
   if (!matches) return [];
 
-  const numbers: number[] = [];
-
-  for (const match of matches) {
-    const numberMatch = match.match(/\d+(?:[.,]\d+)?/);
-
-    if (numberMatch) {
-      const value = Number(numberMatch[0].replace(",", "."));
-
-      if (!Number.isNaN(value)) {
-        numbers.push(value);
-      }
-    }
-  }
-
-  return numbers;
+  return matches
+    .map(match => {
+      const number = match.match(/\\d+(?:[.,]\\d+)?/);
+      return number ? Number(number[0].replace(",", ".")) : NaN;
+    })
+    .filter(value => Number.isFinite(value));
 }
 
 function detectBudgets(
   text: string,
   categories: Category[]
 ): Partial<Record<Category, number>> {
+  const normalized = normalizeSearchText(text);
   const budgets: Partial<Record<Category, number>> = {};
-  const numbers = extractBudgetNumbers(text);
 
-  if (numbers.length === 0) return budgets;
+  const numberMatches = Array.from(
+    normalized.matchAll(/\\d+(?:[.,]\\d+)?/g)
+  ).map(match => ({
+    value: Number(match[0].replace(",", ".")),
+    position: match.index ?? 0
+  })).filter(item => Number.isFinite(item.value));
 
-  const lower = text.toLowerCase();
+  if (numberMatches.length === 0 || categories.length === 0) {
+    return budgets;
+  }
+
+  const occurrences: {
+    category: Category;
+    position: number;
+  }[] = [];
 
   for (const category of categories) {
-    let keywords: string[] = [];
+    for (const keyword of categoryKeywords[category]) {
+      let from = 0;
+      while (true) {
+        const position = normalized.indexOf(keyword, from);
+        if (position === -1) break;
 
-    if (category === "housing") {
-      keywords = [
-        "room",
-        "housing",
-        "apartment",
-        "wohnung",
-        "dorm",
-        "accommodation",
-        "student residence",
-      ];
-    }
-
-    if (category === "mobile") {
-      keywords = ["phone", "mobile", "sim", "tariff", "telefon"];
-    }
-
-    if (category === "transport") {
-      keywords = [
-        "transport",
-        "public transport",
-        "metro",
-        "subway",
-        "tram",
-        "bus",
-        "u-bahn",
-      ];
-    }
-
-    if (category === "gym") {
-      keywords = ["gym", "fitness", "workout"];
-    }
-
-    if (category === "streaming") {
-      keywords = ["streaming", "netflix", "movies", "series"];
-    }
-
-    let bestPosition = -1;
-
-    for (const keyword of keywords) {
-      const position = lower.indexOf(keyword);
-
-      if (position !== -1) {
-        if (bestPosition === -1 || position < bestPosition) {
-          bestPosition = position;
-        }
-      }
-    }
-
-    if (bestPosition !== -1) {
-      const nearby = lower.slice(bestPosition, bestPosition + 100);
-
-      const nearbyMatch = nearby.match(
-        /(?:under|below|less than|max(?:imum)?|up to)\s*€?\s*(\d+(?:[.,]\d+)?)/
-      );
-
-      if (nearbyMatch) {
-        budgets[category] = Number(
-          nearbyMatch[1].replace(",", ".")
-        );
+        occurrences.push({ category, position });
+        from = position + keyword.length;
       }
     }
   }
 
-  if (Object.keys(budgets).length === 0 && numbers.length === 1) {
-    for (const category of categories) {
-      budgets[category] = numbers[0];
-    }
-  }
+  // Associa ogni cifra alla categoria menzionata più vicina.
+  // Funziona sia con "casa 400 euro" sia con "400 euro per la casa".
+  for (const number of numberMatches) {
+    const nearest = occurrences
+      .map(item => ({
+        ...item,
+        distance: Math.abs(item.position - number.position)
+      }))
+      .sort((a, b) => a.distance - b.distance)[0];
 
-  if (Object.keys(budgets).length < categories.length) {
-    let numberIndex = 0;
-
-    for (const category of categories) {
-      if (budgets[category] === undefined && numbers[numberIndex] !== undefined) {
-        budgets[category] = numbers[numberIndex];
-      }
-
-      numberIndex++;
+    if (nearest) {
+      budgets[nearest.category] = number.value;
     }
   }
 
