@@ -532,6 +532,30 @@ export default function Home() {
     [submittedQuery]
   );
 
+  const searchCountries = useMemo(() => {
+    const t = normalizeSearchText(submittedQuery);
+
+    const austriaTerms = [
+      "austria", "osterreich", "vienna", "wien", "graz",
+      "salzburg", "linz", "innsbruck"
+    ];
+
+    const italyTerms = [
+      "italy", "italia", "milan", "milano", "rome", "roma",
+      "verona", "venice", "venezia", "bologna", "florence",
+      "firenze", "turin", "torino", "naples", "napoli"
+    ];
+
+    const mentionsAustria = austriaTerms.some(term => t.includes(term));
+    const mentionsItaly = italyTerms.some(term => t.includes(term));
+
+    if (mentionsAustria && mentionsItaly) return ["Austria", "Italy"];
+    if (mentionsAustria) return ["Austria"];
+    if (mentionsItaly) return ["Italy"];
+
+    return ["Austria", "Italy"];
+  }, [submittedQuery]);
+
   const resultsByCategory = useMemo(() => {
     const output = {} as Record<Category, ScoredOffer[]>;
 
@@ -744,6 +768,34 @@ export default function Home() {
               ))}
             </div>
           </div>
+
+          <section className="mb-10 rounded-2xl border border-slate-200 bg-white p-6">
+            <h2 className="text-2xl font-bold">Search real offers online</h2>
+            <p className="mt-2 text-slate-600">
+              Search results are tailored to the country mentioned in your request.
+              Check prices and availability on the original websites.
+            </p>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              {searchCountries.map((country) => {
+                const isAustria = country === "Austria";
+                const countryTerms = isAustria
+                  ? "Österreich Austria Angebote Preise"
+                  : "Italia Italy offerte prezzi";
+
+                return (
+                  <a
+                    key={country}
+                    href={`https://www.google.com/search?q=${encodeURIComponent(submittedQuery + " " + countryTerms)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-xl bg-[#1746a2] px-5 py-4 text-center font-semibold text-white hover:bg-[#123985]"
+                  >
+                    {isAustria ? "🇦🇹 Search offers in Austria" : "🇮🇹 Search offers in Italy"}
+                  </a>
+                );
+              })}
+            </div>
+          </section>
 
           {detectedCategories.length >= 2 && bundles.length > 0 && (
             <div className="mb-12">
