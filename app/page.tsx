@@ -671,7 +671,7 @@ export default function Home() {
 
             <div>
               <div className="text-xl font-bold tracking-tight">
-                SearchX
+                CompareX
               </div>
               <div className="text-xs text-slate-500">
                 Compare better. Choose better.
@@ -739,47 +739,22 @@ export default function Home() {
           </div>
 
           <div className="relative">
-            <div className="absolute -inset-4 rounded-[2rem] bg-[#e9eef8] blur-2xl" />
-            <div className="relative overflow-hidden rounded-[1.75rem] bg-[#203b72] p-7 text-white shadow-xl md:p-9">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <div className="text-sm text-blue-100">YOUR LIFE IN ONE PLACE</div>
-                  <h2 className="mt-2 text-2xl font-bold">Build your ideal setup</h2>
-                </div>
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-2xl">
-                  ✦
-                </div>
-              </div>
-
-              <p className="mt-3 max-w-sm text-sm leading-6 text-blue-100">
-                Compare services together and explore a combination that fits
-                your needs and budget.
-              </p>
-
-              <div className="mt-7 space-y-3">
-                {[
-                  { icon: "🏠", name: "Student housing", detail: "Find a place to live" },
-                  { icon: "📱", name: "Mobile plan", detail: "Stay connected" },
-                  { icon: "🚇", name: "Public transport", detail: "Get around the city" },
-                ].map((item) => (
-                  <div
-                    key={item.name}
-                    className="flex items-center gap-3 rounded-xl border border-white/15 bg-white/10 p-3"
-                  >
-                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-xl">
-                      {item.icon}
-                    </div>
-                    <div>
-                      <div className="font-semibold">{item.name}</div>
-                      <div className="text-sm text-blue-100">{item.detail}</div>
-                    </div>
-                    <div className="ml-auto text-blue-100">↗</div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-6 border-t border-white/20 pt-5 text-sm text-blue-100">
-                One search. Multiple possibilities. Your choice.
+            <div className="overflow-hidden rounded-[1.75rem] bg-white shadow-xl">
+              <img
+                src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=85"
+                alt="Bright modern apartment interior"
+                className="h-[420px] w-full object-cover md:h-[520px]"
+              />
+              <div className="absolute inset-x-4 bottom-4 rounded-2xl border border-white/60 bg-white/95 p-5 shadow-lg backdrop-blur md:inset-x-6 md:bottom-6">
+                <p className="text-xs font-bold tracking-[0.16em] text-[#3478f6]">
+                  YOUR NEXT CHAPTER
+                </p>
+                <h2 className="mt-2 text-xl font-bold text-[#17233c] md:text-2xl">
+                  Find a place that feels like home.
+                </h2>
+                <p className="mt-1 text-sm text-slate-600">
+                  Start with your needs. Compare your options.
+                </p>
               </div>
             </div>
           </div>
@@ -800,11 +775,11 @@ export default function Home() {
 
           <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
             {[
-              { id: "housing", icon: "⌂", title: "Housing", desc: "Rooms & residences", query: "Student room in Vienna" },
-              { id: "mobile", icon: "▯", title: "Mobile", desc: "Plans & data", query: "Mobile plan in Austria" },
-              { id: "transport", icon: "↗", title: "Transport", desc: "Move around", query: "Public transport in Vienna" },
-              { id: "gym", icon: "✳", title: "Fitness", desc: "Gyms & sports", query: "Gym in Vienna" },
-              { id: "streaming", icon: "▷", title: "Streaming", desc: "Films & music", query: "Streaming subscription" },
+              { id: "housing", image: "photo-1522708323590-d24dbb6b0267", title: "Housing", desc: "Rooms & residences", query: "Student room in Vienna" },
+              { id: "mobile", image: "photo-1511707171634-5f897ff02aa9", title: "Mobile", desc: "Plans & data", query: "Mobile plan in Austria" },
+              { id: "transport", image: "photo-1519501025264-65ba15a82390", title: "Transport", desc: "Move around", query: "Public transport in Vienna" },
+              { id: "gym", image: "photo-1534438327276-14e5300c3a48", title: "Fitness", desc: "Gyms & sports", query: "Gym in Vienna" },
+              { id: "streaming", image: "photo-1489599849927-2ee91cede3ba", title: "Streaming", desc: "Films & music", query: "Streaming subscription" },
             ].map((category) => (
               <button
                 key={category.id}
@@ -815,8 +790,13 @@ export default function Home() {
                 }}
                 className="group rounded-2xl border border-[#e8e6e0] bg-white p-5 text-left transition hover:-translate-y-1 hover:border-[#b9c9e8] hover:shadow-lg hover:shadow-[#17233c]/5"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#eef3fc] text-2xl font-semibold text-[#203b72] transition group-hover:bg-[#203b72] group-hover:text-white">
-                  {category.icon}
+                <div className="overflow-hidden rounded-xl">
+                  <img
+                    src={`https://images.unsplash.com/${category.image}?auto=format&fit=crop&w=500&q=80`}
+                    alt={category.title}
+                    loading="lazy"
+                    className="h-32 w-full object-cover transition duration-300 group-hover:scale-105"
+                  />
                 </div>
                 <div className="mt-4 font-bold text-[#17233c]">{category.title}</div>
                 <div className="mt-1 text-sm text-slate-500">{category.desc}</div>
@@ -842,9 +822,9 @@ export default function Home() {
 
           <div className="mt-6 grid gap-4 md:grid-cols-3">
             {[
-              { icon: "🏠", title: "Find your student room", desc: "Explore housing options in Vienna.", query: "Student room in Vienna under €500", tag: "HOUSING" },
-              { icon: "📱", title: "Choose a mobile plan", desc: "Compare plans that fit your budget.", query: "Phone plan under €20 in Austria", tag: "MOBILE" },
-              { icon: "🚇", title: "Plan city transport", desc: "Explore ways to get around Vienna.", query: "Public transport in Vienna", tag: "TRANSPORT" },
+              { image: "photo-1522708323590-d24dbb6b0267", title: "Find your student room", desc: "Explore housing options in Vienna.", query: "Student room in Vienna under €500", tag: "HOUSING" },
+              { image: "photo-1511707171634-5f897ff02aa9", title: "Choose a mobile plan", desc: "Compare plans that fit your budget.", query: "Phone plan under €20 in Austria", tag: "MOBILE" },
+              { image: "photo-1519501025264-65ba15a82390", title: "Plan city transport", desc: "Explore ways to get around Vienna.", query: "Public transport in Vienna", tag: "TRANSPORT" },
             ].map((item) => (
               <button
                 key={item.title}
@@ -855,9 +835,14 @@ export default function Home() {
                 }}
                 className="rounded-2xl border border-[#e8e6e0] bg-white p-5 text-left transition hover:-translate-y-1 hover:shadow-lg hover:shadow-[#17233c]/5"
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-3xl">{item.icon}</span>
-                  <span className="rounded-full bg-[#eef3fc] px-3 py-1 text-[10px] font-bold tracking-wider text-[#203b72]">
+                <div className="relative -mx-5 -mt-5 mb-5 overflow-hidden rounded-t-2xl">
+                  <img
+                    src={`https://images.unsplash.com/${item.image}?auto=format&fit=crop&w=700&q=80`}
+                    alt={item.title}
+                    loading="lazy"
+                    className="h-44 w-full object-cover transition duration-300 hover:scale-105"
+                  />
+                  <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1 text-[10px] font-bold tracking-wider text-[#203b72]">
                     {item.tag}
                   </span>
                 </div>
@@ -937,7 +922,7 @@ export default function Home() {
                   Your best setup
                 </h2>
                 <p className="mt-2 text-slate-600">
-                  SearchX combines the best options across your categories.
+                  CompareX combines the best options across your categories.
                 </p>
               </div>
 
@@ -1061,7 +1046,7 @@ export default function Home() {
                         </div>
 
                         <div className="mt-2 text-sm text-slate-600">
-                          SearchX Score:{" "}
+                          CompareX Score:{" "}
                           <strong>{offer.score}/10</strong>
                         </div>
                       </div>
