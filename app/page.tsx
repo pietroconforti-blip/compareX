@@ -661,17 +661,17 @@ export default function Home() {
   const hasResults = detectedCategories.length > 0;
 
   return (
-    <main className="min-h-screen bg-[#f6f8fb] text-slate-900">
-      <header className="border-b border-slate-200 bg-white">
+    <main className="min-h-screen bg-[#faf9f6] text-[#17233c]">
+      <header className="border-b border-[#e8e6e0] bg-white/95">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#1746a2] text-lg font-bold text-white">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#203b72] text-lg font-bold text-white">
               C
             </div>
 
             <div>
               <div className="text-xl font-bold tracking-tight">
-                CompareX
+                SearchX
               </div>
               <div className="text-xs text-slate-500">
                 Compare better. Choose better.
@@ -680,63 +680,196 @@ export default function Home() {
           </div>
 
           <div className="hidden text-sm text-slate-500 md:block">
-            AI-powered decision engine
+            Smarter choices for student life
           </div>
         </div>
       </header>
 
-      <section className="mx-auto max-w-6xl px-6 pb-16 pt-20">
-        <div className="mx-auto max-w-4xl text-center">
-          <div className="mb-5 inline-flex rounded-full border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-medium text-[#1746a2]">
-            Compare more than just prices
-          </div>
+      <section className="mx-auto max-w-7xl px-6 pb-14 pt-12 md:pt-16">
+        <div className="grid items-center gap-10 lg:grid-cols-[1.2fr_0.8fr]">
+          <div>
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#dce5f5] bg-white px-4 py-2 text-xs font-bold tracking-[0.16em] text-[#203b72]">
+              <span className="h-2 w-2 rounded-full bg-[#3478f6]" />
+              COMPARE SMARTER. LIVE BETTER.
+            </div>
 
-          <h1 className="text-5xl font-bold tracking-tight text-slate-950 md:text-6xl">
-            Find what actually
-            <span className="text-[#2563eb]"> fits you.</span>
-          </h1>
+            <h1 className="max-w-3xl text-5xl font-bold leading-[1.08] tracking-tight text-[#17233c] md:text-6xl">
+              Your student life,
+              <span className="block text-[#3478f6]">made simpler.</span>
+            </h1>
 
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-slate-600">
-            Tell CompareX what you need in natural language. We compare
-            different options and build the setup that makes the most sense
-            for you.
-          </p>
+            <p className="mt-6 max-w-xl text-lg leading-8 text-slate-600">
+              Find the right combination of housing, mobile plans, transport
+              and more — all in one place.
+            </p>
 
-          <div className="mx-auto mt-10 max-w-3xl rounded-2xl border border-slate-200 bg-white p-2 shadow-xl shadow-slate-200/50">
-            <div className="flex flex-col gap-2 md:flex-row">
-              <input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="e.g. Find me a student room in Vienna under €500, a phone plan under €20 and public transport"
-                className="min-h-14 flex-1 rounded-xl px-4 text-base outline-none placeholder:text-slate-400"
-              />
+            <div className="mt-8 rounded-2xl border border-[#e5e7eb] bg-white p-2 shadow-xl shadow-[#17233c]/10">
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <input
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="What do you need? e.g. a room under €500 in Vienna"
+                  className="min-h-14 min-w-0 flex-1 rounded-xl bg-transparent px-4 text-base outline-none placeholder:text-slate-400"
+                />
+                <button
+                  onClick={search}
+                  className="min-h-14 rounded-xl bg-[#203b72] px-8 font-semibold text-white transition hover:bg-[#172d58]"
+                >
+                  Search offers →
+                </button>
+              </div>
+            </div>
 
-              <button
-                onClick={search}
-                className="min-h-14 rounded-xl bg-[#1746a2] px-8 font-semibold text-white transition hover:bg-[#123985]"
-              >
-                Compare
-              </button>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {[
+                "Room under €500",
+                "Phone plan under €20",
+                "Gym in Vienna",
+              ].map((example) => (
+                <button
+                  key={example}
+                  onClick={() => setQuery(example)}
+                  className="rounded-full border border-[#e8e6e0] bg-white px-3 py-2 text-sm text-slate-600 transition hover:border-[#203b72] hover:text-[#203b72]"
+                >
+                  {example}
+                </button>
+              ))}
             </div>
           </div>
 
-          <div className="mt-4 flex flex-wrap justify-center gap-2">
+          <div className="relative">
+            <div className="absolute -inset-4 rounded-[2rem] bg-[#e9eef8] blur-2xl" />
+            <div className="relative overflow-hidden rounded-[1.75rem] bg-[#203b72] p-7 text-white shadow-xl md:p-9">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="text-sm text-blue-100">YOUR LIFE IN ONE PLACE</div>
+                  <h2 className="mt-2 text-2xl font-bold">Build your ideal setup</h2>
+                </div>
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-2xl">
+                  ✦
+                </div>
+              </div>
+
+              <p className="mt-3 max-w-sm text-sm leading-6 text-blue-100">
+                Compare services together and explore a combination that fits
+                your needs and budget.
+              </p>
+
+              <div className="mt-7 space-y-3">
+                {[
+                  { icon: "🏠", name: "Student housing", detail: "Find a place to live" },
+                  { icon: "📱", name: "Mobile plan", detail: "Stay connected" },
+                  { icon: "🚇", name: "Public transport", detail: "Get around the city" },
+                ].map((item) => (
+                  <div
+                    key={item.name}
+                    className="flex items-center gap-3 rounded-xl border border-white/15 bg-white/10 p-3"
+                  >
+                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-xl">
+                      {item.icon}
+                    </div>
+                    <div>
+                      <div className="font-semibold">{item.name}</div>
+                      <div className="text-sm text-blue-100">{item.detail}</div>
+                    </div>
+                    <div className="ml-auto text-blue-100">↗</div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-6 border-t border-white/20 pt-5 text-sm text-blue-100">
+                One search. Multiple possibilities. Your choice.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-16">
+          <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+            <div>
+              <p className="text-xs font-bold tracking-[0.16em] text-[#3478f6]">
+                EXPLORE YOUR OPTIONS
+              </p>
+              <h2 className="mt-2 text-2xl font-bold tracking-tight text-[#17233c] md:text-3xl">
+                What are you looking for?
+              </h2>
+            </div>
+            <p className="text-sm text-slate-500">Choose a category to get started</p>
+          </div>
+
+          <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
             {[
-              "Student room in Vienna under €500",
-              "Phone plan under €20",
-              "Gym in Vienna",
-              "Room + phone + transport",
-            ].map((example) => (
+              { id: "housing", icon: "⌂", title: "Housing", desc: "Rooms & residences", query: "Student room in Vienna" },
+              { id: "mobile", icon: "▯", title: "Mobile", desc: "Plans & data", query: "Mobile plan in Austria" },
+              { id: "transport", icon: "↗", title: "Transport", desc: "Move around", query: "Public transport in Vienna" },
+              { id: "gym", icon: "✳", title: "Fitness", desc: "Gyms & sports", query: "Gym in Vienna" },
+              { id: "streaming", icon: "▷", title: "Streaming", desc: "Films & music", query: "Streaming subscription" },
+            ].map((category) => (
               <button
-                key={example}
-                onClick={() => setQuery(example)}
-                className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-600 transition hover:border-blue-200 hover:text-[#1746a2]"
+                key={category.id}
+                onClick={() => {
+                  setQuery(category.query);
+                  setSubmittedQuery("");
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                className="group rounded-2xl border border-[#e8e6e0] bg-white p-5 text-left transition hover:-translate-y-1 hover:border-[#b9c9e8] hover:shadow-lg hover:shadow-[#17233c]/5"
               >
-                {example}
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#eef3fc] text-2xl font-semibold text-[#203b72] transition group-hover:bg-[#203b72] group-hover:text-white">
+                  {category.icon}
+                </div>
+                <div className="mt-4 font-bold text-[#17233c]">{category.title}</div>
+                <div className="mt-1 text-sm text-slate-500">{category.desc}</div>
               </button>
             ))}
           </div>
+        </div>
+
+        <div className="mt-16">
+          <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+            <div>
+              <p className="text-xs font-bold tracking-[0.16em] text-[#3478f6]">
+                START EXPLORING
+              </p>
+              <h2 className="mt-2 text-2xl font-bold tracking-tight text-[#17233c] md:text-3xl">
+                Popular starting points
+              </h2>
+            </div>
+            <p className="text-sm text-slate-500">
+              Examples to help you start your search
+            </p>
+          </div>
+
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            {[
+              { icon: "🏠", title: "Find your student room", desc: "Explore housing options in Vienna.", query: "Student room in Vienna under €500", tag: "HOUSING" },
+              { icon: "📱", title: "Choose a mobile plan", desc: "Compare plans that fit your budget.", query: "Phone plan under €20 in Austria", tag: "MOBILE" },
+              { icon: "🚇", title: "Plan city transport", desc: "Explore ways to get around Vienna.", query: "Public transport in Vienna", tag: "TRANSPORT" },
+            ].map((item) => (
+              <button
+                key={item.title}
+                onClick={() => {
+                  setQuery(item.query);
+                  setSubmittedQuery("");
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                className="rounded-2xl border border-[#e8e6e0] bg-white p-5 text-left transition hover:-translate-y-1 hover:shadow-lg hover:shadow-[#17233c]/5"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-3xl">{item.icon}</span>
+                  <span className="rounded-full bg-[#eef3fc] px-3 py-1 text-[10px] font-bold tracking-wider text-[#203b72]">
+                    {item.tag}
+                  </span>
+                </div>
+                <h3 className="mt-5 text-lg font-bold text-[#17233c]">{item.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-600">{item.desc}</p>
+                <div className="mt-5 font-semibold text-[#203b72]">Start comparing →</div>
+              </button>
+            ))}
+          </div>
+          <p className="mt-4 text-xs text-slate-500">
+            These are example search starting points, not verified live offers.
+          </p>
         </div>
       </section>
 
@@ -746,7 +879,7 @@ export default function Home() {
           className="mx-auto max-w-7xl scroll-mt-8 px-6 pb-20"
         >
           <div className="mb-8 rounded-2xl border border-blue-100 bg-blue-50 p-5">
-            <div className="text-sm font-semibold text-[#1746a2]">
+            <div className="text-sm font-semibold text-[#203b72]">
               Your request
             </div>
 
@@ -769,7 +902,7 @@ export default function Home() {
             </div>
           </div>
 
-          <section className="mb-10 rounded-2xl border border-slate-200 bg-white p-6">
+          <section className="mb-10 rounded-2xl border border-[#e8e6e0] bg-white p-6">
             <h2 className="text-2xl font-bold">Search real offers online</h2>
             <p className="mt-2 text-slate-600">
               Search results are tailored to the country mentioned in your request.
@@ -788,7 +921,7 @@ export default function Home() {
                     href={`https://www.google.com/search?q=${encodeURIComponent(submittedQuery + " " + countryTerms)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="rounded-xl bg-[#1746a2] px-5 py-4 text-center font-semibold text-white hover:bg-[#123985]"
+                    className="rounded-xl bg-[#203b72] px-5 py-4 text-center font-semibold text-white hover:bg-[#172d58]"
                   >
                     {isAustria ? "🇦🇹 Search offers in Austria" : "🇮🇹 Search offers in Italy"}
                   </a>
@@ -804,7 +937,7 @@ export default function Home() {
                   Your best setup
                 </h2>
                 <p className="mt-2 text-slate-600">
-                  CompareX combines the best options across your categories.
+                  SearchX combines the best options across your categories.
                 </p>
               </div>
 
@@ -840,7 +973,7 @@ export default function Home() {
                       className={`rounded-2xl border p-5 text-left transition ${
                         active
                           ? "border-[#2563eb] bg-white shadow-lg shadow-blue-100"
-                          : "border-slate-200 bg-white hover:border-blue-200"
+                          : "border-[#e8e6e0] bg-white hover:border-blue-200"
                       }`}
                     >
                       <div className="flex items-start justify-between gap-3">
@@ -854,7 +987,7 @@ export default function Home() {
                         </div>
 
                         {active && (
-                          <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-[#1746a2]">
+                          <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-[#203b72]">
                             Selected
                           </span>
                         )}
@@ -884,10 +1017,10 @@ export default function Home() {
               </div>
 
               {activeBundle && (
-                <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div className="mt-6 rounded-2xl border border-[#e8e6e0] bg-white p-6 shadow-sm">
                   <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
                     <div>
-                      <div className="text-sm font-semibold text-[#1746a2]">
+                      <div className="text-sm font-semibold text-[#203b72]">
                         {selectedBundle === "overall"
                           ? "Best Overall"
                           : selectedBundle === "cheapest"
@@ -914,9 +1047,9 @@ export default function Home() {
                     {activeBundle.offers.map((offer) => (
                       <div
                         key={offer.id}
-                        className="rounded-xl border border-slate-200 bg-slate-50 p-4"
+                        className="rounded-xl border border-[#e8e6e0] bg-slate-50 p-4"
                       >
-                        <div className="text-sm font-medium text-[#1746a2]">
+                        <div className="text-sm font-medium text-[#203b72]">
                           {categoryIcons[offer.category]}{" "}
                           {categoryLabels[offer.category]}
                         </div>
@@ -928,7 +1061,7 @@ export default function Home() {
                         </div>
 
                         <div className="mt-2 text-sm text-slate-600">
-                          CompareX Score:{" "}
+                          SearchX Score:{" "}
                           <strong>{offer.score}/10</strong>
                         </div>
                       </div>
@@ -936,7 +1069,7 @@ export default function Home() {
                   </div>
 
                   <div className="mt-6 rounded-xl bg-blue-50 p-4 text-sm text-slate-700">
-                    <strong className="text-[#1746a2]">
+                    <strong className="text-[#203b72]">
                       Why this package?
                     </strong>{" "}
                     It combines the strongest options across your selected
@@ -951,14 +1084,14 @@ export default function Home() {
           <div className="mb-5 flex flex-col justify-between gap-4 md:flex-row md:items-end">
             <div>
               <h2 className="text-3xl font-bold tracking-tight">
-                Compare individual options
+                Search individual options
               </h2>
               <p className="mt-2 text-slate-600">
                 Explore the individual offers behind your recommendation.
               </p>
             </div>
 
-            <div className="flex rounded-lg border border-slate-200 bg-white p-1">
+            <div className="flex rounded-lg border border-[#e8e6e0] bg-white p-1">
               <button
                 onClick={() => setSort("score")}
                 className={`rounded-md px-4 py-2 text-sm font-medium ${
@@ -1012,7 +1145,7 @@ export default function Home() {
                     {categoryResults.map((offer) => (
                       <article
                         key={offer.id}
-                        className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                        className="rounded-2xl border border-[#e8e6e0] bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div>
@@ -1029,7 +1162,7 @@ export default function Home() {
                             <div className="text-xs text-slate-500">
                               Score
                             </div>
-                            <div className="font-bold text-[#1746a2]">
+                            <div className="font-bold text-[#203b72]">
                               {offer.score}
                             </div>
                           </div>
@@ -1081,7 +1214,7 @@ export default function Home() {
 
       {!hasResults && submittedQuery && (
         <section className="mx-auto max-w-3xl px-6 pb-20 text-center">
-          <div className="rounded-2xl border border-slate-200 bg-white p-10">
+          <div className="rounded-2xl border border-[#e8e6e0] bg-white p-10">
             <div className="text-4xl">🔎</div>
 
             <h2 className="mt-4 text-2xl font-bold">
@@ -1096,7 +1229,7 @@ export default function Home() {
         </section>
       )}
 
-      <footer className="border-t border-slate-200 bg-white">
+      <footer className="border-t border-[#e8e6e0] bg-white">
         <div className="mx-auto max-w-7xl px-6 py-8 text-center text-sm text-slate-500">
           CompareX demo · Prices and offers shown are demo data.
         </div>
