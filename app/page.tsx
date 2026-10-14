@@ -515,6 +515,14 @@ export default function Home() {
     "overall" | "cheapest" | "quality"
   >("overall");
 
+  const [packageBudget, setPackageBudget] = useState(700);
+  const [packageCategories, setPackageCategories] = useState<Category[]>([
+    "housing",
+    "mobile",
+    "transport",
+  ]);
+  const [packageSearchRun, setPackageSearchRun] = useState(false);
+
   const resultsRef = useRef<HTMLElement | null>(null);
 
   const detectedCategories = useMemo(
@@ -531,6 +539,70 @@ export default function Home() {
     () => detectPreferences(submittedQuery),
     [submittedQuery]
   );
+
+  const packageCategoryResults = useMemo(() => {
+    const output = {} as Record<Category, ScoredOffer[]>;
+
+    for (const category of packageCategories) {
+      output[category] = offers
+        .filter((offer) => offer.category === category)
+        .map((offer) =>
+          calculateScore(
+            offer,
+            {
+              student: true,
+              quality: false,
+              cheap: false,
+              vienna: true,
+              university: false,
+            }
+          )
+        )
+        .sort((a, b) => b.score - a.score);
+    }
+
+    return output;
+  }, [packageCategories]);
+
+  const packageBundles = useMemo(() => {
+    if (packageCategories.length < 2) return [];
+    if (packageCategories.some(
+      (category) => packageCategoryResults[category].length === 0
+    )) return [];
+
+    return createBundles(packageCategoryResults, packageCategories);
+  }, [packageCategoryResults, packageCategories]);
+
+  const packageAffordableBundles = useMemo(
+    () => packageBundles.filter((bundle) => bundle.totalPrice <= packageBudget),
+    [packageBundles, packageBudget]
+  );
+
+  const packageOptionsPool =
+    packageAffordableBundles.length > 0
+      ? packageAffordableBundles
+      : packageBundles;
+
+  const packageBestOverall = [...packageOptionsPool].sort(
+    (a, b) => b.score - a.score || a.totalPrice - b.totalPrice
+  )[0] ?? null;
+
+  const packageCheapest = [...packageOptionsPool].sort(
+    (a, b) => a.totalPrice - b.totalPrice || b.score - a.score
+  )[0] ?? null;
+
+  const packageBestQuality = [...packageOptionsPool].sort(
+    (a, b) => b.quality - a.quality || b.score - a.score
+  )[0] ?? null;
+
+  function togglePackageCategory(category: Category) {
+    setPackageCategories((current) =>
+      current.includes(category)
+        ? current.filter((item) => item !== category)
+        : [...current, category]
+    );
+    setPackageSearchRun(false);
+  }
 
   const searchCountries = useMemo(() => {
     const t = normalizeSearchText(submittedQuery);
