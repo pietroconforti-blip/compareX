@@ -524,6 +524,7 @@ export default function Home() {
   const [packageSearchRun, setPackageSearchRun] = useState(false);
 
   const resultsRef = useRef<HTMLElement | null>(null);
+  const packageResultsRef = useRef<HTMLDivElement | null>(null);
 
   const detectedCategories = useMemo(
     () => detectCategories(submittedQuery),
@@ -899,14 +900,25 @@ export default function Home() {
           <button
             type="button"
             disabled={packageCategories.length < 2}
-            onClick={() => setPackageSearchRun(true)}
+            onClick={() => {
+              setPackageSearchRun(true);
+              setTimeout(() => {
+                packageResultsRef.current?.scrollIntoView({
+                  behavior: "smooth",
+                  block: "start",
+                });
+              }, 100);
+            }}
             className="mt-6 rounded-xl bg-[#3478f6] px-6 py-3 font-semibold text-white transition hover:bg-[#2463d8] disabled:cursor-not-allowed disabled:opacity-40"
           >
             Build my packages →
           </button>
 
           {packageSearchRun && (
-            <div className="mt-8 border-t border-slate-100 pt-7">
+            <div
+              ref={packageResultsRef}
+              className="mt-8 scroll-mt-6 border-t border-slate-100 pt-7"
+            >
               <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                   <p className="text-xs font-bold tracking-[0.16em] text-[#3478f6]">YOUR COMPARISON</p>
