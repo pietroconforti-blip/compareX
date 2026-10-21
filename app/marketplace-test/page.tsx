@@ -191,7 +191,12 @@ export default function MarketplaceTestPage() {
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-8 text-slate-900 sm:px-8">
       <div className="mx-auto max-w-5xl">
-        <header className="mb-8 flex flex-wrap items-center justify-between gap-4">
+      <a
+  href="/"
+  className="mb-6 inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 font-semibold text-slate-700 transition hover:bg-slate-100"
+>
+  ← Home
+</a>  <header className="mb-8 flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-sm font-semibold uppercase tracking-widest text-blue-700">
               CompareX Marketplace
