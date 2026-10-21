@@ -714,15 +714,7 @@ export default function Home() {
 
     if (!cleanQuery) return;
 
-    setSubmittedQuery(cleanQuery);
-    setSelectedBundle("overall");
-
-    setTimeout(() => {
-      resultsRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    }, 100);
+    window.location.href = `/search?q=${encodeURIComponent(cleanQuery)}`;
   }
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
@@ -752,9 +744,72 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="hidden text-sm text-slate-500 md:block">
-            Smarter choices for student life
-          </div>
+          <details className="relative">
+            <summary
+              aria-label="Open navigation menu"
+              className="flex cursor-pointer list-none items-center gap-3 rounded-xl border border-[#e8e6e0] bg-white px-4 py-3 transition hover:border-[#203b72] hover:bg-slate-50"
+            >
+              <span className="text-sm font-semibold text-[#17233c]">Menu</span>
+              <span className="flex w-5 flex-col gap-1.5" aria-hidden="true">
+                <span className="h-0.5 w-5 rounded bg-[#203b72]" />
+                <span className="h-0.5 w-5 rounded bg-[#203b72]" />
+                <span className="h-0.5 w-5 rounded bg-[#203b72]" />
+              </span>
+            </summary>
+
+            <nav
+              aria-label="Main navigation"
+              className="absolute right-0 top-full z-50 mt-3 w-72 max-w-[calc(100vw-3rem)] rounded-2xl border border-[#e8e6e0] bg-white p-3 shadow-xl"
+            >
+              <p className="px-3 pb-2 pt-1 text-xs font-bold uppercase tracking-wider text-slate-400">
+                Explore services
+              </p>
+
+              <a href="/search?q=student%20room"
+                className="block rounded-xl px-3 py-3 text-sm font-medium hover:bg-blue-50 hover:text-[#203b72]">
+                🏠 Housing
+              </a>
+              <a href="/search?q=mobile%20plan"
+                className="block rounded-xl px-3 py-3 text-sm font-medium hover:bg-blue-50 hover:text-[#203b72]">
+                📱 Mobile plans
+              </a>
+              <a href="/search?q=transport"
+                className="block rounded-xl px-3 py-3 text-sm font-medium hover:bg-blue-50 hover:text-[#203b72]">
+                🚆 Transport
+              </a>
+              <a href="/search?q=gym"
+                className="block rounded-xl px-3 py-3 text-sm font-medium hover:bg-blue-50 hover:text-[#203b72]">
+                🏋️ Fitness &amp; Gyms
+              </a>
+              <a href="/search?q=streaming"
+                className="block rounded-xl px-3 py-3 text-sm font-medium hover:bg-blue-50 hover:text-[#203b72]">
+                ▶ Streaming
+              </a>
+
+              <a
+                href="/marketplace-test"
+                className="block rounded-xl px-3 py-3 text-sm font-semibold text-[#203b72] hover:bg-blue-50"
+              >
+                🛍️ Marketplace
+                <span className="mt-1 block text-xs font-normal text-slate-500">
+                  Buy, sell and rent items
+                </span>
+              </a>
+
+              <div className="my-2 border-t border-[#e8e6e0]" />
+
+              <p className="px-3 pb-2 pt-1 text-xs font-bold uppercase tracking-wider text-slate-400">
+                Get in touch
+              </p>
+              <a href="mailto:pietro_conforti@yahoo.com"
+                className="block rounded-xl px-3 py-3 text-sm font-semibold text-[#203b72] hover:bg-blue-50">
+                ✉ Contact
+                <span className="mt-1 block break-all text-xs font-normal text-slate-500">
+                  pietro_conforti@yahoo.com
+                </span>
+              </a>
+            </nav>
+          </details>
         </div>
       </header>
 
@@ -1447,6 +1502,68 @@ export default function Home() {
           </div>
         </section>
       )}
+
+
+      <section className="mx-auto max-w-7xl px-6 pb-16">
+        <div className="mb-6">
+          <p className="text-sm font-semibold uppercase tracking-wider text-[#203b72]">
+            Austria · Mobile
+          </p>
+          <h2 className="mt-2 text-2xl font-bold">
+            Official mobile offers
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+            Compare provider websites directly. Prices and plan details must
+            be checked with each operator; these links are not live price feeds.
+          </p>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <article className="rounded-2xl border border-[#e8e6e0] bg-white p-5 shadow-sm">
+            <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Official provider
+            </div>
+            <h3 className="mt-2 text-xl font-bold">yesss!</h3>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              View available mobile plans, data allowances, monthly prices
+              and contract conditions on the provider website.
+            </p>
+            <p className="mt-4 text-sm font-medium text-amber-700">
+              Price: check current tariff
+            </p>
+            <a
+              href="https://www.yesss.at/tarife"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 inline-flex rounded-xl bg-[#203b72] px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90"
+            >
+              Verify offers ↗
+            </a>
+          </article>
+
+          <article className="rounded-2xl border border-[#e8e6e0] bg-white p-5 shadow-sm">
+            <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Official provider
+            </div>
+            <h3 className="mt-2 text-xl font-bold">spusu</h3>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              Explore current mobile plans and check monthly prices,
+              included data and contract conditions.
+            </p>
+            <p className="mt-4 text-sm font-medium text-amber-700">
+              Price: check current tariff
+            </p>
+            <a
+              href="https://www.spusu.at/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 inline-flex rounded-xl bg-[#203b72] px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90"
+            >
+              Verify offers ↗
+            </a>
+          </article>
+        </div>
+      </section>
 
       <footer className="border-t border-[#e8e6e0] bg-white">
         <div className="mx-auto max-w-7xl px-6 py-8 text-center text-sm text-slate-500">
