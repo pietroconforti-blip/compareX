@@ -163,6 +163,7 @@ function OfferCard({
   price,
   body,
   href,
+  images = [],
 }: {
   badge: string;
   title: string;
@@ -170,23 +171,52 @@ function OfferCard({
   price: string;
   body: ReactNode;
   href: string;
+  images?: string[];
 }) {
+  const [rating, setRating] = useState(0);
+  const brand = subtitle.split(/\\s+/).slice(0, 2).join(" ");
   return (
-    <article className="card-hover flex flex-col rounded-2xl border border-[#e8e6e0] bg-white p-6 shadow-sm">
-      <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-        {badge}
-      </span>
-      <h2 className="mt-2 text-xl font-bold">{title}</h2>
-      <p className="mt-1 text-sm text-slate-600">{subtitle}</p>
-      <div className="mt-5 text-2xl font-bold text-[#1e3a6e]">{price}</div>
-      <div className="mt-3 text-sm leading-6 text-slate-600">{body}</div>
-      <div className="mt-auto pt-6">
-        <a
-          href="/#package-builder"
-          className="block rounded-xl bg-[#1e3a6e] px-4 py-3 text-center text-sm font-semibold text-white hover:bg-[#152a52]"
-        >
-          Build a package inside CompareX →
-        </a>
+    <article className="card-hover flex flex-col overflow-hidden rounded-2xl border border-[#d5dceb] bg-white shadow-sm transition hover:shadow-lg">
+      {images.length > 0 && (
+        <div className="grid grid-cols-3 gap-1 bg-slate-100 p-1">
+          {images.slice(0, 3).map((src, index) => (
+            <img key={src} src={src} alt={`${title} accommodation photo ${index + 1}`}
+              className={`h-28 w-full object-cover ${index === 0 ? "col-span-2 row-span-2 h-[232px] rounded-l-xl" : "rounded-r-xl"}`} />
+          ))}
+        </div>
+      )}
+      <div className="flex flex-1 flex-col p-5">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">{badge}</span>
+          <span className="inline-flex max-w-[48%] items-center rounded-lg border border-slate-100 bg-slate-50 px-2.5 py-1.5 text-xs font-extrabold text-[#1e3a6e]" title={`Provider: ${subtitle}`}>
+            {brand}
+          </span>
+        </div>
+        <h2 className="mt-3 text-xl font-bold">{title}</h2>
+        <p className="mt-1 text-sm text-slate-600">{subtitle}</p>
+        <div className="mt-4 text-2xl font-bold text-[#1e3a6e]">{price}</div>
+        <div className="mt-3 text-sm leading-6 text-slate-600">{body}</div>
+        <div className="mt-4 rounded-xl bg-[#f7f9fd] p-3">
+          <p className="text-xs font-semibold text-slate-600">Rate this offer</p>
+          <div className="mt-1 flex items-center gap-1" aria-label="Rate this offer from one to five stars">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button key={star} type="button" onClick={() => setRating(star)}
+                aria-label={`Rate ${star} out of 5 stars`} aria-pressed={rating === star}
+                className={`text-xl leading-none transition ${star <= rating ? "text-amber-400" : "text-slate-300"} hover:text-amber-400`}>★</button>
+            ))}
+            <span className="ml-2 text-xs text-slate-500">{rating ? `Your rating: ${rating}/5` : "Your feedback"}</span>
+          </div>
+          <p className="mt-1 text-[11px] text-slate-400">Your rating is a local preview and is not yet saved or shared.</p>
+        </div>
+        <div className="mt-auto pt-5">
+          <a href={href} target="_blank" rel="noreferrer"
+            className="block rounded-xl border border-[#d5dceb] px-4 py-3 text-center text-sm font-semibold text-[#1e3a6e] hover:bg-slate-50">
+            Visit provider ↗
+          </a>
+          <a href="/package-builder" className="mt-2 block rounded-xl bg-[#1e3a6e] px-4 py-3 text-center text-sm font-semibold text-white hover:bg-[#152a52]">
+            Build my package →
+          </a>
+        </div>
       </div>
     </article>
   );
@@ -469,6 +499,11 @@ function SearchResults() {
                   subtitle={o.provider}
                   price={o.priceLabel}
                   href={o.officialUrl}
+                  images={[
+                    "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=700&q=80",
+                    "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=500&q=80",
+                    "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=500&q=80",
+                  ]}
                   body={
                     <>
                       <p className="mb-2">{o.roomType}</p>
