@@ -41,11 +41,12 @@ export default function Home() {
   const [aiError, setAiError] = useState("");
   const [interpretation, setInterpretation] = useState("");
   const [recs, setRecs] = useState<AiRec[]>([]);
-  const [packageBudget, setPackageBudget] = useState(700);
+  const [packageBudget, setPackageBudget] = useState(900);
   const [packageCategories, setPackageCategories] = useState<Category[]>([
     "housing",
     "mobile",
     "transport",
+    "gym",
   ]);
   const [packageSearchRun, setPackageSearchRun] = useState(false);
 
@@ -332,83 +333,147 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 pb-20">
-        <div className="rounded-[2rem] border border-[#d5dceb] bg-white/90 p-8 shadow-lg shadow-[#1a3470]/5 md:p-10">
-          <p className="text-xs font-bold uppercase tracking-wider text-[#2563eb]">
-            Build your package
-          </p>
-          <h2 className="mt-2 text-3xl font-bold tracking-tight">
-            Everything you need, one smart choice.
-          </h2>
-          <p className="mt-3 max-w-2xl text-slate-600">
-            Choose categories and set your monthly budget. We score packages by
-            value, price and quality.
-          </p>
-
-          <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_280px]">
+      <section id="build-package" className="mx-auto max-w-7xl px-6 pb-20">
+        <div className="overflow-hidden rounded-[2rem] border border-[#d5dceb] bg-white shadow-xl shadow-[#1a3470]/10">
+          <div className="grid gap-8 bg-gradient-to-br from-white via-[#f5f8ff] to-[#eaf1ff] p-6 md:p-10 lg:grid-cols-[1fr_300px]">
             <div>
-              <p className="mb-3 text-sm font-semibold">Choose your categories</p>
-              <div className="flex flex-wrap gap-2">
+              <span className="inline-flex rounded-full border border-[#c7d7f5] bg-white px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#1a3470]">
+                CompareX Package Builder
+              </span>
+              <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl">
+                Your life in one package.
+              </h2>
+              <p className="mt-3 max-w-2xl leading-7 text-slate-600">
+                Combine housing, transport, mobile and fitness. Choose the services you need and see the estimated monthly total update in one place.
+              </p>
+
+              <div className="mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 {(Object.keys(categoryLabels) as Category[]).map((cat) => {
                   const on = packageCategories.includes(cat);
+                  const categoryImage =
+                    cat === "housing" ? HOUSING_IMG :
+                    cat === "mobile" ? MOBILE_IMG :
+                    cat === "transport" ? TRANSPORT_IMG :
+                    cat === "gym" ? GYM_IMG : HERO_IMG;
+                  const sample = offers.find((o) => o.category === cat);
                   return (
                     <button
                       key={cat}
                       onClick={() => toggleCategory(cat)}
-                      className={`rounded-xl border px-4 py-2.5 text-sm font-semibold transition ${
-                        on
-                          ? "border-[#1a3470] bg-[#1a3470] text-white shadow-md"
-                          : "border-[#d5dceb] bg-white text-slate-700 hover:border-[#1a3470]"
-                      }`}
+                      aria-pressed={on}
+                      className={`group overflow-hidden rounded-2xl border text-left transition ${on ? "border-[#1a3470] bg-white ring-2 ring-[#c7d7f5] shadow-md" : "border-[#d5dceb] bg-white/70 hover:border-[#1a3470]"}`}
                     >
-                      {categoryIcons[cat]} {categoryLabels[cat]}
+                      <div className="relative h-28 overflow-hidden">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={categoryImage} alt="" className="h-full w-full object-cover transition duration-300 group-hover:scale-105" />
+                        <span className={`absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold ${on ? "bg-[#1a3470] text-white" : "bg-white/95 text-slate-500"}`}>
+                          {on ? "✓" : "+"}
+                        </span>
+                      </div>
+                      <div className="p-4">
+                        <p className="font-semibold">{categoryIcons[cat]} {categoryLabels[cat]}</p>
+                        <p className="mt-1 text-sm text-slate-500">{sample ? sample.description : "Choose a service to add it to your package."}</p>
+                        <p className="mt-3 text-xs font-bold uppercase tracking-wide text-[#1a3470]">{on ? "Included in package" : "Add to package"}</p>
+                      </div>
                     </button>
                   );
                 })}
               </div>
+              <div className="mt-6 flex flex-col gap-4 rounded-2xl border border-[#d5dceb] bg-white p-5 sm:flex-row sm:items-end sm:justify-between">
+                <label className="block w-full sm:max-w-xs">
+                  <span className="mb-2 block text-sm font-semibold">Your monthly budget (€)</span>
+                  <input
+                    type="number"
+                    min={0}
+                    value={packageBudget}
+                    onChange={(e) => { setPackageBudget(Number(e.target.value) || 0); setPackageSearchRun(false); }}
+                    className="w-full rounded-xl border border-[#d5dceb] bg-white px-4 py-3 font-semibold outline-none focus:border-[#2563eb]"
+                  />
+                </label>
+                <button
+                  onClick={() => setPackageSearchRun(true)}
+                  disabled={packageCategories.length < 2}
+                  className="rounded-xl bg-[#1a3470] px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#1a3470]/20 transition hover:bg-[#12254f] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Build my package →
+                </button>
+              </div>
             </div>
-            <label className="block">
-              <span className="mb-2 block text-sm font-semibold">Monthly budget (€)</span>
-              <input
-                type="number"
-                min={100}
-                value={packageBudget}
-                onChange={(e) => setPackageBudget(Number(e.target.value) || 0)}
-                className="w-full rounded-xl border border-[#d5dceb] bg-white px-4 py-3 font-semibold outline-none focus:border-[#2563eb]"
-              />
-            </label>
+
+            <aside className="h-fit rounded-2xl border border-[#d5dceb] bg-white p-5 shadow-lg shadow-[#1a3470]/5 lg:sticky lg:top-24">
+              <p className="text-xs font-bold uppercase tracking-wider text-[#2563eb]">Your package</p>
+              <h3 className="mt-2 text-xl font-bold">Monthly overview</h3>
+              <p className="mt-1 text-sm text-slate-500">{packageCategories.length} services selected</p>
+              <div className="mt-5 space-y-3">
+                {packageCategories.map((cat) => {
+                  const selectedOffer = offers
+                    .filter((o) => o.category === cat)
+                    .sort((a, b) => a.price - b.price)[0];
+                  return selectedOffer ? (
+                    <div key={cat} className="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold">{categoryIcons[cat]} {categoryLabels[cat]}</p>
+                        <p className="mt-0.5 truncate text-xs text-slate-500">{selectedOffer.name}</p>
+                      </div>
+                      <span className="shrink-0 text-sm font-bold text-[#1a3470]">{formatPrice(selectedOffer.price)}</span>
+                    </div>
+                  ) : null;
+                })}
+              </div>
+              <div className="mt-5 border-t border-slate-200 pt-4">
+                <p className="text-sm text-slate-500">Estimated starting total</p>
+                <p className="mt-1 text-3xl font-bold tracking-tight text-[#1a3470]">
+                  {formatPrice(packageCategories.reduce((sum, cat) => {
+                    const cheapest = offers.filter((o) => o.category === cat).sort((a, b) => a.price - b.price)[0];
+                    return sum + (cheapest?.price ?? 0);
+                  }, 0))}
+                  <span className="text-sm font-medium text-slate-500"> / month</span>
+                </p>
+                <p className={`mt-2 text-sm font-medium ${packageCategories.reduce((sum, cat) => sum + (offers.filter((o) => o.category === cat).sort((a, b) => a.price - b.price)[0]?.price ?? 0), 0) <= packageBudget ? "text-emerald-700" : "text-amber-700"}`}>
+                  {packageCategories.reduce((sum, cat) => sum + (offers.filter((o) => o.category === cat).sort((a, b) => a.price - b.price)[0]?.price ?? 0), 0) <= packageBudget ? "Within your budget" : "Above your budget"}
+                </p>
+              </div>
+              <p className="mt-4 text-xs leading-5 text-slate-500">
+                Estimates use the sample offers currently listed on CompareX. Prices and availability must be verified with each provider.
+              </p>
+            </aside>
           </div>
 
-          <button
-            onClick={() => setPackageSearchRun(true)}
-            className="mt-8 rounded-2xl bg-[#1a3470] px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#1a3470]/30 hover:bg-[#12254f]"
-          >
-            Build my package
-          </button>
-
-          {packageSearchRun && best && (
-            <div className="mt-8 rounded-2xl border border-[#c7d7f5] bg-[#f0f5ff] p-6">
-              <p className="text-xs font-bold uppercase tracking-wider text-[#1a3470]">
-                Best overall package
-              </p>
-              <p className="mt-2 text-2xl font-bold">
-                {formatPrice(best.totalPrice)}
-                <span className="text-base font-medium text-slate-500"> / month</span>
-              </p>
-              <p className="mt-1 text-sm text-slate-600">Score {best.score}/10</p>
-              <ul className="mt-4 space-y-2">
-                {best.offers.map((o) => (
-                  <li
-                    key={o.id}
-                    className="flex items-center justify-between rounded-xl bg-white px-4 py-3 text-sm shadow-sm"
-                  >
-                    <span className="font-medium">
-                      {categoryIcons[o.category]} {o.name}
-                    </span>
-                    <span className="font-semibold text-[#1a3470]">{o.priceLabel}</span>
-                  </li>
-                ))}
-              </ul>
+          {packageSearchRun && (
+            <div className="border-t border-[#d5dceb] bg-white p-6 md:p-10">
+              {best ? (
+                <>
+                  <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-wider text-[#2563eb]">Recommended combination</p>
+                      <h3 className="mt-2 text-2xl font-bold">Best match for your selected services</h3>
+                      <p className="mt-1 text-sm text-slate-600">Ranked by value and student suitability. This is a comparison, not a single provider checkout.</p>
+                    </div>
+                    <div className="text-left sm:text-right">
+                      <p className="text-sm text-slate-500">Combined monthly price</p>
+                      <p className="text-3xl font-bold text-[#1a3470]">{formatPrice(best.totalPrice)}<span className="text-sm font-medium text-slate-500"> / month</span></p>
+                    </div>
+                  </div>
+                  <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                    {best.offers.map((o) => (
+                      <div key={o.id} className="flex items-start gap-3 rounded-xl border border-[#d5dceb] bg-[#f8faff] p-4">
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-xl shadow-sm">{categoryIcons[o.category]}</span>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{categoryLabels[o.category]}</p>
+                          <p className="mt-1 font-semibold">{o.name}</p>
+                          <p className="mt-1 text-sm text-slate-600">{o.priceLabel}</p>
+                          <p className="mt-2 text-xs text-[#1a3470]">{o.reasons.join(" · ") || "Selected match"}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="mt-5 rounded-xl bg-blue-50 p-4 text-sm leading-6 text-slate-700">
+                    Each service is supplied separately. CompareX currently combines and compares offers; it does not process one combined payment or confirm live bookings.
+                  </p>
+                </>
+              ) : (
+                <p className="rounded-xl bg-amber-50 p-4 text-sm text-amber-900">Select at least two categories with available sample offers to build a package.</p>
+              )}
             </div>
           )}
         </div>
