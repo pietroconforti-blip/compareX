@@ -182,12 +182,10 @@ function OfferCard({
       <div className="mt-3 text-sm leading-6 text-slate-600">{body}</div>
       <div className="mt-auto pt-6">
         <a
-          href={href}
-          target="_blank"
-          rel="noopener noreferrer"
+          href="/#package-builder"
           className="block rounded-xl bg-[#1e3a6e] px-4 py-3 text-center text-sm font-semibold text-white hover:bg-[#152a52]"
         >
-          View official details ↗
+          Build a package inside CompareX →
         </a>
       </div>
     </article>
