@@ -77,6 +77,14 @@ function detectCategory(query: string) {
   return null;
 }
 
+function detectCountry(query: string): "All" | Country {
+  const q = query.toLowerCase();
+  // A named destination should select its country automatically.
+  if (/\\b(italy|italia|milan|milano|rome|roma|turin|torino|bologna|florence|firenze|venice|venezia|naples|napoli|verona)\\b/.test(q)) return "Italy";
+  if (/\\b(austria|österreich|osterreich|vienna|wien|graz|linz|salzburg|innsbruck|sankt pölten|st pölten)\\b/.test(q)) return "Austria";
+  return "All";
+}
+
 function getInitialBudget(query: string) {
   const match = query.match(
     /(?:under|below|max|maximum|less than|unter|bis zu|sotto(?: i| a)?|meno di)\s*€?\s*(\d+(?:[.,]\d+)?)/i,
@@ -192,7 +200,7 @@ function SearchResults() {
   const query = params.get("q") ?? "";
   const category = detectCategory(query);
 
-  const [country, setCountry] = useState<"All" | Country>("All");
+  const [country, setCountry] = useState<"All" | Country>(() => detectCountry(query));
   const [budget, setBudget] = useState(() => getInitialBudget(query));
   const [sort, setSort] = useState<"price-asc" | "price-desc" | "data">(
     "price-asc",
