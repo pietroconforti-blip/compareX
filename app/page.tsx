@@ -430,21 +430,39 @@ export default function Home() {
                     </div>
                   </div>
                   <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                    {best.offers.map((o) => (
-                      <div key={o.id} className="flex items-start gap-3 rounded-xl border border-[#d5dceb] bg-[#f8faff] p-4">
-                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-xl shadow-sm">{categoryIcons[o.category]}</span>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{categoryLabels[o.category]}</p>
-                          <p className="mt-1 font-semibold">{o.name}</p>
-                          <p className="mt-1 text-sm text-slate-600">{o.priceLabel}</p>
-                          <p className="mt-2 text-xs text-[#1a3470]">{o.reasons.join(" · ") || "Selected match"}</p>
-                        </div>
-                      </div>
-                    ))}
+                    {best.offers.map((o) => {
+                      const searchTerm =
+                        o.category === "housing"
+                          ? `student room ${o.location}`
+                          : o.category === "transport"
+                            ? `transport ${o.location}`
+                            : o.category === "mobile"
+                              ? `mobile plan ${o.location}`
+                              : o.category === "gym"
+                                ? `gym ${o.location}`
+                                : "streaming";
+                      return (
+                        <a
+                          key={o.id}
+                          href={`/search?q=${encodeURIComponent(searchTerm)}`}
+                          className="group flex items-start gap-3 rounded-xl border border-[#d5dceb] bg-[#f8faff] p-4 transition hover:border-[#1a3470] hover:bg-white hover:shadow-md"
+                        >
+                          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-xl shadow-sm">{categoryIcons[o.category]}</span>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{categoryLabels[o.category]}</p>
+                            <p className="mt-1 font-semibold">{o.name}</p>
+                            <p className="mt-1 text-sm text-slate-600">{o.priceLabel}</p>
+                            <p className="mt-2 text-xs font-semibold text-[#1a3470]">View offer & continue ↗</p>
+                          </div>
+                        </a>
+                      );
+                    })}
                   </div>
-                  <p className="mt-5 rounded-xl bg-blue-50 p-4 text-sm leading-6 text-slate-700">
-                    Each service is supplied separately. CompareX currently combines and compares offers; it does not process one combined payment or confirm live bookings.
-                  </p>
+                  <div className="mt-5 rounded-2xl border border-[#d5dceb] bg-white p-5">
+                    <p className="font-semibold">Ready to choose your services?</p>
+                    <p className="mt-1 text-sm leading-6 text-slate-600">Open any item above to view the matching offers and then continue on the provider’s official website to complete the purchase or application.</p>
+                    <p className="mt-2 text-xs leading-5 text-slate-500">Each provider is purchased separately for now. A single CompareX checkout requires formal provider integrations and payment agreements, which are not active yet.</p>
+                  </div>
                 </>
               ) : (
                 <p className="rounded-xl bg-amber-50 p-4 text-sm text-amber-900">Select at least two categories with available sample offers to build a package.</p>
