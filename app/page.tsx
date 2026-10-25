@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Image from "next/image";
 import {
   type Category,
   offers,
@@ -250,9 +249,7 @@ export default function Home() {
                         {categoryLabels[r.category]} · {r.location}
                       </p>
                       <p className="mt-0.5 font-semibold">{r.name}</p>
-                      <p className="mt-1 text-sm text-slate-600">
-                        {r.description}
-                      </p>
+                      <p className="mt-1 text-sm text-slate-600">{r.description}</p>
                       {r.reasons?.length > 0 && (
                         <p className="mt-1 text-xs text-[#2563eb]">
                           {r.reasons.join(" · ")}
@@ -261,9 +258,7 @@ export default function Home() {
                     </div>
                     <div className="shrink-0 text-right">
                       <p className="font-bold text-[#1a3470]">{r.priceLabel}</p>
-                      <p className="text-xs text-slate-500">
-                        Score {r.score}/10
-                      </p>
+                      <p className="text-xs text-slate-500">Score {r.score}/10</p>
                     </div>
                   </a>
                 ))}
@@ -281,14 +276,12 @@ export default function Home() {
         </div>
 
         <div className="relative animate-fade-up overflow-hidden rounded-[2rem] border border-[#d5dceb] shadow-xl shadow-[#1a3470]/10">
-          <div className="relative aspect-[4/3]">
-            <Image
+          <div className="relative aspect-[4/3] min-h-[280px]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src={HERO_IMG}
               alt="Bright student apartment living room"
-              fill
-              className="object-cover"
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              priority
+              className="absolute inset-0 h-full w-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#0c1222]/70 via-[#0c1222]/20 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
@@ -299,7 +292,7 @@ export default function Home() {
                 Find a place that feels like home.
               </h2>
               <p className="mt-1 text-sm text-white/85">
-                Real student housing photos · Compare before you choose
+                Real photos · Compare before you choose
               </p>
             </div>
           </div>
@@ -308,9 +301,7 @@ export default function Home() {
 
       <section className="mx-auto max-w-7xl px-6 pb-12">
         <h2 className="text-2xl font-bold tracking-tight">Explore by category</h2>
-        <p className="mt-2 text-slate-600">
-          Real photos · Offers from Austria and Italy
-        </p>
+        <p className="mt-2 text-slate-600">Real photos · Offers from Austria and Italy</p>
         <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {[
             { q: "housing", title: "Housing", img: HOUSING_IMG, alt: "Modern apartment interior" },
@@ -323,13 +314,12 @@ export default function Home() {
               onClick={() => goSearch(c.q)}
               className="card-hover group overflow-hidden rounded-2xl border border-[#d5dceb] bg-white text-left shadow-sm"
             >
-              <div className="relative aspect-[4/3]">
-                <Image
+              <div className="relative aspect-[4/3] overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
                   src={c.img}
                   alt={c.alt}
-                  fill
-                  className="object-cover transition duration-300 group-hover:scale-105"
-                  sizes="(max-width: 640px) 100vw, 25vw"
+                  className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                 />
               </div>
               <div className="px-4 py-3">
@@ -377,9 +367,7 @@ export default function Home() {
               </div>
             </div>
             <label className="block">
-              <span className="mb-2 block text-sm font-semibold">
-                Monthly budget (€)
-              </span>
+              <span className="mb-2 block text-sm font-semibold">Monthly budget (€)</span>
               <input
                 type="number"
                 min={100}
@@ -404,10 +392,7 @@ export default function Home() {
               </p>
               <p className="mt-2 text-2xl font-bold">
                 {formatPrice(best.totalPrice)}
-                <span className="text-base font-medium text-slate-500">
-                  {" "}
-                  / month
-                </span>
+                <span className="text-base font-medium text-slate-500"> / month</span>
               </p>
               <p className="mt-1 text-sm text-slate-600">Score {best.score}/10</p>
               <ul className="mt-4 space-y-2">
@@ -419,9 +404,7 @@ export default function Home() {
                     <span className="font-medium">
                       {categoryIcons[o.category]} {o.name}
                     </span>
-                    <span className="font-semibold text-[#1a3470]">
-                      {o.priceLabel}
-                    </span>
+                    <span className="font-semibold text-[#1a3470]">{o.priceLabel}</span>
                   </li>
                 ))}
               </ul>
