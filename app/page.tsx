@@ -308,6 +308,36 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="mx-auto max-w-7xl px-6 pb-10">
+        <div className="rounded-3xl border border-[#d5dceb] bg-white p-6 shadow-sm md:p-8">
+          <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-[#2563eb]">Compare providers</p>
+              <h2 className="mt-2 text-2xl font-bold">Brands for your student life.</h2>
+              <p className="mt-2 text-sm text-slate-600">Explore providers across housing, mobile, transport, fitness and streaming.</p>
+            </div>
+            <span className="text-xs text-slate-400">Provider names shown for comparison</span>
+          </div>
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            {[
+              { name: "spusu", category: "Mobile", style: "text-[#1a3470]" },
+              { name: "A1", category: "Mobile", style: "text-red-600" },
+              { name: "Wiener Linien", category: "Transport", style: "text-red-700" },
+              { name: "FITINN", category: "Fitness", style: "text-black" },
+              { name: "Netflix", category: "Streaming", style: "text-red-600" },
+              { name: "home4students", category: "Housing", style: "text-emerald-700" },
+            ].map((provider) => (
+              <button key={provider.name} onClick={() => goSearch(provider.category === "Mobile" ? "mobile plan" : provider.category.toLowerCase())}
+                className="rounded-2xl border border-[#e4eaf4] bg-[#f9fbff] p-4 text-left transition hover:-translate-y-0.5 hover:border-[#b8c9e8] hover:shadow-sm">
+                <span className={`block truncate text-lg font-extrabold tracking-tight ${provider.style}`}>{provider.name}</span>
+                <span className="mt-1 block text-xs text-slate-500">{provider.category}</span>
+              </button>
+            ))}
+          </div>
+          <p className="mt-4 text-xs leading-5 text-slate-400">Brand names are used to identify providers; this is not an indication of an official partnership.</p>
+        </div>
+      </section>
+
       <section id="build-package" className="mx-auto max-w-7xl px-6 pb-20">
         <div className="overflow-hidden rounded-[2rem] border border-[#d5dceb] bg-white shadow-xl shadow-[#1a3470]/10">
           <div className="grid gap-8 bg-gradient-to-br from-white via-[#f5f8ff] to-[#eaf1ff] p-6 md:p-10 lg:grid-cols-[1fr_300px]">
