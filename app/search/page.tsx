@@ -5,6 +5,7 @@ import {
   useEffect,
   useMemo,
   useState,
+  type ReactNode,
 } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -159,7 +160,7 @@ function OfferCard({
   title: string;
   subtitle: string;
   price: string;
-  body: React.ReactNode;
+  body: ReactNode;
   href: string;
 }) {
   return (
