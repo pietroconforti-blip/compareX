@@ -224,8 +224,8 @@ export default function Home() {
           </div>
 
           <div className="mt-5 flex flex-wrap gap-3">
-            <a href="#build-package" className="inline-flex items-center justify-center rounded-xl bg-[#1a3470] px-5 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-[#12254f]">
-              Build my package ↓
+            <a href="/package-builder" className="inline-flex items-center justify-center rounded-xl bg-[#1a3470] px-5 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-[#12254f]">
+              Build my package →
             </a>
             <span className="self-center text-sm text-slate-500">Housing · Transport · Mobile · Gym · Streaming</span>
           </div>
