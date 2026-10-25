@@ -223,6 +223,13 @@ export default function Home() {
             ))}
           </div>
 
+          <div className="mt-5 flex flex-wrap gap-3">
+            <a href="#build-package" className="inline-flex items-center justify-center rounded-xl bg-[#1a3470] px-5 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-[#12254f]">
+              Build my package ↓
+            </a>
+            <span className="self-center text-sm text-slate-500">Housing · Transport · Mobile · Gym · Streaming</span>
+          </div>
+
           {aiError && (
             <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
               {aiError}
@@ -298,38 +305,6 @@ export default function Home() {
               </p>
             </div>
           </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-6 pb-12">
-        <h2 className="text-2xl font-bold tracking-tight">Explore by category</h2>
-        <p className="mt-2 text-slate-600">Real photos · Offers from Austria and Italy</p>
-        <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            { q: "housing", title: "Housing", img: HOUSING_IMG, alt: "Modern apartment interior" },
-            { q: "mobile plan", title: "Mobile", img: MOBILE_IMG, alt: "Smartphone on desk" },
-            { q: "transport", title: "Transport", img: TRANSPORT_IMG, alt: "City tram and transit" },
-            { q: "gym", title: "Gym", img: GYM_IMG, alt: "Fitness gym interior" },
-          ].map((c) => (
-            <button
-              key={c.q}
-              onClick={() => goSearch(c.q)}
-              className="card-hover group overflow-hidden rounded-2xl border border-[#d5dceb] bg-white text-left shadow-sm"
-            >
-              <div className="relative aspect-[4/3] overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={c.img}
-                  alt={c.alt}
-                  className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                />
-              </div>
-              <div className="px-4 py-3">
-                <p className="font-semibold">{c.title}</p>
-                <p className="text-sm text-slate-500">Compare offers →</p>
-              </div>
-            </button>
-          ))}
         </div>
       </section>
 
@@ -476,6 +451,38 @@ export default function Home() {
               )}
             </div>
           )}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 pb-12">
+        <h2 className="text-2xl font-bold tracking-tight">Explore by category</h2>
+        <p className="mt-2 text-slate-600">Real photos · Offers from Austria and Italy</p>
+        <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { q: "housing", title: "Housing", img: HOUSING_IMG, alt: "Modern apartment interior" },
+            { q: "mobile plan", title: "Mobile", img: MOBILE_IMG, alt: "Smartphone on desk" },
+            { q: "transport", title: "Transport", img: TRANSPORT_IMG, alt: "City tram and transit" },
+            { q: "gym", title: "Gym", img: GYM_IMG, alt: "Fitness gym interior" },
+          ].map((c) => (
+            <button
+              key={c.q}
+              onClick={() => goSearch(c.q)}
+              className="card-hover group overflow-hidden rounded-2xl border border-[#d5dceb] bg-white text-left shadow-sm"
+            >
+              <div className="relative aspect-[4/3] overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={c.img}
+                  alt={c.alt}
+                  className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                />
+              </div>
+              <div className="px-4 py-3">
+                <p className="font-semibold">{c.title}</p>
+                <p className="text-sm text-slate-500">Compare offers →</p>
+              </div>
+            </button>
+          ))}
         </div>
       </section>
 
