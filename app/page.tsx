@@ -458,6 +458,13 @@ export default function Home() {
                       );
                     })}
                   </div>
+                  <a
+                    href={`/checkout?ids=${best.offers.map((o) => o.id).join(",")}`}
+                    className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-[#1a3470] px-6 py-4 text-sm font-bold text-white shadow-lg transition hover:bg-[#12254f] sm:w-auto"
+                  >
+                    Continue inside CompareX →
+                  </a>
+                  <p className="mt-2 text-xs leading-5 text-slate-500">Checkout preview · No payment is taken in this version.</p>
                   <div className="mt-5 rounded-2xl border border-[#d5dceb] bg-white p-5">
                     <p className="font-semibold">Ready to choose your services?</p>
                     <p className="mt-1 text-sm leading-6 text-slate-600">Open any item above to view the matching offers and then continue on the provider’s official website to complete the purchase or application.</p>
