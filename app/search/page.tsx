@@ -41,6 +41,8 @@ type HousingOffer = {
   details: string[];
   officialUrl: string;
   lastVerified: string;
+  images?: string[];
+  imageSourceLabel?: string;
 };
 
 type GenericOffer = {
@@ -499,11 +501,7 @@ function SearchResults() {
                   subtitle={o.provider}
                   price={o.priceLabel}
                   href={o.officialUrl}
-                  images={[
-                    "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=700&q=80",
-                    "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=500&q=80",
-                    "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=500&q=80",
-                  ]}
+                  images={o.images ?? []}
                   body={
                     <>
                       <p className="mb-2">{o.roomType}</p>
@@ -515,6 +513,14 @@ function SearchResults() {
                           <li key={d}>• {d}</li>
                         ))}
                       </ul>
+                      {o.imageSourceLabel && (
+                        <p className="mt-3 text-xs text-slate-400">{o.imageSourceLabel}</p>
+                      )}
+                      {o.images?.length ? (
+                        <p className="mt-1 text-xs text-slate-400">Photos shown are from the provider’s official website. Confirm image-use permission before commercial launch.</p>
+                      ) : (
+                        <p className="mt-3 text-xs text-slate-400">No verified property photos added yet. Use the official provider link for photos and details.</p>
+                      )}
                     </>
                   }
                 />
