@@ -31,7 +31,7 @@ const HOUSING_IMG =
 const MOBILE_IMG =
   "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=800&q=80";
 const TRANSPORT_IMG =
-  "https://images.unsplash.com/photo-1544620341-b388bb8d4d2e?auto=format&fit=crop&w=800&q=80";
+  "https://images.unsplash.com/photo-1474487548417-781cb71495f3?auto=format&fit=crop&w=800&q=80";
 const GYM_IMG =
   "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80";
 
