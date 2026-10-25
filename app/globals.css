@@ -1,17 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f4f2ec;
+  --background: #eef2f9;
   --foreground: #0c1222;
   --brand: #1a3470;
   --brand-hover: #12254f;
-  --brand-soft: #e4ecf8;
+  --brand-soft: #dbe7f8;
   --accent: #2563eb;
   --muted: #5b6578;
-  --border: #e0ddd4;
+  --border: #d5dceb;
   --surface: #ffffff;
   --shadow-soft: 0 4px 24px -4px rgb(12 18 34 / 0.1);
-  --shadow-card: 0 1px 2px rgb(12 18 34 / 0.04), 0 10px 28px -8px rgb(12 18 34 / 0.12);
+  --shadow-card: 0 1px 2px rgb(12 18 34 / 0.04), 0 12px 32px -8px rgb(26 52 112 / 0.14);
   --radius: 1rem;
 }
 
@@ -32,7 +32,11 @@ html {
 
 body {
   margin: 0;
-  background: var(--background);
+  /* Very visible soft blue gradient — clear that the site was updated */
+  background:
+    radial-gradient(1200px 500px at 10% -10%, #d4e4ff 0%, transparent 55%),
+    radial-gradient(900px 400px at 90% 0%, #e8f0ff 0%, transparent 50%),
+    #eef2f9;
   color: var(--foreground);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
@@ -40,11 +44,19 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* Stronger, more modern type */
+/* Thin brand accent bar at the very top of the page */
+body::before {
+  content: "";
+  display: block;
+  height: 3px;
+  width: 100%;
+  background: linear-gradient(90deg, #1a3470, #3b82f6, #60a5fa);
+}
+
 h1,
 h2,
 h3 {
-  letter-spacing: -0.025em;
+  letter-spacing: -0.03em;
 }
 
 button,
@@ -90,19 +102,19 @@ a,
     opacity 0.15s ease;
 }
 
-/* Make ALL main page headers sticky + glass — visible on homepage */
+/* Sticky glass header — very visible */
 body > main > header,
 main > header {
   position: sticky;
   top: 0;
   z-index: 40;
-  background: rgb(255 255 255 / 0.82) !important;
-  backdrop-filter: blur(14px) saturate(1.2);
-  -webkit-backdrop-filter: blur(14px) saturate(1.2);
-  border-bottom-color: rgb(224 221 212 / 0.7) !important;
+  background: rgb(255 255 255 / 0.78) !important;
+  backdrop-filter: blur(16px) saturate(1.3);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  border-bottom: 1px solid rgb(26 52 112 / 0.1) !important;
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.6) inset, 0 8px 24px -12px rgb(26 52 112 / 0.15);
 }
 
-/* Card hover for common card patterns on the homepage */
 main article,
 main a.group,
 main [class*="rounded-2xl"][class*="border"][class*="bg-white"] {
@@ -114,7 +126,7 @@ main [class*="rounded-2xl"][class*="border"][class*="bg-white"] {
 
 main article:hover,
 main a.group:hover {
-  transform: translateY(-3px);
+  transform: translateY(-4px);
   box-shadow: var(--shadow-card);
 }
 
@@ -126,14 +138,14 @@ main a.group:hover {
 }
 
 .card-hover:hover {
-  transform: translateY(-3px);
+  transform: translateY(-4px);
   box-shadow: var(--shadow-card);
 }
 
 .header-glass {
-  background: rgb(255 255 255 / 0.82);
-  backdrop-filter: blur(14px) saturate(1.2);
-  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  background: rgb(255 255 255 / 0.78);
+  backdrop-filter: blur(16px) saturate(1.3);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
 }
 
 @keyframes fade-up {
@@ -159,10 +171,9 @@ details > summary::-webkit-details-marker {
   display: none;
 }
 
-/* Slightly richer primary buttons site-wide */
 main a[class*="bg-[#203b72]"],
 main button[class*="bg-[#203b72]"],
 main a[class*="bg-[#1e3a6e]"],
 main button[class*="bg-[#1e3a6e]"] {
-  box-shadow: 0 4px 14px -4px rgb(26 52 112 / 0.45);
+  box-shadow: 0 6px 18px -4px rgb(26 52 112 / 0.5);
 }
