@@ -60,6 +60,7 @@ export default function Home() {
             quality: false,
             cheap: false,
             vienna: true,
+            milan: false,
             university: false,
           }),
         )
