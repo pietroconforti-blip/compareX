@@ -1,21 +1,25 @@
-
 @import "tailwindcss";
 
 :root {
-  --background: #faf9f6;
-  --foreground: #17233c;
-  --brand: #203b72;
-  --brand-hover: #172d58;
-  --muted: #70798a;
-  --border: #e8e6e0;
+  --background: #f7f6f2;
+  --foreground: #0f1a2e;
+  --brand: #1e3a6e;
+  --brand-hover: #152a52;
+  --brand-soft: #e8eef8;
+  --accent: #3b82f6;
+  --muted: #64748b;
+  --border: #e5e2da;
   --surface: #ffffff;
+  --shadow-soft: 0 4px 24px -4px rgb(15 26 46 / 0.08);
+  --shadow-card: 0 1px 3px rgb(15 26 46 / 0.04), 0 8px 24px -6px rgb(15 26 46 / 0.08);
+  --radius: 1rem;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: Arial, Helvetica, sans-serif;
-  --font-mono: monospace;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
 }
 
 * {
@@ -30,12 +34,16 @@ body {
   margin: 0;
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 button,
-input {
+input,
+select,
+textarea {
   font: inherit;
 }
 
@@ -45,13 +53,79 @@ a {
 }
 
 ::selection {
-  background: #dce5f5;
-  color: #17233c;
+  background: #c7d7f5;
+  color: #0f1a2e;
+}
+
+/* Focus — consistent and accessible */
+:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 3px;
 }
 
 input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
 button:focus-visible,
 a:focus-visible {
-  outline: 2px solid #5278ba;
-  outline-offset: 3px;
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Smooth interactive defaults */
+button,
+a,
+[role="button"] {
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease,
+    opacity 0.15s ease;
+}
+
+/* Card hover lift (opt-in via class) */
+.card-hover {
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card);
+}
+
+/* Sticky header with glass */
+.header-glass {
+  background: rgb(255 255 255 / 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Subtle fade-in for sections */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.45s ease-out both;
+}
+
+/* Hide default details marker for custom menus */
+details > summary {
+  list-style: none;
+}
+
+details > summary::-webkit-details-marker {
+  display: none;
 }
