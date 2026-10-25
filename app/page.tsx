@@ -1,22 +1,47 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Image from "next/image";
 import {
   type Category,
   offers,
   categoryLabels,
   categoryIcons,
-  detectCategories,
-  detectBudgets,
-  detectPreferences,
   calculateScore,
   createBundles,
   formatPrice,
-  normalizeSearchText,
 } from "@/lib/home-data";
+
+type AiRec = {
+  id: number;
+  name: string;
+  category: Category;
+  priceLabel: string;
+  price: number;
+  location: string;
+  description: string;
+  score: number;
+  reasons: string[];
+  searchUrl: string;
+};
+
+const HERO_IMG =
+  "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80";
+const HOUSING_IMG =
+  "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80";
+const MOBILE_IMG =
+  "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=800&q=80";
+const TRANSPORT_IMG =
+  "https://images.unsplash.com/photo-1544620341-b388bb8d4d2e?auto=format&fit=crop&w=800&q=80";
+const GYM_IMG =
+  "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80";
 
 export default function Home() {
   const [query, setQuery] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState("");
+  const [interpretation, setInterpretation] = useState("");
+  const [recs, setRecs] = useState<AiRec[]>([]);
   const [packageBudget, setPackageBudget] = useState(700);
   const [packageCategories, setPackageCategories] = useState<Category[]>([
     "housing",
@@ -53,17 +78,45 @@ export default function Home() {
 
   const affordable = packageBundles.filter((b) => b.totalPrice <= packageBudget);
   const pool = affordable.length > 0 ? affordable : packageBundles;
-  const best = [...pool].sort((a, b) => b.score - a.score || a.totalPrice - b.totalPrice)[0] ?? null;
+  const best =
+    [...pool].sort((a, b) => b.score - a.score || a.totalPrice - b.totalPrice)[0] ??
+    null;
 
   function toggleCategory(category: Category) {
     setPackageCategories((cur) =>
-      cur.includes(category) ? cur.filter((x) => x !== category) : [...cur, category],
+      cur.includes(category)
+        ? cur.filter((x) => x !== category)
+        : [...cur, category],
     );
     setPackageSearchRun(false);
   }
 
   function goSearch(q: string) {
     window.location.href = `/search?q=${encodeURIComponent(q)}`;
+  }
+
+  async function runAiSearch(q: string) {
+    const text = q.trim();
+    if (!text) return;
+    setAiLoading(true);
+    setAiError("");
+    setRecs([]);
+    setInterpretation("");
+    try {
+      const res = await fetch("/api/ai-search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: text }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "AI search failed");
+      setInterpretation(data.interpretation || "");
+      setRecs(data.recommendations || []);
+    } catch (e) {
+      setAiError(e instanceof Error ? e.message : "Something went wrong");
+    } finally {
+      setAiLoading(false);
+    }
   }
 
   return (
@@ -76,25 +129,22 @@ export default function Home() {
             </div>
             <div>
               <div className="text-xl font-bold tracking-tight">CompareX</div>
-              <div className="text-xs text-slate-500">Compare better. Choose better.</div>
+              <div className="text-xs text-slate-500">
+                Compare better. Choose better.
+              </div>
             </div>
           </div>
           <details className="relative">
             <summary className="flex cursor-pointer list-none items-center gap-2 rounded-xl border border-[#d5dceb] bg-white px-4 py-2.5 text-sm font-semibold shadow-sm hover:border-[#1a3470]">
               Menu
-              <span className="flex w-4 flex-col gap-1" aria-hidden>
-                <span className="h-0.5 w-4 rounded bg-[#1a3470]" />
-                <span className="h-0.5 w-4 rounded bg-[#1a3470]" />
-                <span className="h-0.5 w-4 rounded bg-[#1a3470]" />
-              </span>
             </summary>
             <nav className="absolute right-0 top-full z-50 mt-2 w-64 rounded-2xl border border-[#d5dceb] bg-white p-2 shadow-xl">
               {[
-                ["student room", "🏠 Housing"],
-                ["mobile plan", "📱 Mobile"],
-                ["transport", "🚆 Transport"],
-                ["gym", "🏋️ Gym"],
-                ["streaming", "▶️ Streaming"],
+                ["student room", "Housing"],
+                ["mobile plan", "Mobile"],
+                ["transport", "Transport"],
+                ["gym", "Gym"],
+                ["streaming", "Streaming"],
               ].map(([q, label]) => (
                 <button
                   key={q}
@@ -113,77 +163,181 @@ export default function Home() {
         <div className="animate-fade-up">
           <span className="inline-flex items-center gap-2 rounded-full border border-[#c7d7f5] bg-white/80 px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#1a3470] shadow-sm">
             <span className="h-1.5 w-1.5 rounded-full bg-[#2563eb]" />
-            ✦ New look · CompareX 2026
+            AI search · Real offers
           </span>
           <h1 className="mt-6 text-4xl font-bold leading-[1.08] tracking-tight md:text-6xl">
             Compare smarter.
             <span className="block text-[#2563eb]">Live better.</span>
           </h1>
           <p className="mt-6 max-w-xl text-lg leading-8 text-slate-600">
-            Housing, mobile, transport, gyms & streaming — compared in one place
-            for students in Austria and Italy.
+            Tell the AI what you need in plain language — it finds the best
+            offers already on CompareX for students in Austria and Italy.
           </p>
+
           <form
-            className="mt-8 flex flex-col gap-3 sm:flex-row"
+            className="mt-8 rounded-2xl border border-[#d5dceb] bg-white p-2 shadow-lg shadow-[#1a3470]/10"
             onSubmit={(e) => {
               e.preventDefault();
-              if (query.trim()) goSearch(query.trim());
+              runAiSearch(query);
             }}
           >
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="e.g. a room under €500 in Vienna"
-              className="flex-1 rounded-2xl border border-[#d5dceb] bg-white px-5 py-3.5 shadow-sm outline-none focus:border-[#2563eb]"
-            />
-            <button
-              type="submit"
-              className="rounded-2xl bg-[#1a3470] px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#1a3470]/30 hover:bg-[#12254f]"
-            >
-              Search now →
-            </button>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <div className="flex flex-1 items-center gap-2 px-3">
+                <span className="text-lg" aria-hidden>
+                  ✨
+                </span>
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="e.g. student room under €500 in Vienna with cheap mobile"
+                  className="w-full border-0 bg-transparent py-3 text-[15px] outline-none placeholder:text-slate-400"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={aiLoading}
+                className="rounded-xl bg-[#1a3470] px-5 py-3 text-sm font-semibold text-white shadow-md hover:bg-[#12254f] disabled:opacity-60"
+              >
+                {aiLoading ? "Thinking…" : "Ask AI →"}
+              </button>
+            </div>
           </form>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {["Room under €500", "Phone plan under €20", "Gym in Vienna"].map((chip) => (
+
+          <div className="mt-3 flex flex-wrap gap-2">
+            {[
+              "Student room under €450 in Vienna",
+              "Cheap mobile plan Austria",
+              "Gym + transport for students",
+            ].map((chip) => (
               <button
                 key={chip}
-                onClick={() => goSearch(chip)}
+                onClick={() => {
+                  setQuery(chip);
+                  runAiSearch(chip);
+                }}
                 className="rounded-full border border-[#d5dceb] bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm hover:border-[#1a3470] hover:text-[#1a3470]"
               >
                 {chip}
               </button>
             ))}
           </div>
+
+          {aiError && (
+            <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+              {aiError}
+            </p>
+          )}
+
+          {(interpretation || recs.length > 0) && (
+            <div className="mt-6 rounded-2xl border border-[#c7d7f5] bg-[#f5f8ff] p-5">
+              <p className="text-xs font-bold uppercase tracking-wider text-[#1a3470]">
+                CompareX AI
+              </p>
+              {interpretation && (
+                <p className="mt-2 text-sm leading-6 text-slate-700">
+                  {interpretation}
+                </p>
+              )}
+              <div className="mt-4 space-y-3">
+                {recs.map((r) => (
+                  <a
+                    key={r.id}
+                    href={r.searchUrl}
+                    className="card-hover flex items-start justify-between gap-3 rounded-xl border border-[#d5dceb] bg-white px-4 py-3 shadow-sm"
+                  >
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                        {categoryLabels[r.category]} · {r.location}
+                      </p>
+                      <p className="mt-0.5 font-semibold">{r.name}</p>
+                      <p className="mt-1 text-sm text-slate-600">
+                        {r.description}
+                      </p>
+                      {r.reasons?.length > 0 && (
+                        <p className="mt-1 text-xs text-[#2563eb]">
+                          {r.reasons.join(" · ")}
+                        </p>
+                      )}
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <p className="font-bold text-[#1a3470]">{r.priceLabel}</p>
+                      <p className="text-xs text-slate-500">
+                        Score {r.score}/10
+                      </p>
+                    </div>
+                  </a>
+                ))}
+              </div>
+              {query.trim() && (
+                <button
+                  onClick={() => goSearch(query)}
+                  className="mt-4 text-sm font-semibold text-[#1a3470] hover:underline"
+                >
+                  See all results for “{query}” →
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
-        <div className="relative animate-fade-up overflow-hidden rounded-[2rem] border border-[#d5dceb] bg-white shadow-xl shadow-[#1a3470]/10">
-          <div className="aspect-[4/3] bg-gradient-to-br from-[#dbe7f8] via-white to-[#eef2f9] p-8">
-            <p className="text-xs font-bold uppercase tracking-wider text-[#2563eb]">
-              Your next chapter
-            </p>
-            <h2 className="mt-3 text-2xl font-bold tracking-tight">
-              Find a place that feels like home.
-            </h2>
-            <p className="mt-2 text-slate-600">
-              Start with your needs. Compare your options.
-            </p>
-            <div className="mt-8 grid grid-cols-2 gap-3">
-              {[
-                ["🏠", "Housing"],
-                ["📱", "Mobile"],
-                ["🚆", "Transport"],
-                ["🏋️", "Gym"],
-              ].map(([icon, label]) => (
-                <button
-                  key={label}
-                  onClick={() => goSearch(label.toLowerCase())}
-                  className="card-hover flex items-center gap-2 rounded-2xl border border-[#d5dceb] bg-white px-4 py-3 text-sm font-semibold shadow-sm"
-                >
-                  <span>{icon}</span> {label}
-                </button>
-              ))}
+        <div className="relative animate-fade-up overflow-hidden rounded-[2rem] border border-[#d5dceb] shadow-xl shadow-[#1a3470]/10">
+          <div className="relative aspect-[4/3]">
+            <Image
+              src={HERO_IMG}
+              alt="Bright student apartment living room"
+              fill
+              className="object-cover"
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0c1222]/70 via-[#0c1222]/20 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+              <p className="text-xs font-bold uppercase tracking-wider text-blue-200">
+                Your next chapter
+              </p>
+              <h2 className="mt-1 text-2xl font-bold">
+                Find a place that feels like home.
+              </h2>
+              <p className="mt-1 text-sm text-white/85">
+                Real student housing photos · Compare before you choose
+              </p>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 pb-12">
+        <h2 className="text-2xl font-bold tracking-tight">Explore by category</h2>
+        <p className="mt-2 text-slate-600">
+          Real photos · Offers from Austria and Italy
+        </p>
+        <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { q: "housing", title: "Housing", img: HOUSING_IMG, alt: "Modern apartment interior" },
+            { q: "mobile plan", title: "Mobile", img: MOBILE_IMG, alt: "Smartphone on desk" },
+            { q: "transport", title: "Transport", img: TRANSPORT_IMG, alt: "City tram and transit" },
+            { q: "gym", title: "Gym", img: GYM_IMG, alt: "Fitness gym interior" },
+          ].map((c) => (
+            <button
+              key={c.q}
+              onClick={() => goSearch(c.q)}
+              className="card-hover group overflow-hidden rounded-2xl border border-[#d5dceb] bg-white text-left shadow-sm"
+            >
+              <div className="relative aspect-[4/3]">
+                <Image
+                  src={c.img}
+                  alt={c.alt}
+                  fill
+                  className="object-cover transition duration-300 group-hover:scale-105"
+                  sizes="(max-width: 640px) 100vw, 25vw"
+                />
+              </div>
+              <div className="px-4 py-3">
+                <p className="font-semibold">{c.title}</p>
+                <p className="text-sm text-slate-500">Compare offers →</p>
+              </div>
+            </button>
+          ))}
         </div>
       </section>
 
@@ -223,7 +377,9 @@ export default function Home() {
               </div>
             </div>
             <label className="block">
-              <span className="mb-2 block text-sm font-semibold">Monthly budget (€)</span>
+              <span className="mb-2 block text-sm font-semibold">
+                Monthly budget (€)
+              </span>
               <input
                 type="number"
                 min={100}
@@ -248,7 +404,10 @@ export default function Home() {
               </p>
               <p className="mt-2 text-2xl font-bold">
                 {formatPrice(best.totalPrice)}
-                <span className="text-base font-medium text-slate-500"> / month</span>
+                <span className="text-base font-medium text-slate-500">
+                  {" "}
+                  / month
+                </span>
               </p>
               <p className="mt-1 text-sm text-slate-600">Score {best.score}/10</p>
               <ul className="mt-4 space-y-2">
@@ -260,17 +419,13 @@ export default function Home() {
                     <span className="font-medium">
                       {categoryIcons[o.category]} {o.name}
                     </span>
-                    <span className="font-semibold text-[#1a3470]">{o.priceLabel}</span>
+                    <span className="font-semibold text-[#1a3470]">
+                      {o.priceLabel}
+                    </span>
                   </li>
                 ))}
               </ul>
             </div>
-          )}
-
-          {packageSearchRun && !best && (
-            <p className="mt-6 text-slate-600">
-              Select at least two categories to build a package.
-            </p>
           )}
         </div>
       </section>
