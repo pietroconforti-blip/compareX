@@ -7,7 +7,8 @@ import { offers, categoryLabels, categoryIcons, formatPrice } from "@/lib/home-d
 function CheckoutContent() {
   const params = useSearchParams();
   const router = useRouter();
-  const ids = (params.get("ids") ?? "").split(",").map(Number).filter(Number.isFinite);
+  const idsParam = params.get("ids");
+  const ids = (idsParam ? idsParam.split(",").map(Number).filter(Number.isFinite) : [1, 10, 13, 15]);
   const selected = useMemo(() => offers.filter((o) => ids.includes(o.id)), [params]);
   const total = selected.reduce((sum, offer) => sum + offer.price, 0);
   const [fullName, setFullName] = useState("");
@@ -78,7 +79,7 @@ function CheckoutContent() {
                   <span className="shrink-0 text-sm font-bold">{formatPrice(o.price)}</span>
                 </div>
               ))}
-              {selected.length === 0 && <p className="text-sm text-slate-600">No services were passed to checkout. Go back and build a package first.</p>}
+              {selected.length === 0 && <p className="text-sm text-slate-600">Showing a sample package. Go back to the builder to customise your own services.</p>}
             </div>
             <div className="mt-5 border-t border-slate-200 pt-5">
               <p className="text-sm text-slate-500">Estimated monthly total</p>
