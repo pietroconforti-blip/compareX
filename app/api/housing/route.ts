@@ -238,6 +238,34 @@ const housingOffers = [
     lastVerified,
   },
 
+  // —— VIENNA · Viennabase (official provider photos) ——
+  {
+    id: "viennabase11-single-room",
+    country: "Austria",
+    city: "Vienna",
+    provider: "Viennabase",
+    property: "Viennabase11 · Single room in shared apartment",
+    roomType: "Single room in a shared apartment for 2",
+    priceValue: 506.6,
+    pricePeriod: "month",
+    priceLabel: "€506.60/month (2026/27 published all-in fee)",
+    availability: "Confirm availability and eligibility with Viennabase",
+    details: [
+      "Approx. 51 m² shared apartment",
+      "Shared kitchen and bathroom",
+      "Internet included",
+      "Deposit and booking fee may apply",
+    ],
+    images: [
+      "https://viennabase.at/wp-content/uploads/2020/10/Base11_81-NEU_final.jpg",
+      "https://viennabase.at/wp-content/uploads/2020/10/Base11_80-NEU_final.jpg",
+      "https://viennabase.at/wp-content/uploads/2020/10/Base11_75-NEU_final.jpg",
+    ],
+    imageSourceLabel: "Photos: Viennabase official website",
+    officialUrl: "https://viennabase.at/en/zimmer-und-preise/",
+    lastVerified,
+  },
+
   // —— VIENNA · provider hubs ——
   {
     id: "stuwo-vienna",
