@@ -161,6 +161,9 @@ export default function Home() {
               >
                 Marketplace · Buy, sell, rent →
               </a>
+              <a href="/contact" className="block w-full rounded-xl px-3 py-3 text-left text-sm font-semibold text-[#1a3470] hover:bg-blue-50">
+                Contact seller or CompareX support →
+              </a>
             </nav>
           </details>
         </div>
@@ -557,12 +560,7 @@ export default function Home() {
       <footer className="border-t border-[#d5dceb] bg-white/50 py-10 text-center text-sm text-slate-500">
         <p className="font-semibold text-[#0c1222]">CompareX</p>
         <p className="mt-1">Compare better. Choose better.</p>
-        <a
-          href="mailto:pietro_conforti@yahoo.com"
-          className="mt-3 inline-block font-medium text-[#1a3470] hover:underline"
-        >
-          Contact
-        </a>
+        <a href="/contact" className="mt-3 inline-block font-medium text-[#1a3470] hover:underline">Contact seller or CompareX support</a>
       </footer>
     </main>
   );
