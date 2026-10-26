@@ -326,17 +326,24 @@ export default function Home() {
           </div>
           <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
             {[
-              { name: "spusu", category: "Mobile", style: "text-[#1a3470]" },
-              { name: "A1", category: "Mobile", style: "text-red-600" },
-              { name: "Wiener Linien", category: "Transport", style: "text-red-700" },
-              { name: "FITINN", category: "Fitness", style: "text-black" },
-              { name: "Netflix", category: "Streaming", style: "text-red-600" },
-              { name: "home4students", category: "Housing", style: "text-emerald-700" },
+              { name: "spusu", category: "Mobile", domain: "spusu.at" },
+              { name: "A1", category: "Mobile", domain: "a1.net" },
+              { name: "Wiener Linien", category: "Transport", domain: "wienerlinien.at" },
+              { name: "FITINN", category: "Fitness", domain: "fitinn.at" },
+              { name: "Netflix", category: "Streaming", domain: "netflix.com" },
+              { name: "home4students", category: "Housing", domain: "home4students.at" },
             ].map((provider) => (
               <button key={provider.name} onClick={() => goSearch(provider.category === "Mobile" ? "mobile plan" : provider.category.toLowerCase())}
-                className="rounded-2xl border border-[#e4eaf4] bg-[#f9fbff] p-4 text-left transition hover:-translate-y-0.5 hover:border-[#b8c9e8] hover:shadow-sm">
-                <span className={`block truncate text-lg font-extrabold tracking-tight ${provider.style}`}>{provider.name}</span>
-                <span className="mt-1 block text-xs text-slate-500">{provider.category}</span>
+                aria-label={`Compare ${provider.name} offers`}
+                className="flex min-h-28 flex-col items-center justify-center gap-3 rounded-2xl border border-[#e4eaf4] bg-white p-4 transition hover:-translate-y-0.5 hover:border-[#b8c9e8] hover:shadow-sm">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`https://www.google.com/s2/favicons?domain=${provider.domain}&sz=128`}
+                  alt={`${provider.name} logo`}
+                  loading="lazy"
+                  className="h-12 w-12 object-contain"
+                />
+                <span className="text-xs font-medium text-slate-500">{provider.category}</span>
               </button>
             ))}
           </div>
