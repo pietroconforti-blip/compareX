@@ -155,6 +155,12 @@ export default function Home() {
                   {label}
                 </button>
               ))}
+              <a
+                href="/marketplace-test"
+                className="mt-1 block w-full rounded-xl border-t border-slate-100 px-3 py-3 text-left text-sm font-semibold text-[#1a3470] hover:bg-blue-50"
+              >
+                Marketplace · Buy, sell, rent →
+              </a>
             </nav>
           </details>
         </div>
