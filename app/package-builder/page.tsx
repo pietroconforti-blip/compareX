@@ -98,7 +98,7 @@ export default function PackageBuilderPage() {
             <div><h2 className="text-2xl font-bold">Your suggested combination</h2><p className="mt-1 text-slate-600">Estimated total: {formatPrice(total)} / month</p></div>
             <a href={`/checkout?ids=${picks.map((offer) => offer.id).join(",")}`} className="inline-flex items-center justify-center rounded-xl bg-[#1a3470] px-6 py-4 font-semibold text-white hover:bg-[#12254f]">Continue to checkout →</a>
           </div>
-          <p className="mt-3 text-xs text-slate-500">Creating and editing your package is free. CompareX charges a one-time €5 activation fee; provider services are paid separately.</p>
+          <p className="mt-3 text-xs text-slate-500">Creating and editing your package is free. Activation costs €5 once plus €2/month for CompareX; provider services are paid separately.</p>
         </section>}
       </div>
     </main>
