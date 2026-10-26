@@ -40,7 +40,11 @@ const emptyForm = {
 };
 
 export default function MarketplaceTestPage() {
-  const supabase = useMemo(() => createClient(), []);
+  const supabase = useMemo(() => {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+    return url && key ? createClient() : null;
+  }, []);
 
   const [session, setSession] = useState<any>(null);
   const [authReady, setAuthReady] = useState(false);
@@ -55,6 +59,11 @@ export default function MarketplaceTestPage() {
   const [error, setError] = useState("");
 
   const loadListings = useCallback(async () => {
+    if (!supabase) {
+      setError("Marketplace non ancora configurato: mancano le variabili Supabase su Vercel.");
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const { data, error: queryError } = await supabase
       .from("listings")
@@ -75,6 +84,12 @@ export default function MarketplaceTestPage() {
   }, [supabase]);
 
   useEffect(() => {
+    if (!supabase) {
+      setAuthReady(true);
+      setLoading(false);
+      setError("Marketplace non ancora configurato: aggiungi NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY nelle variabili d'ambiente di Vercel.");
+      return;
+    }
     let mounted = true;
 
     supabase.auth.getSession().then(({ data }) => {
@@ -101,6 +116,10 @@ export default function MarketplaceTestPage() {
 
   async function handleAuth(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!supabase) {
+      setError("Accesso non disponibile: configura prima Supabase su Vercel.");
+      return;
+    }
     setError("");
     setMessage("");
 
@@ -131,6 +150,7 @@ export default function MarketplaceTestPage() {
   }
 
   async function handleLogout() {
+    if (!supabase) return;
     const { error: logoutError } = await supabase.auth.signOut();
     if (logoutError) setError(logoutError.message);
     else setMessage("Hai effettuato la disconnessione.");
@@ -138,6 +158,10 @@ export default function MarketplaceTestPage() {
 
   async function handlePublish(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!supabase) {
+      setError("Pubblicazione non disponibile: configura prima Supabase su Vercel.");
+      return;
+    }
     setError("");
     setMessage("");
 
