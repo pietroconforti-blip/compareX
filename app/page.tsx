@@ -164,7 +164,7 @@ export default function Home() {
         <div className="animate-fade-up">
           <span className="inline-flex items-center gap-2 rounded-full border border-[#c7d7f5] bg-white/80 px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#1a3470] shadow-sm">
             <span className="h-1.5 w-1.5 rounded-full bg-[#2563eb]" />
-            AI search · Real offers
+            AI search · Student offers
           </span>
           <h1 className="mt-6 text-4xl font-bold leading-[1.08] tracking-tight md:text-6xl">
             Compare smarter.
@@ -172,7 +172,7 @@ export default function Home() {
           </h1>
           <p className="mt-6 max-w-xl text-lg leading-8 text-slate-600">
             Tell the AI what you need in plain language — it finds the best
-            offers already on CompareX for students in Austria and Italy.
+            offers in the CompareX catalogue for students in Austria and Italy.
           </p>
 
           <form
@@ -301,7 +301,7 @@ export default function Home() {
                 Find a place that feels like home.
               </h2>
               <p className="mt-1 text-sm text-white/85">
-                Real photos · Compare before you choose
+                Explore options · Compare before you choose
               </p>
             </div>
           </div>
