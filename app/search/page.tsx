@@ -116,18 +116,6 @@ function Filters({
   return (
     <div className="mt-8 grid gap-4 rounded-2xl border border-[#e8e6e0] bg-white p-5 shadow-sm md:grid-cols-2 lg:grid-cols-3">
       <label className="block">
-        <span className="mb-2 block text-sm font-semibold">Country</span>
-        <select
-          value={country}
-          onChange={(e) => setCountry(e.target.value as "All" | Country)}
-          className="w-full rounded-xl border border-[#e8e6e0] bg-white px-4 py-3 transition focus:border-[#3b82f6]"
-        >
-          <option value="All">Austria and Italy</option>
-          <option value="Austria">Austria</option>
-          <option value="Italy">Italy</option>
-        </select>
-      </label>
-      <label className="block">
         <span className="mb-2 block text-sm font-semibold">{budgetLabel}</span>
         <input
           type="number"
