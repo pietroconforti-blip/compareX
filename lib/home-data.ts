@@ -13,6 +13,7 @@ export type Offer = {
   transport: number;
   description: string;
   tags: string[];
+  sourceUrl?: string;
 };
 
 export type ScoredOffer = Offer & {
