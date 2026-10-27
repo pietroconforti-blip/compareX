@@ -199,12 +199,16 @@ function OfferCard({
           <p className="mt-1 text-[11px] text-slate-400">Your rating is a local preview and is not yet saved or shared.</p>
         </div>
         <div className="mt-auto pt-5">
-          <a href={href} target="_blank" rel="noreferrer"
-            className="block rounded-xl border border-[#d5dceb] px-4 py-3 text-center text-sm font-semibold text-[#1e3a6e] hover:bg-slate-50">
-            Visit provider ↗
+          <a href={`/offer?title=${encodeURIComponent(title)}&provider=${encodeURIComponent(subtitle)}&price=${encodeURIComponent(price)}&href=${encodeURIComponent(href)}&badge=${encodeURIComponent(badge)}`}
+            className="block rounded-xl bg-[#1e3a6e] px-4 py-3 text-center text-sm font-semibold text-white hover:bg-[#152a52]">
+            View offer details →
           </a>
-          <a href="/package-builder" className="mt-2 block rounded-xl bg-[#1e3a6e] px-4 py-3 text-center text-sm font-semibold text-white hover:bg-[#152a52]">
-            Build my package →
+          <a href={href} target="_blank" rel="noreferrer"
+            className="mt-2 block rounded-xl border border-[#d5dceb] px-4 py-3 text-center text-sm font-semibold text-[#1e3a6e] hover:bg-slate-50">
+            Visit provider website ↗
+          </a>
+          <a href="/package-builder" className="mt-2 block rounded-xl border border-[#d5dceb] px-4 py-3 text-center text-sm font-semibold text-[#1e3a6e] hover:bg-slate-50">
+            Add to package →
           </a>
         </div>
       </div>
