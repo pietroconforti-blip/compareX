@@ -35,6 +35,13 @@ export default function PackageBuilderPage() {
     locationOffers.filter((offer) => offer.category === category).sort((a, b) => a.price - b.price)[0]
   ).filter(Boolean), [selected, locationOffers]);
 
+  useEffect(() => {
+    setSelected((current) => current.filter((category) =>
+      locationOffers.some((offer) => offer.category === category)
+    ));
+    setBuilt(false);
+  }, [locationOffers]);
+
   const total = picks.reduce((sum, offer) => sum + offer.price, 0);
   const budgetValue = budget === "" ? Number.POSITIVE_INFINITY : Number(budget);
 
