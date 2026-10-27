@@ -162,6 +162,7 @@ export default function PackageBuilderPage() {
             <h2 className="text-xl font-bold">1. Where are you going?</h2>
             <p className="mt-1 text-sm text-slate-500">The package will only show offers for your chosen destination.</p>
             <p className="mt-2 text-xs text-slate-500" aria-live="polite">{catalogueStatus}</p>
+            <a href="/integrations" className="mt-2 inline-flex text-sm font-semibold text-[#1a3470] underline underline-offset-4 hover:text-[#2563eb]">Explore more providers and official integrations →</a>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {(["Vienna", "Milan"] as const).map((city) => (
                 <button key={city} type="button" aria-pressed={location === city}
