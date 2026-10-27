@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { offers, categoryLabels, categoryIcons, formatPrice } from "@/lib/home-data";
 
@@ -11,19 +11,7 @@ function CheckoutContent() {
   const ids = idsParam ? idsParam.split(",").map(Number).filter(Number.isFinite) : [];
   const selected = useMemo(() => offers.filter((o) => ids.includes(o.id)), [idsParam]);
   const total = selected.reduce((sum, offer) => sum + offer.price, 0);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const cancelled = params.get("cancelled") === "1";
-
-  async function activatePackage() {
-    setLoading(true); setError("");
-    try {
-      const response = await fetch("/api/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids: selected.map((offer) => offer.id) }) });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Impossibile avviare il pagamento.");
-      window.location.assign(data.url);
-    } catch (err) { setError(err instanceof Error ? err.message : "Impossibile avviare il pagamento."); setLoading(false); }
-  }
 
   return <main className="min-h-screen bg-[#f7f9fd] text-[#0c1222]">
     <header className="border-b border-[#d5dceb] bg-white"><div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5"><button onClick={() => router.push("/")} className="text-xl font-bold">Compare<span className="text-blue-600">X</span></button><span className="text-sm text-slate-500">Attivazione pacchetto</span></div></header>
@@ -33,7 +21,6 @@ function CheckoutContent() {
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-700">Ultimo passaggio</p><h1 className="mt-3 text-4xl font-bold tracking-tight">Attiva il tuo pacchetto</h1>
         <p className="mt-3 max-w-2xl leading-7 text-slate-600">CompareX è attualmente uno strumento di confronto. Il checkout combinato e l’abbonamento non sono ancora attivi: non verrà effettuato alcun addebito. Per acquistare un servizio, usa il link ufficiale del relativo fornitore nel Package Builder.</p>
         {cancelled && <p className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">Pagamento annullato: non hai completato l'acquisto.</p>}
-        {error && <p role="alert" className="mt-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">{error}</p>}
         <div className="mt-8 rounded-3xl border border-[#d5dceb] bg-white p-6 shadow-sm md:p-8">
           <h2 className="text-xl font-bold">Checkout non ancora attivo</h2>
           <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">Il pagamento è disattivato finché non sono pronti il servizio in abbonamento, le condizioni contrattuali e il processo di cancellazione. I prezzi mostrati nel pacchetto sono stime dei fornitori, non un importo da pagare qui.</div>
