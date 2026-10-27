@@ -61,6 +61,7 @@ export default function PackageBuilderPage() {
           transport: 7,
           description: String(o.availability ?? o.roomType ?? "Check current price and availability with the provider."),
           tags: ["housing", String(o.country ?? "").toLowerCase(), city.toLowerCase()],
+          sourceUrl: typeof o.officialUrl === "string" ? o.officialUrl : undefined,
         });
       }
 
@@ -79,6 +80,7 @@ export default function PackageBuilderPage() {
           transport: 5,
           description: `${Number(o.dataGB) || 0} GB data · ${String(o.contract ?? "Check current terms")}`,
           tags: ["mobile", String(o.country ?? "").toLowerCase()],
+          sourceUrl: typeof o.officialUrl === "string" ? o.officialUrl : undefined,
         });
       }
 
@@ -99,6 +101,7 @@ export default function PackageBuilderPage() {
             transport: category === "transport" ? 10 : 5,
             description: String(o.details ?? "Check current price and conditions with the provider."),
             tags: [category, String(o.country ?? "").toLowerCase(), String(o.city ?? "").toLowerCase()],
+            sourceUrl: typeof o.url === "string" ? o.url : undefined,
           });
         }
       }
@@ -231,6 +234,7 @@ export default function PackageBuilderPage() {
                     </select>
                   </label>
                   <p className="mt-2 text-xs text-slate-500">{chosen.description}</p>
+                  {chosen.sourceUrl && <a href={chosen.sourceUrl} target="_blank" rel="noreferrer" className="mt-2 inline-flex text-xs font-semibold text-[#1a3470] underline underline-offset-4 hover:text-[#2563eb]">Verify offer with provider ↗</a>}
                 </div>;
               })}
             </div>
