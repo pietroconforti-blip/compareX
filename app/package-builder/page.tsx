@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { offers, categoryLabels, categoryIcons, type Category, formatPrice } from "@/lib/home-data";
+import { offers as baseOffers, categoryLabels, categoryIcons, type Category, type Offer, formatPrice } from "@/lib/home-data";
 
 const categories = Object.keys(categoryLabels) as Category[];
 
 export default function PackageBuilderPage() {
   const [selected, setSelected] = useState<Category[]>(["housing", "mobile", "transport", "gym"]);
+  const [catalogue, setCatalogue] = useState<Offer[]>(baseOffers);
+  const [catalogueStatus, setCatalogueStatus] = useState("Loading expanded online catalogue…");
   const [budget, setBudget] = useState("");
   const [location, setLocation] = useState<"Vienna" | "Milan">("Vienna");
   const [built, setBuilt] = useState(false);
@@ -25,11 +27,97 @@ export default function PackageBuilderPage() {
     if (incomingBudget !== null || incomingCategories) setBuilt(true);
   }, []);
 
-  const locationOffers = useMemo(() => offers.filter((offer) => {
+  useEffect(() => {
+    let cancelled = false;
+    async function loadExpandedCatalogue() {
+      const requests = [
+        fetch("/api/housing", { cache: "no-store" }).then((r) => r.ok ? r.json() : null),
+        fetch("/api/offers", { cache: "no-store" }).then((r) => r.ok ? r.json() : null),
+        fetch("/api/transport", { cache: "no-store" }).then((r) => r.ok ? r.json() : null),
+        fetch("/api/gyms", { cache: "no-store" }).then((r) => r.ok ? r.json() : null),
+        fetch("/api/streaming", { cache: "no-store" }).then((r) => r.ok ? r.json() : null),
+      ];
+      const [housingData, mobileData, transportData, gymData, streamingData] =
+        await Promise.all(requests.map((request) => request.catch(() => null)));
+      const expanded: Offer[] = [];
+      let id = 1000;
+      const add = (item: Omit<Offer, "id">) => expanded.push({ ...item, id: id++ });
+
+      for (const o of housingData?.offers ?? []) {
+        const rawPrice = Number(o.priceValue);
+        if (!Number.isFinite(rawPrice) || rawPrice <= 0) continue;
+        const price = o.pricePeriod === "year" ? rawPrice / 12 : rawPrice;
+        const city = String(o.city ?? "");
+        add({
+          name: String(o.property ?? o.name ?? "Housing offer"),
+          category: "housing",
+          price,
+          priceLabel: String(o.priceLabel ?? `€${price.toFixed(0)}/month`),
+          location: city || String(o.country ?? ""),
+          quality: 7.5,
+          flexibility: 7,
+          studentFriendly: true,
+          transport: 7,
+          description: String(o.availability ?? o.roomType ?? "Check current price and availability with the provider."),
+          tags: ["housing", String(o.country ?? "").toLowerCase(), city.toLowerCase()],
+        });
+      }
+
+      for (const o of mobileData?.offers ?? []) {
+        const price = Number(o.monthlyPrice);
+        if (!Number.isFinite(price) || price <= 0) continue;
+        add({
+          name: `${String(o.provider ?? "Mobile provider")} · ${String(o.plan ?? "Mobile plan")}`,
+          category: "mobile",
+          price,
+          priceLabel: `€${price.toFixed(2)}/month`,
+          location: String(o.country ?? ""),
+          quality: 7.5,
+          flexibility: 7.5,
+          studentFriendly: true,
+          transport: 5,
+          description: `${Number(o.dataGB) || 0} GB data · ${String(o.contract ?? "Check current terms")}`,
+          tags: ["mobile", String(o.country ?? "").toLowerCase()],
+        });
+      }
+
+      for (const [data, category] of [[transportData, "transport"], [gymData, "gym"], [streamingData, "streaming"]] as const) {
+        for (const o of data?.offers ?? []) {
+          const rawPrice = Number(o.priceValue);
+          if (!Number.isFinite(rawPrice) || rawPrice <= 0) continue;
+          const price = o.pricePeriod === "year" ? rawPrice / 12 : rawPrice;
+          add({
+            name: `${String(o.provider ?? "")} ${String(o.name ?? "offer")}`.trim(),
+            category,
+            price,
+            priceLabel: String(o.priceLabel ?? `€${price.toFixed(0)}/month`),
+            location: String(o.city ?? o.country ?? ""),
+            quality: 7.5,
+            flexibility: 7,
+            studentFriendly: true,
+            transport: category === "transport" ? 10 : 5,
+            description: String(o.details ?? "Check current price and conditions with the provider."),
+            tags: [category, String(o.country ?? "").toLowerCase(), String(o.city ?? "").toLowerCase()],
+          });
+        }
+      }
+
+      if (!cancelled) {
+        setCatalogue([...baseOffers, ...expanded]);
+        setCatalogueStatus(`Expanded catalogue loaded: ${expanded.length} additional offers and listings. Prices and availability must be confirmed with providers.`);
+      }
+    }
+    loadExpandedCatalogue().catch(() => {
+      if (!cancelled) setCatalogueStatus("Showing the core catalogue. Some online provider lists could not be loaded.");
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  const locationOffers = useMemo(() => catalogue.filter((offer) => {
     const offerLocation = offer.location.toLowerCase();
     if (location === "Vienna") return offerLocation === "vienna" || offerLocation === "austria";
     return offerLocation === "milan" || offerLocation === "italy";
-  }), [location]);
+  }), [location, catalogue]);
 
   const picks = useMemo(() => selected.map((category) =>
     locationOffers.filter((offer) => offer.category === category).sort((a, b) => a.price - b.price)[0]
@@ -73,6 +161,7 @@ export default function PackageBuilderPage() {
           <section className="rounded-3xl border border-[#d5dceb] bg-white p-5 shadow-sm md:p-7">
             <h2 className="text-xl font-bold">1. Where are you going?</h2>
             <p className="mt-1 text-sm text-slate-500">The package will only show offers for your chosen destination.</p>
+            <p className="mt-2 text-xs text-slate-500" aria-live="polite">{catalogueStatus}</p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {(["Vienna", "Milan"] as const).map((city) => (
                 <button key={city} type="button" aria-pressed={location === city}
