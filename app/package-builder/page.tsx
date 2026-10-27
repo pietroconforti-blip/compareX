@@ -12,6 +12,7 @@ export default function PackageBuilderPage() {
   const [budget, setBudget] = useState("");
   const [location, setLocation] = useState<"Vienna" | "Milan">("Vienna");
   const [built, setBuilt] = useState(false);
+  const [chosenOffers, setChosenOffers] = useState<Partial<Record<Category, string>>>({});
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -115,18 +116,27 @@ export default function PackageBuilderPage() {
 
   const locationOffers = useMemo(() => catalogue.filter((offer) => {
     const offerLocation = offer.location.toLowerCase();
-    if (location === "Vienna") return offerLocation === "vienna" || offerLocation.startsWith("austria");
-    return offerLocation === "milan" || offerLocation.startsWith("italy");
+    if (location === "Vienna") {
+      return offerLocation.includes("vienna") || offerLocation.includes("austria") || offerLocation === "all austria";
+    }
+    return offerLocation.includes("milan") || offerLocation.includes("italy") || offerLocation === "all italy";
   }), [location, catalogue]);
 
-  const picks = useMemo(() => selected.map((category) =>
-    locationOffers.filter((offer) => offer.category === category).sort((a, b) => a.price - b.price)[0]
-  ).filter(Boolean), [selected, locationOffers]);
+  const offersByCategory = useMemo(() => Object.fromEntries(categories.map((category) => [
+    category,
+    locationOffers.filter((offer) => offer.category === category).sort((a, b) => a.price - b.price),
+  ])) as Record<Category, Offer[]>, [locationOffers]);
+
+  const picks = useMemo(() => selected.map((category) => {
+    const alternatives = offersByCategory[category] ?? [];
+    return alternatives.find((offer) => offer.name === chosenOffers[category]) ?? alternatives[0];
+  }).filter((offer): offer is Offer => Boolean(offer)), [selected, offersByCategory, chosenOffers]);
 
   useEffect(() => {
     setSelected((current) => current.filter((category) =>
       locationOffers.some((offer) => offer.category === category)
     ));
+    setChosenOffers({});
     setBuilt(false);
   }, [locationOffers]);
 
@@ -208,19 +218,28 @@ export default function PackageBuilderPage() {
           <aside className="h-fit rounded-3xl border border-[#d5dceb] bg-white p-6 shadow-sm lg:sticky lg:top-6">
             <p className="text-xs font-bold uppercase tracking-wider text-[#2563eb]">Your package</p>
             <h2 className="mt-2 text-2xl font-bold">Monthly overview</h2>
-            <p className="mt-1 text-sm text-slate-500">{selected.length} services selected</p>
+            <p className="mt-1 text-sm text-slate-500">{selected.length} services selected · {locationOffers.length} offers in this destination</p>
             <div className="mt-5 space-y-4">
-              {picks.map((offer) => <div key={offer.id} className="flex justify-between gap-3 border-b border-slate-100 pb-3">
-                <div><p className="text-sm font-semibold">{offer.name}</p><p className="text-xs text-slate-500">{categoryLabels[offer.category]}</p></div>
-                <p className="shrink-0 text-sm font-bold">{formatPrice(offer.price)}</p>
-              </div>)}
+              {selected.map((category) => {
+                const alternatives = offersByCategory[category] ?? [];
+                const chosen = picks.find((offer) => offer.category === category);
+                if (!chosen) return null;
+                return <div key={category} className="border-b border-slate-100 pb-4">
+                  <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500">{categoryIcons[category]} {categoryLabels[category]}
+                    <select value={chosen.name} onChange={(event) => { setChosenOffers((current) => ({ ...current, [category]: event.target.value })); setBuilt(false); }} className="mt-2 w-full rounded-xl border border-[#d5dceb] bg-white px-3 py-2 text-sm font-medium normal-case tracking-normal text-[#0c1222]">
+                      {alternatives.map((offer) => <option key={`${offer.id}-${offer.name}`} value={offer.name}>{offer.name} · {formatPrice(offer.price)}/month</option>)}
+                    </select>
+                  </label>
+                  <p className="mt-2 text-xs text-slate-500">{chosen.description}</p>
+                </div>;
+              })}
             </div>
             <div className="mt-5 border-t border-slate-200 pt-5">
               <p className="text-sm text-slate-500">Estimated monthly total</p>
               <p className="mt-1 text-3xl font-bold text-[#1a3470]">{formatPrice(total)}<span className="text-sm font-medium text-slate-500"> / month</span></p>
               <p className={`mt-2 text-sm font-semibold ${total <= budgetValue ? "text-emerald-700" : "text-amber-700"}`}>{total <= budgetValue ? "Within your budget" : "Above your budget"}</p>
             </div>
-            <p className="mt-4 text-xs leading-5 text-slate-500">Indicative estimates based on sample offers. Confirm prices and availability with each provider.</p>
+            <p className="mt-4 text-xs leading-5 text-slate-500">Compare alternatives using the menus above. Prices are indicative catalogue data, not guaranteed live quotes; confirm price, fees and availability with each provider.</p>
           </aside>
         </div>
 
