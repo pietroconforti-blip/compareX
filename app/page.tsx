@@ -41,7 +41,7 @@ export default function Home() {
   const [aiError, setAiError] = useState("");
   const [interpretation, setInterpretation] = useState("");
   const [recs, setRecs] = useState<AiRec[]>([]);
-  const [packageBudget, setPackageBudget] = useState(900);
+  const [packageBudget, setPackageBudget] = useState("900");
   const [packageCategories, setPackageCategories] = useState<Category[]>([
     "housing",
     "mobile",
@@ -77,7 +77,8 @@ export default function Home() {
     return createBundles(packageCategoryResults, packageCategories);
   }, [packageCategoryResults, packageCategories]);
 
-  const affordable = packageBundles.filter((b) => b.totalPrice <= packageBudget);
+  const budgetValue = packageBudget === "" ? Number.POSITIVE_INFINITY : Number(packageBudget);
+  const affordable = packageBundles.filter((b) => b.totalPrice <= budgetValue);
   const pool = affordable.length > 0 ? affordable : packageBundles;
   const best =
     [...pool].sort((a, b) => b.score - a.score || a.totalPrice - b.totalPrice)[0] ??
@@ -317,43 +318,6 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 pb-10">
-        <div className="rounded-3xl border border-[#d5dceb] bg-white p-6 shadow-sm md:p-8">
-          <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-[#2563eb]">Compare providers</p>
-              <h2 className="mt-2 text-2xl font-bold">Brands for your student life.</h2>
-              <p className="mt-2 text-sm text-slate-600">Explore providers across housing, mobile, transport, fitness and streaming.</p>
-            </div>
-            <span className="text-xs text-slate-400">Provider names shown for comparison</span>
-          </div>
-          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            {[
-              { name: "spusu", category: "Mobile", domain: "spusu.at" },
-              { name: "A1", category: "Mobile", domain: "a1.net" },
-              { name: "Wiener Linien", category: "Transport", domain: "wienerlinien.at" },
-              { name: "FITINN", category: "Fitness", domain: "fitinn.at" },
-              { name: "Netflix", category: "Streaming", domain: "netflix.com" },
-              { name: "home4students", category: "Housing", domain: "home4students.at" },
-            ].map((provider) => (
-              <button key={provider.name} onClick={() => goSearch(provider.category === "Mobile" ? "mobile plan" : provider.category.toLowerCase())}
-                aria-label={`Compare ${provider.name} offers`}
-                className="flex min-h-28 flex-col items-center justify-center gap-3 rounded-2xl border border-[#e4eaf4] bg-white p-4 transition hover:-translate-y-0.5 hover:border-[#b8c9e8] hover:shadow-sm">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={`https://www.google.com/s2/favicons?domain=${provider.domain}&sz=128`}
-                  alt={`${provider.name} logo`}
-                  loading="lazy"
-                  className="h-12 w-12 object-contain"
-                />
-                <span className="text-xs font-medium text-slate-500">{provider.category}</span>
-              </button>
-            ))}
-          </div>
-          <p className="mt-4 text-xs leading-5 text-slate-400">Brand names are used to identify providers; this is not an indication of an official partnership.</p>
-        </div>
-      </section>
-
       <section id="build-package" className="mx-auto max-w-7xl px-6 pb-20">
         <div className="overflow-hidden rounded-[2rem] border border-[#d5dceb] bg-white shadow-xl shadow-[#1a3470]/10">
           <div className="grid gap-8 bg-gradient-to-br from-white via-[#f5f8ff] to-[#eaf1ff] p-6 md:p-10 lg:grid-cols-[1fr_300px]">
@@ -407,12 +371,12 @@ export default function Home() {
                     type="number"
                     min={0}
                     value={packageBudget}
-                    onChange={(e) => { setPackageBudget(Number(e.target.value) || 0); setPackageSearchRun(false); }}
+                    onChange={(e) => { setPackageBudget(e.target.value); setPackageSearchRun(false); }}
                     className="w-full rounded-xl border border-[#d5dceb] bg-white px-4 py-3 font-semibold outline-none focus:border-[#2563eb]"
                   />
                 </label>
                 <button
-                  onClick={() => setPackageSearchRun(true)}
+                  onClick={() => { window.location.href = "/package-builder?budget=" + encodeURIComponent(packageBudget) + "&categories=" + encodeURIComponent(packageCategories.join(",")); }}
                   disabled={packageCategories.length < 2}
                   className="rounded-xl bg-[#1a3470] px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#1a3470]/20 transition hover:bg-[#12254f] disabled:cursor-not-allowed disabled:opacity-50"
                 >
@@ -450,8 +414,8 @@ export default function Home() {
                   }, 0))}
                   <span className="text-sm font-medium text-slate-500"> / month</span>
                 </p>
-                <p className={`mt-2 text-sm font-medium ${packageCategories.reduce((sum, cat) => sum + (offers.filter((o) => o.category === cat).sort((a, b) => a.price - b.price)[0]?.price ?? 0), 0) <= packageBudget ? "text-emerald-700" : "text-amber-700"}`}>
-                  {packageCategories.reduce((sum, cat) => sum + (offers.filter((o) => o.category === cat).sort((a, b) => a.price - b.price)[0]?.price ?? 0), 0) <= packageBudget ? "Within your budget" : "Above your budget"}
+                <p className={`mt-2 text-sm font-medium ${packageCategories.reduce((sum, cat) => sum + (offers.filter((o) => o.category === cat).sort((a, b) => a.price - b.price)[0]?.price ?? 0), 0) <= budgetValue ? "text-emerald-700" : "text-amber-700"}`}>
+                  {packageCategories.reduce((sum, cat) => sum + (offers.filter((o) => o.category === cat).sort((a, b) => a.price - b.price)[0]?.price ?? 0), 0) <= budgetValue ? "Within your budget" : "Above your budget"}
                 </p>
               </div>
               <p className="mt-4 text-xs leading-5 text-slate-500">
@@ -522,6 +486,41 @@ export default function Home() {
               )}
             </div>
           )}
+        </div>
+      </section>
+
+
+
+      <section className="mx-auto max-w-7xl px-6 pb-10">
+        <div className="rounded-3xl border border-[#d5dceb] bg-white p-6 shadow-sm md:p-8">
+          <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-[#2563eb]">Compare providers</p>
+              <h2 className="mt-2 text-2xl font-bold">Brands for your student life.</h2>
+              <p className="mt-2 text-sm text-slate-600">Explore providers across housing, mobile, transport, fitness and streaming.</p>
+            </div>
+            <span className="text-xs text-slate-400">Provider names shown for comparison</span>
+          </div>
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            {[
+              { name: "spusu", category: "Mobile", domain: "spusu.at" },
+              { name: "A1", category: "Mobile", domain: "a1.net" },
+              { name: "Wiener Linien", category: "Transport", domain: "wienerlinien.at" },
+              { name: "FITINN", category: "Fitness", domain: "fitinn.at" },
+              { name: "Netflix", category: "Streaming", domain: "netflix.com" },
+              { name: "home4students", category: "Housing", domain: "home4students.at" },
+            ].map((provider) => (
+              <button key={provider.name} onClick={() => goSearch(provider.category === "Mobile" ? "mobile plan" : provider.category.toLowerCase())}
+                aria-label={`Compare ${provider.name} offers`}
+                className="flex min-h-28 flex-col items-center justify-center gap-3 rounded-2xl border border-[#e4eaf4] bg-white p-4 transition hover:-translate-y-0.5 hover:border-[#b8c9e8] hover:shadow-sm">
+                <span aria-label={`${provider.name} brand`} className={`flex h-12 min-w-12 items-center justify-center rounded-xl px-2 text-lg font-black tracking-tight ${provider.name === "A1" ? "bg-[#e30613] text-white" : provider.name === "FITINN" ? "bg-black text-white" : "bg-[#f2f6ff] text-[#1a3470]"}`}>
+                  {provider.name}
+                </span>
+                <span className="text-xs font-medium text-slate-500">{provider.category}</span>
+              </button>
+            ))}
+          </div>
+          <p className="mt-4 text-xs leading-5 text-slate-400">Brand names are used to identify providers; this is not an indication of an official partnership.</p>
         </div>
       </section>
 
