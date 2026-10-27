@@ -1,20 +1,33 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { offers, categoryLabels, categoryIcons, type Category, formatPrice } from "@/lib/home-data";
 
 const categories = Object.keys(categoryLabels) as Category[];
 
 export default function PackageBuilderPage() {
   const [selected, setSelected] = useState<Category[]>(["housing", "mobile", "transport", "gym"]);
-  const [budget, setBudget] = useState(900);
+  const [budget, setBudget] = useState("");
   const [built, setBuilt] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const incomingBudget = params.get("budget");
+    const incomingCategories = params.get("categories");
+    if (incomingBudget !== null) setBudget(incomingBudget);
+    if (incomingCategories) {
+      const valid = incomingCategories.split(",").filter((item): item is Category => categories.includes(item as Category));
+      if (valid.length) setSelected(valid);
+    }
+    if (incomingBudget !== null || incomingCategories) setBuilt(true);
+  }, []);
 
   const picks = useMemo(() => selected.map((category) =>
     offers.filter((offer) => offer.category === category).sort((a, b) => a.price - b.price)[0]
   ).filter(Boolean), [selected]);
 
   const total = picks.reduce((sum, offer) => sum + offer.price, 0);
+  const budgetValue = budget === "" ? Number.POSITIVE_INFINITY : Number(budget);
 
   function toggle(category: Category) {
     setSelected((current) => current.includes(category)
@@ -63,7 +76,7 @@ export default function PackageBuilderPage() {
             </div>
             <div className="mt-7 border-t border-slate-100 pt-6">
               <label className="block max-w-xs text-sm font-semibold">Monthly budget (€)
-                <input type="number" min="0" value={budget} onChange={(event) => { setBudget(Number(event.target.value) || 0); setBuilt(false); }}
+                <input type="number" min="0" value={budget} onChange={(event) => { setBudget(event.target.value); setBuilt(false); }}
                   className="mt-2 w-full rounded-xl border border-[#d5dceb] px-4 py-3 text-base outline-none focus:border-[#2563eb]" />
               </label>
               <button type="button" disabled={selected.length < 2} onClick={() => setBuilt(true)}
@@ -86,7 +99,7 @@ export default function PackageBuilderPage() {
             <div className="mt-5 border-t border-slate-200 pt-5">
               <p className="text-sm text-slate-500">Estimated monthly total</p>
               <p className="mt-1 text-3xl font-bold text-[#1a3470]">{formatPrice(total)}<span className="text-sm font-medium text-slate-500"> / month</span></p>
-              <p className={`mt-2 text-sm font-semibold ${total <= budget ? "text-emerald-700" : "text-amber-700"}`}>{total <= budget ? "Within your budget" : "Above your budget"}</p>
+              <p className={`mt-2 text-sm font-semibold ${total <= budgetValue ? "text-emerald-700" : "text-amber-700"}`}>{total <= budgetValue ? "Within your budget" : "Above your budget"}</p>
             </div>
             <p className="mt-4 text-xs leading-5 text-slate-500">Indicative estimates based on sample offers. Confirm prices and availability with each provider.</p>
           </aside>
