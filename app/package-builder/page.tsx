@@ -251,9 +251,17 @@ export default function PackageBuilderPage() {
           <p className="text-xs font-bold uppercase tracking-wider text-[#2563eb]">Package ready</p>
           <div className="mt-2 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <div><h2 className="text-2xl font-bold">Your suggested combination</h2><p className="mt-1 text-slate-600">Estimated total: {formatPrice(total)} / month</p></div>
-            <a href={`/checkout?ids=${picks.map((offer) => offer.id).join(",")}`} className="inline-flex items-center justify-center rounded-xl bg-[#1a3470] px-6 py-4 font-semibold text-white hover:bg-[#12254f]">Continue to checkout →</a>
+<span className="inline-flex items-center justify-center rounded-xl border border-[#d5dceb] bg-slate-50 px-5 py-4 text-sm font-semibold text-slate-700">Choose providers below to continue ↘</span>
           </div>
-          <p className="mt-3 text-xs text-slate-500">Destination: {location}. Creating and editing your package is free. Activation costs €5 once plus €2/month for CompareX; provider services are paid separately.</p>
+<p className="mt-3 text-xs text-slate-500">Destination: {location}. CompareX is currently a comparison tool: no package subscription or combined provider checkout is active. Open each provider’s official page to confirm current prices, terms and availability.</p>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            {picks.map((offer) => (
+              <div key={offer.id} className="flex items-center justify-between gap-3 rounded-xl border border-[#d5dceb] p-4">
+                <div className="min-w-0"><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{categoryLabels[offer.category]}</p><p className="truncate font-semibold">{offer.name}</p><p className="text-sm text-slate-600">{formatPrice(offer.price)} / month (estimate)</p></div>
+                {offer.sourceUrl ? <a href={offer.sourceUrl} target="_blank" rel="noreferrer" className="shrink-0 text-sm font-semibold text-[#1a3470] underline underline-offset-4">Provider ↗</a> : <span className="shrink-0 text-xs text-slate-500">No direct link</span>}
+              </div>
+            ))}
+          </div>
         </section>}
       </div>
     </main>
