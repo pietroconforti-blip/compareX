@@ -115,8 +115,8 @@ export default function PackageBuilderPage() {
 
   const locationOffers = useMemo(() => catalogue.filter((offer) => {
     const offerLocation = offer.location.toLowerCase();
-    if (location === "Vienna") return offerLocation === "vienna" || offerLocation === "austria";
-    return offerLocation === "milan" || offerLocation === "italy";
+    if (location === "Vienna") return offerLocation === "vienna" || offerLocation.startsWith("austria");
+    return offerLocation === "milan" || offerLocation.startsWith("italy");
   }), [location, catalogue]);
 
   const picks = useMemo(() => selected.map((category) =>
