@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { offers as baseOffers, categoryLabels, categoryIcons, type Category, type Offer, formatPrice } from "@/lib/home-data";
 
 const categories = Object.keys(categoryLabels) as Category[];
@@ -13,6 +13,11 @@ export default function PackageBuilderPage() {
   const [location, setLocation] = useState<"Vienna" | "Milan">("Vienna");
   const [built, setBuilt] = useState(false);
   const [chosenOffers, setChosenOffers] = useState<Partial<Record<Category, string>>>({});
+  const resultRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (built) resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [built]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -210,7 +215,7 @@ export default function PackageBuilderPage() {
             </div>
             <div className="mt-7 border-t border-slate-100 pt-6">
               <label className="block max-w-xs text-sm font-semibold">Monthly budget (€)
-                <input type="number" min="0" value={budget} onChange={(event) => { setBudget(event.target.value); setBuilt(false); }}
+                <input type="number" min="0" value={budget} onChange={(event) => { setBudget(event.target.value); }}
                   className="mt-2 w-full rounded-xl border border-[#d5dceb] px-4 py-3 text-base outline-none focus:border-[#2563eb]" />
               </label>
               <button type="button" disabled={selected.length < 2} onClick={() => setBuilt(true)}
@@ -231,7 +236,7 @@ export default function PackageBuilderPage() {
                 if (!chosen) return null;
                 return <div key={category} className="border-b border-slate-100 pb-4">
                   <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500">{categoryIcons[category]} {categoryLabels[category]}
-                    <select value={chosen.name} onChange={(event) => { setChosenOffers((current) => ({ ...current, [category]: event.target.value })); setBuilt(false); }} className="mt-2 w-full rounded-xl border border-[#d5dceb] bg-white px-3 py-2 text-sm font-medium normal-case tracking-normal text-[#0c1222]">
+                    <select value={chosen.name} onChange={(event) => { setChosenOffers((current) => ({ ...current, [category]: event.target.value })); }} className="mt-2 w-full rounded-xl border border-[#d5dceb] bg-white px-3 py-2 text-sm font-medium normal-case tracking-normal text-[#0c1222]">
                       {alternatives.map((offer) => <option key={`${offer.id}-${offer.name}`} value={offer.name}>{offer.name} · {formatPrice(offer.price)}/month</option>)}
                     </select>
                   </label>
@@ -249,7 +254,7 @@ export default function PackageBuilderPage() {
           </aside>
         </div>
 
-        {built && <section className="mt-8 rounded-3xl border border-[#c7d7f5] bg-white p-6 shadow-sm md:p-8">
+        {built && <section ref={resultRef} className="mt-8 scroll-mt-6 rounded-3xl border border-[#c7d7f5] bg-white p-6 shadow-sm md:p-8">
           <p className="text-xs font-bold uppercase tracking-wider text-[#2563eb]">Package ready</p>
           <div className="mt-2 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <div><h2 className="text-2xl font-bold">Your suggested combination</h2><p className="mt-1 text-slate-600">Estimated total: {formatPrice(total)} / month</p></div>
