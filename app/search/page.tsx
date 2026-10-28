@@ -82,8 +82,8 @@ function detectCategory(query: string) {
 function detectCountry(query: string): "All" | Country {
   const q = query.toLowerCase();
   // A named destination should select its country automatically.
-  if (/\\b(italy|italia|milan|milano|rome|roma|turin|torino|bologna|florence|firenze|venice|venezia|naples|napoli|verona)\\b/.test(q)) return "Italy";
-  if (/\\b(austria|österreich|osterreich|vienna|wien|graz|linz|salzburg|innsbruck|sankt pölten|st pölten)\\b/.test(q)) return "Austria";
+  if (["italy","italia","milan","milano","rome","roma","turin","torino","bologna","florence","firenze","venice","venezia","naples","napoli","verona"].some((city) => q.includes(city))) return "Italy";
+  if (["austria","österreich","osterreich","vienna","wien","graz","linz","salzburg","innsbruck","sankt pölten","st pölten"].some((city) => q.includes(city))) return "Austria";
   return "All";
 }
 
