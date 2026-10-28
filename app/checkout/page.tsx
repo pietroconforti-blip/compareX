@@ -27,7 +27,7 @@ function CheckoutContent() {
 
   async function startTestCheckout() {
     if (name.trim().length < 2) { setPaymentError("Inserisci prima nome e cognome."); return; }
-    if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) { setPaymentError("Inserisci prima un indirizzo email valido."); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setPaymentError("Inserisci prima un indirizzo email valido."); return; }
     if (!consent) { setPaymentError("Conferma la nota privacy prima di continuare."); return; }
     setPaymentBusy(true);
     setPaymentError("");
