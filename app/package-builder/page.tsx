@@ -135,13 +135,15 @@ export default function PackageBuilderPage() {
     return alternatives.find((offer) => offer.name === chosenOffers[category]) ?? alternatives[0];
   }).filter((offer): offer is Offer => Boolean(offer)), [selected, offersByCategory, chosenOffers]);
 
+  // Do not reset the completed package when the online catalogue finishes loading.
+  // The previous effect depended on locationOffers, so loading offers cleared built
+  // immediately after navigation and forced users to click "Build" a second time.
   useEffect(() => {
     setSelected((current) => current.filter((category) =>
       locationOffers.some((offer) => offer.category === category)
     ));
     setChosenOffers({});
-    setBuilt(false);
-  }, [locationOffers]);
+  }, [location]);
 
   const total = picks.reduce((sum, offer) => sum + offer.price, 0);
   const budgetValue = budget === "" ? Number.POSITIVE_INFINITY : Number(budget);
