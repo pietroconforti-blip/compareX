@@ -261,6 +261,10 @@ export default function PackageBuilderPage() {
 <span className="inline-flex items-center justify-center rounded-xl border border-[#d5dceb] bg-slate-50 px-5 py-4 text-sm font-semibold text-slate-700">Choose providers below to continue ↘</span>
           </div>
 <p className="mt-3 text-xs text-slate-500">Destination: {location}. CompareX is currently a comparison tool: no package subscription or combined provider checkout is active. Open each provider’s official page to confirm current prices, terms and availability.</p>
+          <div className="mt-6 flex flex-col gap-3 rounded-2xl bg-[#f2f6ff] p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div><p className="font-bold text-[#12254f]">Ready to continue?</p><p className="mt-1 text-sm text-slate-600">Review your package and enter your customer details in CompareX before any payment is enabled.</p></div>
+            <button type="button" onClick={() => { const items = picks.map(({ category, name, price, priceLabel, location: offerLocation, sourceUrl }) => ({ category, name, price, priceLabel, location: offerLocation, sourceUrl })); const params = new URLSearchParams({ items: JSON.stringify(items), destination: location, budget: budget }); window.location.href = "/checkout?" + params.toString(); }} disabled={picks.length < 2} className="shrink-0 rounded-xl bg-[#1a3470] px-5 py-3 font-bold text-white hover:bg-[#12254f] disabled:opacity-50">Continue to checkout →</button>
+          </div>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             {picks.map((offer) => (
               <div key={offer.id} className="flex items-center justify-between gap-3 rounded-xl border border-[#d5dceb] p-4">
