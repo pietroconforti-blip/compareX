@@ -162,7 +162,7 @@ export default function Home() {
               >
                 Marketplace · Buy, sell, rent →
               </a>
-              <a href="/contact" className="block w-full rounded-xl px-3 py-3 text-left text-sm font-semibold text-[#1a3470] hover:bg-blue-50">
+              <a href="/dashboard" className="block w-full rounded-xl px-3 py-3 text-left text-sm font-semibold text-[#1a3470] hover:bg-blue-50">\n                My student dashboard →\n              </a>\n              <a href="/moving" className="block w-full rounded-xl px-3 py-3 text-left text-sm font-semibold text-[#1a3470] hover:bg-blue-50">\n                Student moving guide →\n              </a>\n              <a href="/contact" className="block w-full rounded-xl px-3 py-3 text-left text-sm font-semibold text-[#1a3470] hover:bg-blue-50">
                 Contact seller or CompareX support →
               </a>
             </nav>
