@@ -1,43 +1,67 @@
 "use client";
 
-import { Suspense, useMemo } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { offers, categoryLabels, categoryIcons, formatPrice } from "@/lib/home-data";
+import { Suspense, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
+type PackageItem = { category: string; name: string; price: number; priceLabel?: string; location?: string; sourceUrl?: string };
 function CheckoutContent() {
   const params = useSearchParams();
-  const router = useRouter();
-  const idsParam = params.get("ids");
-  const ids = idsParam ? idsParam.split(",").map(Number).filter(Number.isFinite) : [];
-  const selected = useMemo(() => offers.filter((o) => ids.includes(o.id)), [idsParam]);
-  const total = selected.reduce((sum, offer) => sum + offer.price, 0);
-  const cancelled = params.get("cancelled") === "1";
+  const items = useMemo<PackageItem[]>(() => {
+    try {
+      const parsed = JSON.parse(params.get("items") || "[]");
+      if (!Array.isArray(parsed)) return [];
+      return parsed.filter((item) => item && typeof item.name === "string" && typeof item.category === "string" && Number.isFinite(Number(item.price)) && Number(item.price) >= 0).map((item) => ({ category: String(item.category), name: String(item.name), price: Number(item.price), priceLabel: typeof item.priceLabel === "string" ? item.priceLabel : undefined, location: typeof item.location === "string" ? item.location : "", sourceUrl: typeof item.sourceUrl === "string" ? item.sourceUrl : undefined }));
+    } catch { return []; }
+  }, [params]);
+  const total = items.reduce((sum, item) => sum + item.price, 0);
+  const destination = params.get("destination") || "Vienna";
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [consent, setConsent] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+  const [success, setSuccess] = useState(false);
 
-  return <main className="min-h-screen bg-[#f7f9fd] text-[#0c1222]">
-    <header className="border-b border-[#d5dceb] bg-white"><div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5"><button onClick={() => router.push("/")} className="text-xl font-bold">Compare<span className="text-blue-600">X</span></button><span className="text-sm text-slate-500">Attivazione pacchetto</span></div></header>
-    <div className="mx-auto max-w-5xl px-5 py-10 md:py-14">
-      <button onClick={() => router.push("/package-builder")} className="text-sm font-semibold text-[#1a3470] hover:underline">← Torna al builder</button>
-      <div className="mt-5 grid gap-8 lg:grid-cols-[1fr_390px]"><section>
-        <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-700">Ultimo passaggio</p><h1 className="mt-3 text-4xl font-bold tracking-tight">Attiva il tuo pacchetto</h1>
-        <p className="mt-3 max-w-2xl leading-7 text-slate-600">CompareX è attualmente uno strumento di confronto. Il checkout combinato e l’abbonamento non sono ancora attivi: non verrà effettuato alcun addebito. Per acquistare un servizio, usa il link ufficiale del relativo fornitore nel Package Builder.</p>
-        {cancelled && <p className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">Pagamento annullato: non hai completato l'acquisto.</p>}
-        <div className="mt-8 rounded-3xl border border-[#d5dceb] bg-white p-6 shadow-sm md:p-8">
-          <h2 className="text-xl font-bold">Checkout non ancora attivo</h2>
-          <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">Il pagamento è disattivato finché non sono pronti il servizio in abbonamento, le condizioni contrattuali e il processo di cancellazione. I prezzi mostrati nel pacchetto sono stime dei fornitori, non un importo da pagare qui.</div>
-          <button type="button" disabled className="mt-6 w-full cursor-not-allowed rounded-xl bg-slate-300 px-6 py-4 font-bold text-slate-600">Checkout non disponibile</button>
-          <p className="mt-3 text-center text-xs leading-5 text-slate-500">Nessun pagamento viene richiesto o avviato da questa pagina.</p>
-          <p className="mt-4 text-xs leading-5 text-slate-500">Torna al Package Builder e apri i link ufficiali per verificare i termini e completare l’acquisto direttamente con il fornitore.</p>
-        </div>
-        </section>
-        <aside className="h-fit rounded-3xl border border-[#d5dceb] bg-white p-6 shadow-sm lg:sticky lg:top-6"><h2 className="text-xl font-bold">Il tuo pacchetto</h2><p className="mt-1 text-sm text-slate-500">{selected.length} servizi selezionati · stima mensile</p>
-          <div className="mt-5 space-y-4">{selected.map((o) => <div key={o.id} className="flex items-start justify-between gap-3 border-b border-slate-100 pb-4"><div className="flex gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f0f5ff] text-xl">{categoryIcons[o.category]}</span><div><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{categoryLabels[o.category]}</p><p className="mt-1 font-semibold">{o.name}</p><p className="mt-1 text-sm text-slate-500">{o.location}</p></div></div><span className="shrink-0 text-sm font-bold">{formatPrice(o.price)}</span></div>)}
-          {selected.length === 0 && <p className="text-sm text-amber-800">Pacchetto non valido. Torna al builder e seleziona almeno due servizi.</p>}</div>
-          <div className="mt-5 border-t border-slate-200 pt-5"><p className="text-sm text-slate-500">Totale stimato fornitori</p><p className="mt-1 text-3xl font-bold text-[#1a3470]">{formatPrice(total)}<span className="text-sm font-medium text-slate-500"> / mese</span></p><p className="mt-3 text-sm text-slate-600">I servizi vengono acquistati separatamente dai rispettivi fornitori. Il checkout unico non è ancora disponibile.</p></div>
-          <p className="mt-4 text-xs leading-5 text-slate-500">I prezzi dei fornitori sono stime del catalogo dimostrativo. Conferma prezzi e disponibilità con ciascun fornitore.</p>
-        </aside>
-      </div>
-      <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-5"><h2 className="font-bold">Hai una domanda?</h2><p className="mt-1 text-sm text-slate-600">Scrivi al venditore o all'assistenza CompareX senza uscire dalla piattaforma.</p><a href="/contact" className="mt-3 inline-flex rounded-xl border border-[#1a3470] px-4 py-2 text-sm font-semibold text-[#1a3470]">Apri il centro assistenza →</a></div>
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage("");
+    if (items.length < 2) { setMessage("Torna al Package Builder e seleziona almeno due servizi."); return; }
+    if (!consent) { setMessage("Devi confermare l'informativa sulla privacy per inviare la richiesta."); return; }
+    setBusy(true);
+    try {
+      const response = await fetch("/api/orders", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ customer: { name, email, phone }, items, destination, privacyConsent: consent }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Non è stato possibile salvare la richiesta.");
+      setSuccess(true);
+      setMessage("Richiesta salvata. Il pagamento non è ancora attivo: non è stato effettuato alcun addebito.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Errore durante l'invio.");
+    } finally { setBusy(false); }
+  }
+
+  return <main className="min-h-screen bg-[#f7f9fd] px-5 py-10 text-[#0c1222]"><div className="mx-auto max-w-5xl">
+    <a href="/package-builder" className="font-semibold text-[#1a3470]">← Torna al pacchetto</a>
+    <p className="mt-8 text-xs font-bold uppercase tracking-[0.16em] text-blue-700">CompareX checkout</p>
+    <h1 className="mt-3 text-4xl font-bold tracking-tight">Completa i tuoi dati</h1>
+    <p className="mt-3 max-w-2xl leading-7 text-slate-600">Il pacchetto rimane su CompareX. Inserisci i dati di contatto per preparare la richiesta; non stai ancora acquistando e non verrà addebitato nulla.</p>
+    <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_380px]">
+      <form onSubmit={submit} className="space-y-5 rounded-3xl border border-[#d5dceb] bg-white p-6 shadow-sm md:p-8">
+        <h2 className="text-xl font-bold">Dati del cliente</h2>
+        <label className="block text-sm font-semibold">Nome e cognome<input required minLength={2} maxLength={120} autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 font-normal" /></label>
+        <label className="block text-sm font-semibold">Email<input required type="email" maxLength={254} autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 font-normal" /></label>
+        <label className="block text-sm font-semibold">Telefono (facoltativo)<input type="tel" maxLength={40} autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 font-normal" /></label>
+        <label className="flex items-start gap-3 text-sm leading-6 text-slate-600"><input required type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-1 h-4 w-4" /><span>Confermo di aver letto l'informativa privacy di CompareX e acconsento all'uso dei dati per gestire questa richiesta. L'informativa completa deve essere pubblicata prima di raccogliere dati reali.</span></label>
+        {message && <p role="status" className={"rounded-xl p-4 text-sm " + (success ? "bg-emerald-50 text-emerald-900" : "bg-amber-50 text-amber-900")}>{message}</p>}
+        <button type="submit" disabled={busy || success} className="w-full rounded-xl bg-[#1a3470] px-5 py-4 font-bold text-white disabled:opacity-60">{busy ? "Salvataggio…" : success ? "Richiesta salvata" : "Salva i dati e prepara il pacchetto →"}</button>
+        <p className="text-xs leading-5 text-slate-500">Questa fase non è un pagamento né una prenotazione confermata. Non inserire documenti d'identità o dati bancari in questo modulo.</p>
+      </form>
+      <aside className="h-fit rounded-3xl border border-[#d5dceb] bg-white p-6 shadow-sm lg:sticky lg:top-6"><p className="text-xs font-bold uppercase tracking-wider text-blue-700">Riepilogo</p><h2 className="mt-2 text-2xl font-bold">Il tuo pacchetto</h2><p className="mt-1 text-sm text-slate-500">Destinazione: {destination} · stima mensile</p>
+        <div className="mt-5 space-y-4">{items.map((item, index) => <div key={item.category + "-" + item.name + "-" + index} className="border-b border-slate-100 pb-4"><p className="text-xs font-semibold uppercase text-slate-500">{item.category}</p><p className="mt-1 font-semibold">{item.name}</p><p className="mt-1 text-sm text-slate-600">€{item.price.toFixed(2)} / mese (stima)</p></div>)}{items.length === 0 && <p className="text-sm text-amber-800">Nessun pacchetto trovato. Torna al builder e creane uno.</p>}</div>
+        <div className="mt-5 border-t border-slate-200 pt-5"><p className="text-sm text-slate-500">Totale mensile stimato</p><p className="mt-1 text-3xl font-bold text-[#1a3470]">€{total.toFixed(2)}<span className="text-sm font-medium text-slate-500"> / mese</span></p></div>
+        <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">Pagamento unico non ancora disponibile. Per attivarlo serviranno un sistema di pagamento verificato e accordi con i fornitori.</div>
+      </aside>
     </div>
-  </main>;
+  </div></main>;
 }
-export default function CheckoutPage() { return <Suspense fallback={<main className="min-h-screen p-10">Caricamento checkout…</main>}><CheckoutContent /></Suspense>; }
+export default function CheckoutPage() { return <Suspense fallback={<main className="p-10">Caricamento checkout…</main>}><CheckoutContent /></Suspense>; }
