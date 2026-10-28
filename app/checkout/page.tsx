@@ -22,6 +22,22 @@ function CheckoutContent() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState(false);
+  const [paymentBusy, setPaymentBusy] = useState(false);
+  const [paymentError, setPaymentError] = useState("");
+
+  async function startTestCheckout() {
+    setPaymentBusy(true);
+    setPaymentError("");
+    try {
+      const response = await fetch("/api/checkout/session", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items, email }) });
+      const data = await response.json();
+      if (!response.ok || typeof data.url !== "string") throw new Error(data.error || "Checkout di prova non disponibile.");
+      window.location.href = data.url;
+    } catch (error) {
+      setPaymentError(error instanceof Error ? error.message : "Errore durante l'avvio del checkout.");
+      setPaymentBusy(false);
+    }
+  }
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -54,7 +70,13 @@ function CheckoutContent() {
         <label className="flex items-start gap-3 text-sm leading-6 text-slate-600"><input required type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-1 h-4 w-4" /><span>Ho letto la <a href="/privacy" target="_blank" className="font-semibold text-[#1a3470] underline">nota privacy pre-lancio</a> e chiedo di usare questi dati per preparare la mia richiesta. So che la registrazione è ancora disattivata e non verrà salvato nulla finché il servizio non sarà pronto.</span></label>
         {message && <p role="status" className={"rounded-xl p-4 text-sm " + (success ? "bg-emerald-50 text-emerald-900" : "bg-amber-50 text-amber-900")}>{message}</p>}
         <button type="submit" disabled={busy || success} className="w-full rounded-xl bg-[#1a3470] px-5 py-4 font-bold text-white disabled:opacity-60">{busy ? "Salvataggio…" : success ? "Richiesta salvata" : "Salva i dati e prepara il pacchetto →"}</button>
-        <p className="text-xs leading-5 text-slate-500">Questa fase non è un pagamento né una prenotazione confermata. Non inserire documenti d'identità o dati bancari in questo modulo.</p>
+        {process.env.NEXT_PUBLIC_COMPAREX_TEST_CHECKOUT_ENABLED === "true" && <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4">
+          <p className="font-bold text-blue-950">Prova il pagamento unico (modalità test)</p>
+          <p className="mt-1 text-sm leading-6 text-blue-900">Si aprirà il checkout Stripe di prova. Non è un pagamento reale e non attiva né prenota i servizi inclusi nel pacchetto.</p>
+          {paymentError && <p role="alert" className="mt-3 rounded-lg bg-white p-3 text-sm text-red-700">{paymentError}</p>}
+          <button type="button" onClick={startTestCheckout} disabled={paymentBusy || items.length < 2} className="mt-3 w-full rounded-xl border border-[#1a3470] bg-white px-5 py-3 font-bold text-[#1a3470] disabled:opacity-60">{paymentBusy ? "Apertura checkout…" : "Vai al pagamento di prova →"}</button>
+        </div>}
+        <p className="text-xs leading-5 text-slate-500">Questa fase non è una prenotazione confermata. Non inserire documenti d'identità o dati bancari in questo modulo.</p>
       </form>
       <aside className="h-fit rounded-3xl border border-[#d5dceb] bg-white p-6 shadow-sm lg:sticky lg:top-6"><p className="text-xs font-bold uppercase tracking-wider text-blue-700">Riepilogo</p><h2 className="mt-2 text-2xl font-bold">Il tuo pacchetto</h2><p className="mt-1 text-sm text-slate-500">Destinazione: {destination} · stima mensile</p>
         <div className="mt-5 space-y-4">{items.map((item, index) => <div key={item.category + "-" + item.name + "-" + index} className="border-b border-slate-100 pb-4"><p className="text-xs font-semibold uppercase text-slate-500">{item.category}</p><p className="mt-1 font-semibold">{item.name}</p><p className="mt-1 text-sm text-slate-600">€{item.price.toFixed(2)} / mese (stima)</p></div>)}{items.length === 0 && <p className="text-sm text-amber-800">Nessun pacchetto trovato. Torna al builder e creane uno.</p>}</div>
