@@ -31,6 +31,10 @@ export async function POST(request: Request) {
   }
   if (typeof destination !== "string" || !["Vienna", "Milan"].includes(destination)) return NextResponse.json({ error: "Destinazione non valida." }, { status: 400 });
 
+  if (process.env.COMPAREX_ORDERS_ENABLED !== "true") {
+    return NextResponse.json({ error: "La raccolta degli ordini è ancora in fase di preparazione. Nessun dato è stato salvato e nessun pagamento è stato avviato." }, { status: 503 });
+  }
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!supabaseUrl || !serviceRoleKey) {
