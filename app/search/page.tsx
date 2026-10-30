@@ -229,10 +229,12 @@ function SearchResults() {
   );
 
   const [offers, setOffers] = useState<MobileOffer[]>([]);
+  const [mobileLastVerified, setMobileLastVerified] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
 
   const [housingOffers, setHousingOffers] = useState<HousingOffer[]>([]);
+  const [housingLastVerified, setHousingLastVerified] = useState<string | null>(null);
   const [housingLoading, setHousingLoading] = useState(false);
   const [housingError, setHousingError] = useState(false);
 
@@ -256,7 +258,10 @@ function SearchResults() {
         const res = await fetch("/api/offers", { cache: "no-store" });
         if (!res.ok) throw new Error("fail");
         const data = await res.json();
-        if (!cancelled) setOffers(data.offers ?? []);
+        if (!cancelled) {
+          setOffers(data.offers ?? []);
+          setMobileLastVerified(data.lastVerified ?? data.offers?.[0]?.lastVerified ?? null);
+        }
       } catch {
         if (!cancelled) setLoadError(true);
       } finally {
@@ -279,7 +284,10 @@ function SearchResults() {
         const res = await fetch("/api/housing", { cache: "no-store" });
         if (!res.ok) throw new Error("fail");
         const data = await res.json();
-        if (!cancelled) setHousingOffers(data.offers ?? []);
+        if (!cancelled) {
+          setHousingOffers(data.offers ?? []);
+          setHousingLastVerified(data.lastVerified ?? data.offers?.[0]?.lastVerified ?? null);
+        }
       } catch {
         if (!cancelled) setHousingError(true);
       } finally {
@@ -413,6 +421,7 @@ function SearchResults() {
             <h2 className="mt-7 text-xl font-bold">
               {filteredMobile.length} mobile plans
             </h2>
+            {mobileLastVerified && <p className="mt-1 text-xs text-slate-500">Provider information last checked: {new Date(`${mobileLastVerified}T00:00:00`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}. Prices are not live quotes.</p>}
             {loading && (
               <p className="mt-5 text-slate-600">Loading mobile plans…</p>
             )}
@@ -469,6 +478,7 @@ function SearchResults() {
             <h2 className="mt-7 text-xl font-bold">
               {filteredHousing.length} housing listings
             </h2>
+            {housingLastVerified && <p className="mt-1 text-xs text-slate-500">Listing information last checked: {new Date(`${housingLastVerified}T00:00:00`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}. Confirm current availability with the provider.</p>}
             {housingLoading && (
               <p className="mt-5 text-slate-600">Loading housing…</p>
             )}
