@@ -195,7 +195,7 @@ export default function PackageBuilderPage() {
             </div>
             <h2 className="mt-7 text-xl font-bold">2. Choose your services</h2>
             <p className="mt-1 text-sm text-slate-500">Select at least two categories. Unavailable categories won't be added to your package.</p>
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <div id="provider-options" className="mt-5 grid gap-3 sm:grid-cols-2">
               {categories.map((category) => {
                 const active = selected.includes(category);
                 const categoryOffers = locationOffers.filter((offer) => offer.category === category);
@@ -264,7 +264,7 @@ export default function PackageBuilderPage() {
           <div className="mt-6 flex flex-col gap-3 rounded-2xl bg-[#f2f6ff] p-5 sm:flex-row sm:items-center sm:justify-between">
             <div><p className="font-bold text-[#12254f]">Ready to continue?</p><p className="mt-1 text-sm text-slate-600">Review your package and enter your customer details in CompareX before any payment is enabled.</p></div>
             <button type="button" onClick={() => { const items = picks.map(({ category, name, price, priceLabel, location: offerLocation, sourceUrl }) => ({ category, name, price, priceLabel, location: offerLocation, sourceUrl })); try { localStorage.setItem("comparex-saved-package", JSON.stringify({ items, destination: location, budget, savedAt: new Date().toISOString() })); window.location.href = "/dashboard"; } catch { window.alert("Could not save this package in your browser. Please check your browser storage settings."); } }} disabled={picks.length < 2} className="shrink-0 rounded-xl border border-[#1a3470] bg-white px-5 py-3 font-bold text-[#1a3470] hover:bg-blue-50 disabled:opacity-50">Save to dashboard</button>
-            <button type="button" onClick={() => { const items = picks.map(({ category, name, price, priceLabel, location: offerLocation, sourceUrl }) => ({ category, name, price, priceLabel, location: offerLocation, sourceUrl })); const params = new URLSearchParams({ items: JSON.stringify(items), destination: location, budget: budget }); window.location.href = "/checkout?" + params.toString(); }} disabled={picks.length < 2} className="shrink-0 rounded-xl bg-[#1a3470] px-5 py-3 font-bold text-white hover:bg-[#12254f] disabled:opacity-50">Continue to checkout →</button>
+            <a href="#provider-options" className="shrink-0 rounded-xl bg-[#1a3470] px-5 py-3 text-center font-bold text-white hover:bg-[#12254f]">Compare provider options ↓</a>
           </div>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             {picks.map((offer) => (
