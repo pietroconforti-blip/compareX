@@ -140,15 +140,9 @@ export default function PackageBuilderPage() {
     return alternatives.find((offer) => offer.name === chosenOffers[category]) ?? alternatives[0];
   }).filter((offer): offer is Offer => Boolean(offer)), [selected, offersByCategory, chosenOffers]);
 
-  // Do not reset the completed package when the online catalogue finishes loading.
-  // The previous effect depended on locationOffers, so loading offers cleared built
-  // immediately after navigation and forced users to click "Build" a second time.
-  useEffect(() => {
-    setSelected((current) => current.filter((category) =>
-      locationOffers.some((offer) => offer.category === category)
-    ));
-    setChosenOffers({});
-  }, [location]);
+  // Keep the user's category choices when changing destination. The online
+  // catalogue loads asynchronously; filtering selections before it finishes can
+  // remove valid categories (especially mobile and gym in Milan) and disable Build.
 
   const total = picks.reduce((sum, offer) => sum + offer.price, 0);
   const budgetValue = budget === "" ? Number.POSITIVE_INFINITY : Number(budget);
@@ -186,7 +180,7 @@ export default function PackageBuilderPage() {
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {(["Vienna", "Milan"] as const).map((city) => (
                 <button key={city} type="button" aria-pressed={location === city}
-                  onClick={() => { setLocation(city); setBuilt(false); }}
+                  onClick={() => { setLocation(city); setBuilt(false); setChosenOffers({}); }}
                   className={`rounded-xl border px-4 py-3 text-left font-semibold transition ${location === city ? "border-[#1a3470] bg-[#f2f6ff] ring-2 ring-[#d5e2ff]" : "border-[#d5dceb] hover:border-[#1a3470]"}`}>
                   {city === "Vienna" ? "🇦🇹 Vienna, Austria" : "🇮🇹 Milan, Italy"}
                   <span className="mt-1 block text-xs font-normal text-slate-500">{city === "Vienna" ? "Vienna and Austria-wide offers" : "Milan and Italy-wide offers"}</span>
@@ -218,10 +212,11 @@ export default function PackageBuilderPage() {
                 <input type="number" min="0" value={budget} onChange={(event) => { setBudget(event.target.value); }}
                   className="mt-2 w-full rounded-xl border border-[#d5dceb] px-4 py-3 text-base outline-none focus:border-[#2563eb]" />
               </label>
-              <button type="button" disabled={selected.length < 2} onClick={() => setBuilt(true)}
+              <button type="button" disabled={picks.length < 2} onClick={() => setBuilt(true)}
                 className="mt-5 w-full rounded-xl bg-[#1a3470] px-6 py-4 font-semibold text-white shadow-md transition hover:bg-[#12254f] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto">
                 Build my package →
               </button>
+              {picks.length < 2 && <p className="mt-3 text-sm text-amber-700" role="status">At least two categories with available offers are needed. Choose another destination or wait for the catalogue to finish loading.</p>}
             </div>
           </section>
 
