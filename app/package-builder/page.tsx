@@ -135,10 +135,50 @@ export default function PackageBuilderPage() {
     locationOffers.filter((offer) => offer.category === category).sort((a, b) => a.price - b.price),
   ])) as Record<Category, Offer[]>, [locationOffers]);
 
+  const automaticPicks = useMemo(() => {
+    // Find the strongest complete combination that stays within the customer's
+    // monthly budget. If no complete combination fits, show the lowest-cost
+    // complete combination and make the over-budget state visible.
+    const options = selected.map((category) => {
+      const all = offersByCategory[category] ?? [];
+      const byQuality = [...all].sort((a, b) =>
+        (b.quality + b.flexibility * 0.25 + (b.studentFriendly ? 0.35 : 0)) -
+        (a.quality + a.flexibility * 0.25 + (a.studentFriendly ? 0.35 : 0))
+      ).slice(0, 8);
+      const byPrice = [...all].sort((a, b) => a.price - b.price).slice(0, 5);
+      return [...new Map([...byQuality, ...byPrice].map((offer) => [offer.id, offer])).values()];
+    });
+
+    if (options.some((items) => items.length === 0)) return [] as Offer[];
+
+    let bestWithinBudget: { items: Offer[]; score: number; total: number } | null = null;
+    let cheapest: { items: Offer[]; total: number } | null = null;
+    const hasBudget = budget.trim() !== "" && Number.isFinite(Number(budget)) && Number(budget) > 0;
+    const limit = hasBudget ? Number(budget) : Number.POSITIVE_INFINITY;
+
+    function visit(index: number, items: Offer[], total: number, score: number) {
+      if (index === options.length) {
+        if (!cheapest || total < cheapest.total) cheapest = { items: [...items], total };
+        if (total <= limit && (!bestWithinBudget || score > bestWithinBudget.score ||
+          (score === bestWithinBudget.score && total < bestWithinBudget.total))) {
+          bestWithinBudget = { items: [...items], score, total };
+        }
+        return;
+      }
+      for (const offer of options[index]) {
+        visit(index + 1, [...items, offer], total + offer.price,
+          score + offer.quality + offer.flexibility * 0.25 + (offer.studentFriendly ? 0.35 : 0));
+      }
+    }
+    visit(0, [], 0, 0);
+    return (bestWithinBudget ?? cheapest)?.items ?? [];
+  }, [selected, offersByCategory, budget]);
+
   const picks = useMemo(() => selected.map((category) => {
     const alternatives = offersByCategory[category] ?? [];
-    return alternatives.find((offer) => offer.name === chosenOffers[category]) ?? alternatives[0];
-  }).filter((offer): offer is Offer => Boolean(offer)), [selected, offersByCategory, chosenOffers]);
+    return alternatives.find((offer) => offer.name === chosenOffers[category]) ??
+      automaticPicks.find((offer) => offer.category === category);
+  }).filter((offer): offer is Offer => Boolean(offer)), [selected, offersByCategory, chosenOffers, automaticPicks]);
 
   // Keep the user's category choices when changing destination. The online
   // catalogue loads asynchronously; filtering selections before it finishes can
