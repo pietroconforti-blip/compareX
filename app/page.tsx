@@ -510,7 +510,7 @@ export default function Home() {
               { name: "Netflix", category: "Streaming", domain: "netflix.com" },
               { name: "home4students", category: "Housing", domain: "home4students.at" },
             ].map((provider) => (
-              <button key={provider.name} onClick={() => goSearch(provider.category === "Mobile" ? "mobile plan" : provider.category.toLowerCase())}
+              <button key={provider.name} onClick={() => goSearch(provider.name)}
                 aria-label={`Compare ${provider.name} offers`}
                 className="flex min-h-28 flex-col items-center justify-center gap-3 rounded-2xl border border-[#e4eaf4] bg-white p-4 transition hover:-translate-y-0.5 hover:border-[#b8c9e8] hover:shadow-sm">
                 <span aria-label={`${provider.name} brand`} className={`flex h-12 min-w-12 items-center justify-center rounded-xl px-2 text-lg font-black tracking-tight ${provider.name === "A1" ? "bg-[#e30613] text-white" : provider.name === "FITINN" ? "bg-black text-white" : "bg-[#f2f6ff] text-[#1a3470]"}`}>
