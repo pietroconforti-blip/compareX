@@ -376,7 +376,7 @@ export default function Home() {
                   />
                 </label>
                 <button
-                  onClick={() => { window.location.href = "/package-builder?budget=" + encodeURIComponent(packageBudget) + "&categories=" + encodeURIComponent(packageCategories.join(",")); }}
+                  onClick={() => { const params = new URLSearchParams({ budget: packageBudget, categories: packageCategories.join(","), location: "Vienna" }); window.location.assign("/package-builder?" + params.toString()); }}
                   disabled={packageCategories.length < 2}
                   className="rounded-xl bg-[#1a3470] px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#1a3470]/20 transition hover:bg-[#12254f] disabled:cursor-not-allowed disabled:opacity-50"
                 >
