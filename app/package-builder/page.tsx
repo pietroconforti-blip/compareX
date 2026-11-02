@@ -171,7 +171,7 @@ export default function PackageBuilderPage() {
         <h1 className="mt-3 text-4xl font-bold tracking-tight md:text-5xl">Build your student life package.</h1>
         <p className="mt-4 max-w-2xl text-lg leading-7 text-slate-600">Choose where you plan to live, then select services and a budget. Your package will only include offers available in that city or country.</p>
 
-        <div className="mt-9 grid gap-8 lg:grid-cols-[1fr_340px]">
+        {!built && <div className="mt-9 grid gap-8 lg:grid-cols-[1fr_340px]">
           <section className="rounded-3xl border border-[#d5dceb] bg-white p-5 shadow-sm md:p-7">
             <h2 className="text-xl font-bold">1. Where are you going?</h2>
             <p className="mt-1 text-sm text-slate-500">The package will only show offers for your chosen destination.</p>
@@ -246,7 +246,7 @@ export default function PackageBuilderPage() {
             </div>
             <p className="mt-4 text-xs leading-5 text-slate-500">Compare alternatives using the menus above. Prices are indicative catalogue data, not guaranteed live quotes; confirm price, fees and availability with each provider.</p>
           </aside>
-        </div>
+        </div>}
 
         {built && <section ref={resultRef} className="mt-8 scroll-mt-6 rounded-3xl border border-[#c7d7f5] bg-white p-6 shadow-sm md:p-8">
           <p className="text-xs font-bold uppercase tracking-wider text-[#2563eb]">Package ready</p>
@@ -254,7 +254,11 @@ export default function PackageBuilderPage() {
             <div><h2 className="text-2xl font-bold">Your suggested combination</h2><p className="mt-1 text-slate-600">Estimated total: {formatPrice(total)} / month</p></div>
 <span className="inline-flex items-center justify-center rounded-xl border border-[#d5dceb] bg-slate-50 px-5 py-4 text-sm font-semibold text-slate-700">Choose providers below to continue ↘</span>
           </div>
-<p className="mt-3 text-xs text-slate-500">Destination: {location}. CompareX is currently a comparison tool: no package subscription or combined provider checkout is active. Open each provider’s official page to confirm current prices, terms and availability.</p>
+<p className="mt-3 text-xs text-slate-500">Destination: {location}. Your package is based on the selected services and monthly budget. CompareX is currently a comparison tool: provider prices and availability must be confirmed on official pages.</p>
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm text-slate-600">{selected.length} selected categories · Budget: {budget ? formatPrice(Number(budget)) : "Not specified"} / month</p>
+            <button type="button" onClick={() => setBuilt(false)} className="rounded-xl border border-[#d5dceb] px-4 py-2 text-sm font-semibold text-[#1a3470] hover:bg-blue-50">← Edit needs and budget</button>
+          </div>
           <div className="mt-6 flex flex-col gap-3 rounded-2xl bg-[#f2f6ff] p-5 sm:flex-row sm:items-center sm:justify-between">
             <div><p className="font-bold text-[#12254f]">Ready to continue?</p><p className="mt-1 text-sm text-slate-600">Review your package and enter your customer details in CompareX before any payment is enabled.</p></div>
             <button type="button" onClick={() => { const items = picks.map(({ category, name, price, priceLabel, location: offerLocation, sourceUrl }) => ({ category, name, price, priceLabel, location: offerLocation, sourceUrl })); try { localStorage.setItem("comparex-saved-package", JSON.stringify({ items, destination: location, budget, savedAt: new Date().toISOString() })); window.location.href = "/dashboard"; } catch { window.alert("Could not save this package in your browser. Please check your browser storage settings."); } }} disabled={picks.length < 2} className="shrink-0 rounded-xl border border-[#1a3470] bg-white px-5 py-3 font-bold text-[#1a3470] hover:bg-blue-50 disabled:opacity-50">Save to dashboard</button>
@@ -262,9 +266,16 @@ export default function PackageBuilderPage() {
           </div>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             {picks.map((offer) => (
-              <div key={offer.id} className="flex items-center justify-between gap-3 rounded-xl border border-[#d5dceb] p-4">
-                <div className="min-w-0"><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{categoryLabels[offer.category]}</p><p className="truncate font-semibold">{offer.name}</p><p className="text-sm text-slate-600">{formatPrice(offer.price)} / month (estimate)</p></div>
-                {offer.sourceUrl ? <a href={offer.sourceUrl} target="_blank" rel="noreferrer" className="shrink-0 text-sm font-semibold text-[#1a3470] underline underline-offset-4">Provider ↗</a> : <span className="shrink-0 text-xs text-slate-500">No direct link</span>}
+              <div key={offer.id} className="rounded-xl border border-[#d5dceb] p-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{categoryIcons[offer.category]} {categoryLabels[offer.category]}</p>
+                <label className="mt-2 block text-sm font-semibold">Recommended offer
+                  <select value={offer.name} onChange={(event) => setChosenOffers((current) => ({ ...current, [offer.category]: event.target.value }))} className="mt-2 w-full rounded-lg border border-[#d5dceb] bg-white px-3 py-2 text-sm font-medium">
+                    {(offersByCategory[offer.category] ?? []).map((alternative) => <option key={alternative.id} value={alternative.name}>{alternative.name} · {formatPrice(alternative.price)}/month</option>)}
+                  </select>
+                </label>
+                <p className="mt-2 text-sm text-slate-600">{offer.description}</p>
+                <p className="mt-2 font-bold text-[#1a3470]">{formatPrice(offer.price)} / month <span className="text-xs font-normal text-slate-500">(estimate)</span></p>
+                {offer.sourceUrl ? <a href={offer.sourceUrl} target="_blank" rel="noreferrer" className="mt-2 inline-flex text-sm font-semibold text-[#1a3470] underline underline-offset-4">View provider ↗</a> : <span className="mt-2 block text-xs text-slate-500">Provider link not available</span>}
               </div>
             ))}
           </div>
