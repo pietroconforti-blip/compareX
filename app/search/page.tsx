@@ -68,13 +68,13 @@ const categories = [
 
 function detectCategory(query: string) {
   const q = query.toLowerCase();
-  if (/mobile|phone|tariff|sim|spusu|yesss|telefonia|handy|smartphone/.test(q))
+  if (/mobile|phone|tariff|sim|spusu|yesss|a1|telefonia|handy|smartphone/.test(q))
     return "mobile";
-  if (/room|housing|rent|apartment|wohnung|zimmer|affitto|stanza|casa/.test(q))
+  if (/room|housing|rent|apartment|wohnung|zimmer|affitto|stanza|casa|home4students/.test(q))
     return "housing";
-  if (/transport|train|bus|metro|tram|trasporto|treno|autobus/.test(q))
+  if (/transport|train|bus|metro|tram|trasporto|treno|autobus|wiener linien/.test(q))
     return "transport";
-  if (/gym|fitness|palestra|sport membership/.test(q)) return "gym";
+  if (/gym|fitness|palestra|sport membership|fitinn/.test(q)) return "gym";
   if (/streaming|netflix|disney|spotify|subscription/.test(q)) return "streaming";
   return null;
 }
@@ -221,6 +221,7 @@ function SearchResults() {
   const router = useRouter();
   const query = params.get("q") ?? "";
   const category = detectCategory(query);
+  const providerTerm = ["home4students", "wiener linien", "spusu", "fitinn", "netflix", "a1"].find((term) => query.toLowerCase().includes(term)) ?? "";
 
   const [country, setCountry] = useState<"All" | Country>(() => detectCountry(query));
   const [budget, setBudget] = useState(() => getInitialBudget(query));
@@ -332,7 +333,7 @@ function SearchResults() {
 
   const filteredMobile = useMemo(() => {
     let result = offers.filter(
-      (o) => country === "All" || o.country === country,
+      (o) => (country === "All" || o.country === country) && (!providerTerm || `${o.provider} ${o.plan}`.toLowerCase().includes(providerTerm)),
     );
     const max = Number(budget);
     if (budget.trim() !== "" && Number.isFinite(max)) {
@@ -347,7 +348,7 @@ function SearchResults() {
 
   const filteredHousing = useMemo(() => {
     let result = housingOffers.filter(
-      (o) => country === "All" || o.country === country,
+      (o) => (country === "All" || o.country === country) && (!providerTerm || `${o.provider} ${o.property}`.toLowerCase().includes(providerTerm)),
     );
     const max = Number(budget);
     if (budget.trim() !== "" && Number.isFinite(max)) {
@@ -365,7 +366,8 @@ function SearchResults() {
   const filteredGeneric = useMemo(() => {
     const max = budget.trim() === "" ? Infinity : Number(budget);
     return genericOffers.filter((o) => {
-      const matchCountry = country === "All" || o.country === country;
+      const matchProvider = !providerTerm || `${o.provider} ${o.name}`.toLowerCase().includes(providerTerm);
+      const matchCountry = (country === "All" || o.country === country) && matchProvider;
       const matchBudget = !Number.isFinite(max) || o.priceValue <= max;
       return matchCountry && matchBudget;
     });
