@@ -50,20 +50,20 @@ export async function POST(request: Request) {
     const stripe = new Stripe(secretKey);
     const origin = new URL(request.url).origin;
     const session = await stripe.checkout.sessions.create({
+      ui_mode: "embedded",
       mode: "payment",
       payment_method_types: ["card"],
       line_items: lineItems,
       customer_email: email,
       client_reference_id: "comparex-test-" + crypto.randomUUID(),
       metadata: { environment: "test", checkout_kind: "package_demo", offer_ids: offerIds.join(","), monthly_estimate_eur: (total / 100).toFixed(2) },
-      success_url: origin + "/checkout/result?status=success&session_id={CHECKOUT_SESSION_ID}",
-      cancel_url: origin + "/checkout/result?status=cancelled",
+      return_url: origin + "/checkout/result?status=success&session_id={CHECKOUT_SESSION_ID}",
       submit_type: "pay",
     });
-    if (!session.url) return NextResponse.json({ error: "Stripe non ha restituito un link di checkout." }, { status: 502 });
-    return NextResponse.json({ url: session.url, testMode: true, estimatedMonthlyTotal: total / 100 });
+    if (!session.client_secret) return NextResponse.json({ error: "Stripe non ha restituito il client secret del checkout embedded." }, { status: 502 });
+    return NextResponse.json({ clientSecret: session.client_secret, testMode: true, estimatedMonthlyTotal: total / 100 });
   } catch (error) {
-    console.error("CompareX test checkout session creation failed", error instanceof Error ? error.message : "unknown error");
-    return NextResponse.json({ error: "Impossibile avviare il checkout di prova. Verifica la configurazione Stripe test." }, { status: 502 });
+    console.error("CompareX embedded test checkout creation failed", error instanceof Error ? error.message : "unknown error");
+    return NextResponse.json({ error: "Impossibile avviare il checkout embedded di prova. Verifica la configurazione Stripe test." }, { status: 502 });
   }
 }
