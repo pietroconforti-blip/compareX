@@ -1,10 +1,15 @@
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import Script from "next/script";
 import { offers as baseOffers } from "@/lib/home-data";
 import { useSearchParams } from "next/navigation";
 
 type PackageItem = { id: number; category: string; name: string; price: number; priceLabel?: string; location?: string; sourceUrl?: string };
+type EmbeddedCheckoutInstance = { mount(target: string | HTMLElement): void; unmount(): void; destroy(): void };
+type StripeBrowserInstance = { initEmbeddedCheckout(options: { clientSecret: string }): Promise<EmbeddedCheckoutInstance> };
+declare global { interface Window { Stripe?: (publishableKey: string) => StripeBrowserInstance } }
+
 function CheckoutContent() {
   const params = useSearchParams();
   const items = useMemo<PackageItem[]>(() => {
@@ -12,9 +17,7 @@ function CheckoutContent() {
       const parsed = JSON.parse(params.get("items") || "[]");
       if (!Array.isArray(parsed)) return [];
       // Display only canonical offers from the server-maintained starter catalogue.
-      // Browser-supplied names and prices are never trusted for checkout.
       const resolved = parsed.map((item) => baseOffers.find((offer) => offer.id === Number(item?.id)));
-      // Never silently drop part of a package: every selected item must be verified.
       if (resolved.length < 2 || resolved.some((offer) => !offer)) return [];
       return (resolved as (typeof baseOffers)[number][]).map((offer) => ({ id: offer.id, category: offer.category, name: offer.name, price: offer.price, priceLabel: offer.priceLabel, location: offer.location, sourceUrl: offer.sourceUrl }));
     } catch { return []; }
@@ -30,6 +33,32 @@ function CheckoutContent() {
   const [success, setSuccess] = useState(false);
   const [paymentBusy, setPaymentBusy] = useState(false);
   const [paymentError, setPaymentError] = useState("");
+  const [stripeReady, setStripeReady] = useState(false);
+  const [checkoutClientSecret, setCheckoutClientSecret] = useState("");
+  const checkoutContainerRef = useRef<HTMLDivElement>(null);
+  const embeddedCheckoutRef = useRef<EmbeddedCheckoutInstance | null>(null);
+
+  useEffect(() => {
+    const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+    if (!checkoutClientSecret || !stripeReady || !checkoutContainerRef.current || !publishableKey || !window.Stripe) return;
+    let active = true;
+    let checkout: EmbeddedCheckoutInstance | undefined;
+    window.Stripe(publishableKey).initEmbeddedCheckout({ clientSecret: checkoutClientSecret })
+      .then((instance) => {
+        if (!active) { instance.destroy(); return; }
+        checkout = instance;
+        embeddedCheckoutRef.current = instance;
+        instance.mount(checkoutContainerRef.current!);
+      })
+      .catch((error: unknown) => {
+        setPaymentError(error instanceof Error ? error.message : "Impossibile caricare il modulo di pagamento Stripe.");
+      });
+    return () => {
+      active = false;
+      checkout?.destroy();
+      embeddedCheckoutRef.current = null;
+    };
+  }, [checkoutClientSecret, stripeReady]);
 
   async function startTestCheckout() {
     if (name.trim().length < 2) { setPaymentError("Inserisci prima nome e cognome."); return; }
@@ -40,10 +69,11 @@ function CheckoutContent() {
     try {
       const response = await fetch("/api/checkout/session", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ offerIds: items.map((item) => item.id), email }) });
       const data = await response.json();
-      if (!response.ok || typeof data.url !== "string") throw new Error(data.error || "Checkout di prova non disponibile.");
-      window.location.href = data.url;
+      if (!response.ok || typeof data.clientSecret !== "string") throw new Error(data.error || "Checkout di prova non disponibile.");
+      setCheckoutClientSecret(data.clientSecret);
     } catch (error) {
       setPaymentError(error instanceof Error ? error.message : "Errore durante l'avvio del checkout.");
+    } finally {
       setPaymentBusy(false);
     }
   }
@@ -65,11 +95,13 @@ function CheckoutContent() {
     } finally { setBusy(false); }
   }
 
-  return <main className="min-h-screen bg-[#f7f9fd] px-5 py-10 text-[#0c1222]"><div className="mx-auto max-w-5xl">
+  return <main className="min-h-screen bg-[#f7f9fd] px-5 py-10 text-[#0c1222]">
+    {process.env.NEXT_PUBLIC_COMPAREX_TEST_CHECKOUT_ENABLED === "true" && <Script src="https://js.stripe.com/v3/" strategy="afterInteractive" onReady={() => setStripeReady(true)} />}
+    <div className="mx-auto max-w-5xl">
     <a href="/package-builder" className="font-semibold text-[#1a3470]">← Torna al pacchetto</a>
     <p className="mt-8 text-xs font-bold uppercase tracking-[0.16em] text-blue-700">CompareX checkout</p>
     <h1 className="mt-3 text-4xl font-bold tracking-tight">Completa i tuoi dati</h1>
-    <p className="mt-3 max-w-2xl leading-7 text-slate-600">Il pacchetto rimane su CompareX. Inserisci i dati di contatto per preparare la richiesta; non stai ancora acquistando e non verrà addebitato nulla.</p>
+    <p className="mt-3 max-w-2xl leading-7 text-slate-600">Il pacchetto rimane su CompareX. Inserisci i dati di contatto per preparare la richiesta; il checkout di pagamento qui sotto è ancora una dimostrazione in modalità test.</p>
     <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_380px]">
       <form onSubmit={submit} className="space-y-5 rounded-3xl border border-[#d5dceb] bg-white p-6 shadow-sm md:p-8">
         <h2 className="text-xl font-bold">Dati del cliente</h2>
@@ -80,17 +112,18 @@ function CheckoutContent() {
         {message && <p role="status" className={"rounded-xl p-4 text-sm " + (success ? "bg-emerald-50 text-emerald-900" : "bg-amber-50 text-amber-900")}>{message}</p>}
         <button type="submit" disabled={busy || success} className="w-full rounded-xl bg-[#1a3470] px-5 py-4 font-bold text-white disabled:opacity-60">{busy ? "Salvataggio…" : success ? "Richiesta salvata" : "Salva i dati e prepara il pacchetto →"}</button>
         {process.env.NEXT_PUBLIC_COMPAREX_TEST_CHECKOUT_ENABLED === "true" && <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4">
-          <p className="font-bold text-blue-950">Prova il pagamento unico (modalità test)</p>
-          <p className="mt-1 text-sm leading-6 text-blue-900">Si aprirà il checkout Stripe di prova. Non è un pagamento reale e non attiva né prenota i servizi inclusi nel pacchetto.</p>
+          <p className="font-bold text-blue-950">Pagamento incorporato in CompareX (solo test)</p>
+          <p className="mt-1 text-sm leading-6 text-blue-900">Il modulo Stripe apparirà direttamente qui, senza aprire una pagina di pagamento esterna. È un addebito dimostrativo una tantum sull'ambiente test: gli importi sono stime mensili e nessun servizio viene prenotato o attivato.</p>
           {paymentError && <p role="alert" className="mt-3 rounded-lg bg-white p-3 text-sm text-red-700">{paymentError}</p>}
-          <button type="button" onClick={startTestCheckout} disabled={paymentBusy || items.length < 2} className="mt-3 w-full rounded-xl border border-[#1a3470] bg-white px-5 py-3 font-bold text-[#1a3470] disabled:opacity-60">{paymentBusy ? "Apertura checkout…" : "Vai al pagamento di prova →"}</button>
+          {!checkoutClientSecret && <button type="button" onClick={startTestCheckout} disabled={paymentBusy || items.length < 2} className="mt-3 w-full rounded-xl border border-[#1a3470] bg-white px-5 py-3 font-bold text-[#1a3470] disabled:opacity-60">{paymentBusy ? "Preparazione pagamento…" : "Mostra pagamento di prova →"}</button>}
+          {checkoutClientSecret && <div className="mt-4 rounded-xl bg-white p-3"><div ref={checkoutContainerRef} /><p className="mt-3 text-xs leading-5 text-slate-500">Stripe opera in modalità test. Usa solo i dati di carta di prova Stripe, mai una carta reale.</p></div>}
         </div>}
         <p className="text-xs leading-5 text-slate-500">Questa fase non è una prenotazione confermata. Non inserire documenti d'identità o dati bancari in questo modulo.</p>
       </form>
       <aside className="h-fit rounded-3xl border border-[#d5dceb] bg-white p-6 shadow-sm lg:sticky lg:top-6"><p className="text-xs font-bold uppercase tracking-wider text-blue-700">Riepilogo</p><h2 className="mt-2 text-2xl font-bold">Il tuo pacchetto</h2><p className="mt-1 text-sm text-slate-500">Destinazione: {destination} · stima mensile</p>
         <div className="mt-5 space-y-4">{items.map((item, index) => <div key={item.category + "-" + item.name + "-" + index} className="border-b border-slate-100 pb-4"><p className="text-xs font-semibold uppercase text-slate-500">{item.category}</p><p className="mt-1 font-semibold">{item.name}</p><p className="mt-1 text-sm text-slate-600">€{item.price.toFixed(2)} / mese (stima)</p></div>)}{items.length === 0 && <p className="text-sm text-amber-800">Nessun pacchetto verificato disponibile. Alcune offerte selezionate non sono ancora abilitate al checkout: torna al builder e scegli almeno due offerte del catalogo verificato.</p>}</div>
         <div className="mt-5 border-t border-slate-200 pt-5"><p className="text-sm text-slate-500">Totale mensile stimato</p><p className="mt-1 text-3xl font-bold text-[#1a3470]">€{total.toFixed(2)}<span className="text-sm font-medium text-slate-500"> / mese</span></p></div>
-        <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">Pagamento unico non ancora disponibile. Per attivarlo serviranno un sistema di pagamento verificato e accordi con i fornitori.</div>
+        <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">Il checkout attuale è esclusivamente una dimostrazione Stripe test: importi stimati, pagamento una tantum e nessuna attivazione del servizio.</div>
       </aside>
     </div>
   </div></main>;
