@@ -14,7 +14,7 @@ export async function POST(request: Request) {
   if (!customer || typeof customer.name !== "string" || customer.name.trim().length < 2 || customer.name.length > 120) {
     return NextResponse.json({ error: "Inserisci nome e cognome validi." }, { status: 400 });
   }
-  if (typeof customer.email !== "string" || customer.email.length > 254 || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(customer.email)) {
+  if (typeof customer.email !== "string" || customer.email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customer.email)) {
     return NextResponse.json({ error: "Inserisci un indirizzo email valido." }, { status: 400 });
   }
   if (typeof customer.phone === "string" && customer.phone.length > 40) return NextResponse.json({ error: "Numero di telefono troppo lungo." }, { status: 400 });
