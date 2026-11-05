@@ -191,6 +191,7 @@ alter table public.package_order_drafts
   add column if not exists order_status text not null default 'draft',
   add column if not exists quote_snapshot jsonb not null default '{}'::jsonb,
   add column if not exists quote_expires_at timestamptz,
+  add column if not exists checkout_request_id text,
   add column if not exists stripe_checkout_session_id text,
   add column if not exists stripe_payment_intent_id text,
   add column if not exists paid_at timestamptz,
@@ -215,6 +216,9 @@ begin
   end if;
 end;
 $block$;
+
+create unique index if not exists package_order_drafts_checkout_request_uidx
+  on public.package_order_drafts(checkout_request_id);
 
 create unique index if not exists package_order_drafts_stripe_session_uidx
   on public.package_order_drafts(stripe_checkout_session_id)
