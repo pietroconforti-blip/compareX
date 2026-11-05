@@ -184,6 +184,9 @@ export default function PackageBuilderPage() {
 
   const total = picks.reduce((sum, offer) => sum + offer.price, 0);
   const budgetValue = budget === "" ? Number.POSITIVE_INFINITY : Number(budget);
+  const catalogueLoading = catalogueStatus.startsWith("Loading");
+  const unavailableSelected = selected.filter((category) => (offersByCategory[category] ?? []).length === 0);
+  const validBudget = budget.trim() === "" || (Number.isFinite(Number(budget)) && Number(budget) > 0);
 
   function toggle(category: Category) {
     setSelected((current) => current.includes(category)
@@ -250,7 +253,10 @@ export default function PackageBuilderPage() {
                 <input type="number" min="0" value={budget} onChange={(event) => { setBudget(event.target.value); }}
                   className="mt-2 w-full rounded-xl border border-[#d5dceb] px-4 py-3 text-base outline-none focus:border-[#2563eb]" />
               </label>
-              <button type="button" disabled={selected.length < 2} onClick={() => setBuilt(true)}
+              {catalogueLoading && <p className="mt-3 text-sm text-slate-500" role="status">Loading offers for your destination. You can build your package as soon as the catalogue is ready.</p>}
+              {!catalogueLoading && unavailableSelected.length > 0 && <p className="mt-3 text-sm text-amber-700" role="status">Some selected categories have no offers for {location}: {unavailableSelected.map((category) => categoryLabels[category]).join(", ")}. Remove them or choose another destination.</p>}
+              {!validBudget && <p className="mt-3 text-sm text-amber-700" role="alert">Enter a monthly budget greater than zero, or leave it empty for no budget limit.</p>}
+              <button type="button" disabled={selected.length < 2 || catalogueLoading || unavailableSelected.length > 0 || !validBudget} onClick={() => setBuilt(true)}
                 className="mt-5 w-full rounded-xl bg-[#1a3470] px-6 py-4 font-semibold text-white shadow-md transition hover:bg-[#12254f] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto">
                 Build my package →
               </button>
