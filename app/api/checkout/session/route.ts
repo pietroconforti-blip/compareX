@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import { offers as catalogue } from "@/lib/home-data";
 
 export const runtime = "nodejs";
 
-const allowedCategories = new Set(["housing", "mobile", "transport", "gym", "streaming"]);
-
 export async function POST(request: Request) {
-  // This is a test-only checkout prototype. Real charges stay disabled until
-  // provider agreements, trusted pricing, fulfillment, legal terms and webhooks are ready.
+  // Test-only. Real charges remain disabled until CompareX has seller agreements,
+  // verified catalogue data, fulfilment, legal terms and production payment controls.
   if (process.env.COMPAREX_TEST_CHECKOUT_ENABLED !== "true") {
     return NextResponse.json({ error: "Il checkout di prova non è abilitato su questo deployment." }, { status: 503 });
   }
@@ -18,32 +17,34 @@ export async function POST(request: Request) {
 
   let body: any;
   try { body = await request.json(); } catch { return NextResponse.json({ error: "Richiesta non valida." }, { status: 400 }); }
-  const items = body?.items;
-  const email = typeof body?.email === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email) ? body.email.slice(0, 254) : undefined;
-  if (!Array.isArray(items) || items.length < 2 || items.length > 10) return NextResponse.json({ error: "Seleziona da 2 a 10 servizi." }, { status: 400 });
-
-  const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
-  for (const item of items) {
-    if (!item || !allowedCategories.has(item.category) || typeof item.name !== "string" || item.name.trim().length < 1 || item.name.length > 200 || !Number.isFinite(item.price) || item.price < 0 || item.price > 100000) {
-      return NextResponse.json({ error: "Una delle offerte non è valida." }, { status: 400 });
-    }
-    const unitAmount = Math.round(item.price * 100);
-    if (unitAmount < 1) continue;
-    lineItems.push({
-      quantity: 1,
-      price_data: {
-        currency: "eur",
-        unit_amount: unitAmount,
-        product_data: {
-          name: item.name.trim(),
-          description: item.category + " · stima mensile, checkout dimostrativo",
-        },
-      },
-    });
+  const offerIds = body?.offerIds;
+  const email = typeof body?.email === "string" && /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(body.email) ? body.email.slice(0, 254) : undefined;
+  if (!Array.isArray(offerIds) || offerIds.length < 2 || offerIds.length > 10 || offerIds.some((id: unknown) => !Number.isInteger(id))) {
+    return NextResponse.json({ error: "Seleziona da 2 a 10 offerte valide." }, { status: 400 });
   }
-  if (lineItems.length < 2) return NextResponse.json({ error: "Il totale del pacchetto deve includere almeno due offerte con prezzo maggiore di zero." }, { status: 400 });
+  if (new Set(offerIds).size !== offerIds.length) return NextResponse.json({ error: "Il pacchetto contiene offerte duplicate." }, { status: 400 });
+
+  // Resolve IDs and prices on the server. Never accept price, name or currency from the browser.
+  const selectedOffers = offerIds.map((id: number) => catalogue.find((offer) => offer.id === id));
+  if (selectedOffers.some((offer) => !offer)) {
+    return NextResponse.json({ error: "Una o più offerte richiedono verifica del catalogo prima del checkout. Torna al builder e scegli offerte abilitate." }, { status: 400 });
+  }
+  const verifiedOffers = selectedOffers as (typeof catalogue)[number][];
+  const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = verifiedOffers.map((offer) => ({
+    quantity: 1,
+    price_data: {
+      currency: "eur",
+      unit_amount: Math.round(offer.price * 100),
+      product_data: {
+        name: offer.name,
+        description: offer.category + " · stima mensile, checkout dimostrativo",
+      },
+    },
+  }));
   const total = lineItems.reduce((sum, item) => sum + (item.price_data?.unit_amount ?? 0), 0);
-  if (total > 5000000) return NextResponse.json({ error: "Il totale supera il limite consentito per il checkout di prova." }, { status: 400 });
+  if (lineItems.some((item) => (item.price_data?.unit_amount ?? 0) < 1) || total > 5000000) {
+    return NextResponse.json({ error: "Il totale del pacchetto non rientra nei limiti del checkout di prova." }, { status: 400 });
+  }
 
   try {
     const stripe = new Stripe(secretKey);
@@ -54,7 +55,7 @@ export async function POST(request: Request) {
       line_items: lineItems,
       customer_email: email,
       client_reference_id: "comparex-test-" + crypto.randomUUID(),
-      metadata: { environment: "test", checkout_kind: "package_demo", monthly_estimate_eur: (total / 100).toFixed(2) },
+      metadata: { environment: "test", checkout_kind: "package_demo", offer_ids: offerIds.join(","), monthly_estimate_eur: (total / 100).toFixed(2) },
       success_url: origin + "/checkout/result?status=success&session_id={CHECKOUT_SESSION_ID}",
       cancel_url: origin + "/checkout/result?status=cancelled",
       submit_type: "pay",
