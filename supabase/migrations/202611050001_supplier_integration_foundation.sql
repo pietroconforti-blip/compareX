@@ -198,6 +198,24 @@ alter table public.package_order_drafts
   add column if not exists customer_terms_version text,
   add column if not exists seller_terms_version text;
 
+do $
+begin
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'package_order_drafts_order_status_check'
+      and conrelid = 'public.package_order_drafts'::regclass
+  ) then
+    alter table public.package_order_drafts
+      add constraint package_order_drafts_order_status_check
+      check (order_status in (
+        'draft','awaiting_payment','paid','fulfilment_pending',
+        'partially_fulfilled','fulfilled','cancellation_requested',
+        'refund_pending','refunded','failed'
+      ));
+  end if;
+end;
+$;
+
 create unique index if not exists package_order_drafts_stripe_session_uidx
   on public.package_order_drafts(stripe_checkout_session_id)
   where stripe_checkout_session_id is not null;
