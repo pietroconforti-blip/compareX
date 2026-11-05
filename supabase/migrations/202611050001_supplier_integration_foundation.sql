@@ -116,6 +116,33 @@ before insert or update of sale_status, supplier_id, price_verified_at, contract
 on public.comparex_supplier_products
 for each row execute function public.comparex_guard_sellable_supplier_product();
 
+-- If a supplier's resale rights or fulfilment approval is withdrawn, immediately
+-- pause its sellable products. This prevents old catalogue rows remaining purchasable.
+create or replace function public.comparex_pause_products_when_supplier_unapproved()
+returns trigger
+language plpgsql
+as $
+begin
+  if (
+    not new.contract_verified
+    or not new.resale_rights_verified
+    or not new.fulfilment_tested
+    or new.integration_status not in ('contracted','sandbox','live')
+  ) then
+    update public.comparex_supplier_products
+      set sale_status = 'paused', updated_at = now()
+      where supplier_id = new.id and sale_status = 'sellable';
+  end if;
+  return new;
+end;
+$;
+
+drop trigger if exists comparex_supplier_approval_change on public.comparex_suppliers;
+create trigger comparex_supplier_approval_change
+after update of contract_verified, resale_rights_verified, fulfilment_tested, integration_status
+on public.comparex_suppliers
+for each row execute function public.comparex_pause_products_when_supplier_unapproved();
+
 
 
 create table if not exists public.comparex_payment_events (
@@ -123,7 +150,7 @@ create table if not exists public.comparex_payment_events (
   provider text not null,
   provider_event_id text not null,
   event_type text not null,
-  order_id uuid,
+  order_id uuid references public.package_order_drafts(id) on delete set null,
   received_at timestamptz not null default now(),
   processed_at timestamptz,
   processing_status text not null default 'received'
@@ -134,7 +161,7 @@ create table if not exists public.comparex_payment_events (
 
 create table if not exists public.comparex_fulfilment_tasks (
   id uuid primary key default gen_random_uuid(),
-  order_id uuid not null,
+  order_id uuid not null references public.package_order_drafts(id) on delete restrict,
   order_item_index integer not null check (order_item_index >= 0),
   supplier_id uuid references public.comparex_suppliers(id),
   supplier_product_id uuid references public.comparex_supplier_products(id),
