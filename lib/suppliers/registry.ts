@@ -1,4 +1,5 @@
-import type { Category, SupplierIntegrationMethod, SupplierLifecycle } from "./types";
+import type { Category } from "@/lib/home-data";
+import type { SupplierIntegrationMethod, SupplierLifecycle } from "./types";
 
 export type SupplierProspect = {
   id: string;
