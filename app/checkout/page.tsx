@@ -13,9 +13,10 @@ function CheckoutContent() {
       if (!Array.isArray(parsed)) return [];
       // Display only canonical offers from the server-maintained starter catalogue.
       // Browser-supplied names and prices are never trusted for checkout.
-      return parsed.map((item) => baseOffers.find((offer) => offer.id === Number(item?.id)))
-        .filter((offer): offer is (typeof baseOffers)[number] => Boolean(offer))
-        .map((offer) => ({ id: offer.id, category: offer.category, name: offer.name, price: offer.price, priceLabel: offer.priceLabel, location: offer.location, sourceUrl: offer.sourceUrl }));
+      const resolved = parsed.map((item) => baseOffers.find((offer) => offer.id === Number(item?.id)));
+      // Never silently drop part of a package: every selected item must be verified.
+      if (resolved.length < 2 || resolved.some((offer) => !offer)) return [];
+      return (resolved as (typeof baseOffers)[number][]).map((offer) => ({ id: offer.id, category: offer.category, name: offer.name, price: offer.price, priceLabel: offer.priceLabel, location: offer.location, sourceUrl: offer.sourceUrl }));
     } catch { return []; }
   }, [params]);
   const total = items.reduce((sum, item) => sum + item.price, 0);
@@ -87,7 +88,7 @@ function CheckoutContent() {
         <p className="text-xs leading-5 text-slate-500">Questa fase non è una prenotazione confermata. Non inserire documenti d'identità o dati bancari in questo modulo.</p>
       </form>
       <aside className="h-fit rounded-3xl border border-[#d5dceb] bg-white p-6 shadow-sm lg:sticky lg:top-6"><p className="text-xs font-bold uppercase tracking-wider text-blue-700">Riepilogo</p><h2 className="mt-2 text-2xl font-bold">Il tuo pacchetto</h2><p className="mt-1 text-sm text-slate-500">Destinazione: {destination} · stima mensile</p>
-        <div className="mt-5 space-y-4">{items.map((item, index) => <div key={item.category + "-" + item.name + "-" + index} className="border-b border-slate-100 pb-4"><p className="text-xs font-semibold uppercase text-slate-500">{item.category}</p><p className="mt-1 font-semibold">{item.name}</p><p className="mt-1 text-sm text-slate-600">€{item.price.toFixed(2)} / mese (stima)</p></div>)}{items.length === 0 && <p className="text-sm text-amber-800">Nessun pacchetto trovato. Torna al builder e creane uno.</p>}</div>
+        <div className="mt-5 space-y-4">{items.map((item, index) => <div key={item.category + "-" + item.name + "-" + index} className="border-b border-slate-100 pb-4"><p className="text-xs font-semibold uppercase text-slate-500">{item.category}</p><p className="mt-1 font-semibold">{item.name}</p><p className="mt-1 text-sm text-slate-600">€{item.price.toFixed(2)} / mese (stima)</p></div>)}{items.length === 0 && <p className="text-sm text-amber-800">Nessun pacchetto verificato disponibile. Alcune offerte selezionate non sono ancora abilitate al checkout: torna al builder e scegli almeno due offerte del catalogo verificato.</p>}</div>
         <div className="mt-5 border-t border-slate-200 pt-5"><p className="text-sm text-slate-500">Totale mensile stimato</p><p className="mt-1 text-3xl font-bold text-[#1a3470]">€{total.toFixed(2)}<span className="text-sm font-medium text-slate-500"> / mese</span></p></div>
         <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">Pagamento unico non ancora disponibile. Per attivarlo serviranno un sistema di pagamento verificato e accordi con i fornitori.</div>
       </aside>
