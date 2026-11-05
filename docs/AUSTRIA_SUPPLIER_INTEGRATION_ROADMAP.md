@@ -8,19 +8,17 @@ CompareX is the intended seller to the student. A provider listing is not a purc
 
 ## Rollout sequence
 
-### Stage 1 — Student housing (first commercial pilot)
+The requested rollout covers all five categories. The implementation order below is based on the clearest publicly documented path to an authorised direct sale, not on category importance. It can be changed if a supplier signs a suitable agreement sooner.
 
-**Initial supplier targets**
-- Home4students — Vienna reservations contact: wien_info@home4students.at; cooperation / marketing contact: marketing@home4students.at.
-- STUWO — central contact: info@stuwo.at.
-- OeAD student housing — establish a commercial contact through its official company contact route; it publicly describes partnerships with other student accommodation providers, but this is not evidence that it accepts third-party resellers.
-- Akademikerhilfe and ÖJAB — second wave after the first pilot.
+### Stage 1 — Transport (first technical/commercial pilot)
 
-**Best first integration:** a human-assisted reservation workflow, not scraping or pretending to have live inventory. Supplier sends a controlled rate/availability sheet or confirms each reservation. CompareX creates a pending order, supplier confirms availability and the final price, then CompareX captures payment or authorises payment according to an agreed contract. The customer must see whether the room is merely requested or actually confirmed.
+**Initial supplier:** Wiener Linien.
 
-**Questions for supplier:** Can CompareX contract with the student and resell the room in its own name? Can it collect the full accommodation fee? What commission/wholesale rate applies? Who is the accommodation provider of record? Who holds the deposit? Who handles cancellations, refunds, damage claims, residence registration documents and emergency support? Is inventory available by API, extranet, CSV or email confirmation?
+Wiener Linien publicly describes a B2B ticket distribution interface that allows companies to sell selected tickets (including single, 24-hour and 7-day tickets) through their own webshop/app after technical review and contract. Contact: business@wienerlinien.at.
 
-Sources: https://www.home4students.at/kontakt/ · https://www.stuwo.at/kontakt/ · https://www.oeadstudenthousing.at/en/oead-student-housing/about-us/
+**Best first integration:** apply for the ticket distribution interface, implement their documented API and ticket delivery/validation process, and start with the ticket types covered by the agreement. The existing 31-day and annual passes in the comparison catalogue must not be assumed to be available through that interface.
+
+Source: https://www.wienerlinien.at/b2b/ticketvertriebsschnittstelle
 
 ### Stage 2 — Mobile plans
 
@@ -34,15 +32,19 @@ Sources: https://www.home4students.at/kontakt/ · https://www.stuwo.at/kontakt/ 
 
 Sources: https://www.drei.at/de/business/wholesale/ · https://www.drei.at/de/business/kontakt/ · https://www.magenta.at/business/unternehmen/partner · https://www.yesss.at/handelspartner · https://www.spusu.at/impressum
 
-### Stage 3 — Transport
+### Stage 3 — Student housing
 
-**Initial supplier:** Wiener Linien.
+**Initial supplier targets**
+- Home4students — Vienna reservations contact: wien_info@home4students.at; cooperation / marketing contact: marketing@home4students.at.
+- STUWO — central contact: info@stuwo.at.
+- OeAD student housing — establish a commercial contact through its official company contact route; it publicly describes partnerships with other student accommodation providers, but this is not evidence that it accepts third-party resellers.
+- Akademikerhilfe and ÖJAB — second wave after the first pilot.
 
-Wiener Linien publicly describes a B2B ticket distribution interface that allows companies to sell selected tickets (including single, 24-hour and 7-day tickets) through their own webshop/app after technical review and contract. Contact: business@wienerlinien.at.
+**Best first integration:** a human-assisted reservation workflow, not scraping or pretending to have live inventory. Supplier sends a controlled rate/availability sheet or confirms each reservation. CompareX creates a pending order, supplier confirms availability and the final price, then CompareX captures payment or authorises payment according to an agreed contract. The customer must see whether the room is merely requested or actually confirmed.
 
-**Best first integration:** apply for the ticket distribution interface, implement their documented API and ticket delivery/validation process, and start with the ticket types covered by the agreement. The existing 31-day and annual passes in the comparison catalogue must not be assumed to be available through that interface.
+**Questions for supplier:** Can CompareX contract with the student and resell the room in its own name? Can it collect the full accommodation fee? What commission/wholesale rate applies? Who is the accommodation provider of record? Who holds the deposit? Who handles cancellations, refunds, damage claims, residence registration documents and emergency support? Is inventory available by API, extranet, CSV or email confirmation?
 
-Source: https://www.wienerlinien.at/b2b/ticketvertriebsschnittstelle
+Sources: https://www.home4students.at/kontakt/ · https://www.stuwo.at/kontakt/ · https://www.oeadstudenthousing.at/en/oead-student-housing/about-us/
 
 ### Stage 4 — Gym memberships
 
