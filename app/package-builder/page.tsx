@@ -136,9 +136,7 @@ export default function PackageBuilderPage() {
   ])) as Record<Category, Offer[]>, [locationOffers]);
 
   const automaticPicks = useMemo(() => {
-    // Find the strongest complete combination that stays within the customer's
-    // monthly budget. If no complete combination fits, show the lowest-cost
-    // complete combination and make the over-budget state visible.
+    // Evaluate complete combinations and rank affordable ones by quality.
     const options = selected.map((category) => {
       const all = offersByCategory[category] ?? [];
       const byQuality = [...all].sort((a, b) =>
@@ -151,18 +149,13 @@ export default function PackageBuilderPage() {
 
     if (options.some((items) => items.length === 0)) return [] as Offer[];
 
-    let bestWithinBudget: { items: Offer[]; score: number; total: number } | null = null;
-    let cheapest: { items: Offer[]; total: number } | null = null;
+    const combinations: { items: Offer[]; total: number; score: number }[] = [];
     const hasBudget = budget.trim() !== "" && Number.isFinite(Number(budget)) && Number(budget) > 0;
     const limit = hasBudget ? Number(budget) : Number.POSITIVE_INFINITY;
 
     function visit(index: number, items: Offer[], total: number, score: number) {
       if (index === options.length) {
-        if (!cheapest || total < cheapest.total) cheapest = { items: [...items], total };
-        if (total <= limit && (!bestWithinBudget || score > bestWithinBudget.score ||
-          (score === bestWithinBudget.score && total < bestWithinBudget.total))) {
-          bestWithinBudget = { items: [...items], score, total };
-        }
+        combinations.push({ items, total, score });
         return;
       }
       for (const offer of options[index]) {
@@ -171,7 +164,12 @@ export default function PackageBuilderPage() {
       }
     }
     visit(0, [], 0, 0);
-    return (bestWithinBudget ?? cheapest)?.items ?? [];
+
+    const affordable = combinations
+      .filter((combination) => combination.total <= limit)
+      .sort((a, b) => b.score - a.score || a.total - b.total);
+    const fallback = combinations.sort((a, b) => a.total - b.total || b.score - a.score);
+    return (affordable[0] ?? fallback[0])?.items ?? [];
   }, [selected, offersByCategory, budget]);
 
   const picks = useMemo(() => selected.map((category) => {
