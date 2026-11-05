@@ -39,6 +39,7 @@ function CheckoutContent() {
   const [returnMessage, setReturnMessage] = useState("");
   const checkoutContainerRef = useRef<HTMLDivElement>(null);
   const embeddedCheckoutRef = useRef<EmbeddedCheckoutInstance | null>(null);
+  const checkoutRequestIdRef = useRef<string>("");
 
   useEffect(() => {
     const returnedSessionId = params.get("session_id");
@@ -100,7 +101,8 @@ function CheckoutContent() {
     setPaymentBusy(true);
     setPaymentError("");
     try {
-      const response = await fetch("/api/checkout/session", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ offerIds: items.map((item) => item.id), email }) });
+      if (!checkoutRequestIdRef.current) checkoutRequestIdRef.current = window.crypto.randomUUID();
+      const response = await fetch("/api/checkout/session", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ offerIds: items.map((item) => item.id), customer: { name, email, phone }, destination, privacyConsent: consent, checkoutRequestId: checkoutRequestIdRef.current }) });
       const data = await response.json();
       if (!response.ok || typeof data.clientSecret !== "string") throw new Error(data.error || "Checkout di prova non disponibile.");
       setCheckoutClientSecret(data.clientSecret);
@@ -114,6 +116,10 @@ function CheckoutContent() {
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage("");
+    if (process.env.NEXT_PUBLIC_COMPAREX_TEST_CHECKOUT_ENABLED === "true") {
+      await startTestCheckout();
+      return;
+    }
     if (items.length < 2) { setMessage("Torna al Package Builder e seleziona almeno due servizi."); return; }
     if (!consent) { setMessage("Devi confermare l'informativa sulla privacy per inviare la richiesta."); return; }
     setBusy(true);
@@ -147,12 +153,11 @@ function CheckoutContent() {
         <label className="block text-sm font-semibold">Telefono (facoltativo)<input type="tel" maxLength={40} autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 font-normal" /></label>
         <label className="flex items-start gap-3 text-sm leading-6 text-slate-600"><input required type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-1 h-4 w-4" /><span>Ho letto la <a href="/privacy" target="_blank" className="font-semibold text-[#1a3470] underline">nota privacy pre-lancio</a> e chiedo di usare questi dati per preparare la mia richiesta. So che la registrazione è ancora disattivata e non verrà salvato nulla finché il servizio non sarà pronto.</span></label>
         {message && <p role="status" className={"rounded-xl p-4 text-sm " + (success ? "bg-emerald-50 text-emerald-900" : "bg-amber-50 text-amber-900")}>{message}</p>}
-        <button type="submit" disabled={busy || success} className="w-full rounded-xl bg-[#1a3470] px-5 py-4 font-bold text-white disabled:opacity-60">{busy ? "Salvataggio…" : success ? "Richiesta salvata" : "Salva i dati e prepara il pacchetto →"}</button>
+        <button type="submit" disabled={busy || success} className="w-full rounded-xl bg-[#1a3470] px-5 py-4 font-bold text-white disabled:opacity-60">{process.env.NEXT_PUBLIC_COMPAREX_TEST_CHECKOUT_ENABLED === "true" ? (paymentBusy ? "Preparazione pagamento…" : "Continua al pagamento test →") : busy ? "Salvataggio…" : success ? "Richiesta salvata" : "Salva i dati e prepara il pacchetto →"}</button>
         {process.env.NEXT_PUBLIC_COMPAREX_TEST_CHECKOUT_ENABLED === "true" && <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4">
           <p className="font-bold text-blue-950">Pagamento incorporato in CompareX (solo test)</p>
           <p className="mt-1 text-sm leading-6 text-blue-900">Il modulo Stripe apparirà direttamente qui, senza aprire una pagina di pagamento esterna. È un addebito dimostrativo una tantum sull'ambiente test: gli importi sono stime mensili e nessun servizio viene prenotato o attivato.</p>
           {paymentError && <p role="alert" className="mt-3 rounded-lg bg-white p-3 text-sm text-red-700">{paymentError}</p>}
-          {!checkoutClientSecret && <button type="button" onClick={startTestCheckout} disabled={paymentBusy || items.length < 2} className="mt-3 w-full rounded-xl border border-[#1a3470] bg-white px-5 py-3 font-bold text-[#1a3470] disabled:opacity-60">{paymentBusy ? "Preparazione pagamento…" : "Mostra pagamento di prova →"}</button>}
           {checkoutClientSecret && <div className="mt-4 rounded-xl bg-white p-3"><div ref={checkoutContainerRef} /><p className="mt-3 text-xs leading-5 text-slate-500">Stripe opera in modalità test. Usa solo i dati di carta di prova Stripe, mai una carta reale.</p></div>}
         </div>}
         <p className="text-xs leading-5 text-slate-500">Questa fase non è una prenotazione confermata. Non inserire documenti d'identità o dati bancari in questo modulo.</p>
