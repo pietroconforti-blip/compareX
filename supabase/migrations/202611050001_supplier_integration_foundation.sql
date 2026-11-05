@@ -218,8 +218,7 @@ end;
 $block$;
 
 create unique index if not exists package_order_drafts_checkout_request_uidx
-  on public.package_order_drafts(checkout_request_id)
-  where checkout_request_id is not null;
+  on public.package_order_drafts(checkout_request_id);
 
 create unique index if not exists package_order_drafts_stripe_session_uidx
   on public.package_order_drafts(stripe_checkout_session_id)
