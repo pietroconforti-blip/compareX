@@ -18,7 +18,7 @@ export async function POST(request: Request) {
   let body: any;
   try { body = await request.json(); } catch { return NextResponse.json({ error: "Richiesta non valida." }, { status: 400 }); }
   const offerIds = body?.offerIds;
-  const email = typeof body?.email === "string" && /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(body.email) ? body.email.slice(0, 254) : undefined;
+  const email = typeof body?.email === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email) ? body.email.slice(0, 254) : undefined;
   if (!Array.isArray(offerIds) || offerIds.length < 2 || offerIds.length > 10 || offerIds.some((id: unknown) => !Number.isInteger(id))) {
     return NextResponse.json({ error: "Seleziona da 2 a 10 offerte valide." }, { status: 400 });
   }
