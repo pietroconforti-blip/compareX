@@ -236,7 +236,7 @@ export default function PackageBuilderPage() {
                 const categoryOffers = locationOffers.filter((offer) => offer.category === category);
                 const sample = categoryOffers[0];
                 return (
-                  <button key={category} type="button" aria-pressed={active} disabled={categoryOffers.length === 0} onClick={() => toggle(category)}
+                  <button key={category} type="button" aria-pressed={active} disabled={categoryOffers.length === 0 && !active} onClick={() => toggle(category)}
                     className={`rounded-2xl border p-4 text-left transition ${categoryOffers.length === 0 ? "cursor-not-allowed border-slate-100 bg-slate-50 opacity-50" : active ? "border-[#1a3470] bg-[#f2f6ff] ring-2 ring-[#d5e2ff]" : "border-[#d5dceb] hover:border-[#1a3470]"}`}>
                     <span className="flex items-center justify-between">
                       <span className="text-lg font-semibold">{categoryIcons[category]} {categoryLabels[category]}</span>
