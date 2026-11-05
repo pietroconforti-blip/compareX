@@ -57,10 +57,66 @@ create table if not exists public.comparex_supplier_products (
   )
 );
 
+-- Seed researched Austrian supplier prospects as research-only records.
+-- Do not mark any supplier contracted or sellable based on this seed data.
+insert into public.comparex_suppliers (slug, display_name, category, country_code, contact_email, public_website, integration_method)
+values
+  ('home4students', 'Home4students', 'housing', 'AT', 'marketing@home4students.at', 'https://www.home4students.at/', 'manual'),
+  ('stuwo', 'STUWO', 'housing', 'AT', 'info@stuwo.at', 'https://www.stuwo.at/', 'manual'),
+  ('oead-student-housing', 'OeAD Student Housing', 'housing', 'AT', null, 'https://www.oeadstudenthousing.at/', 'manual'),
+  ('akademikerhilfe', 'Akademikerhilfe', 'housing', 'AT', null, 'https://www.akademikerhilfe.at/', 'manual'),
+  ('drei-wholesale', 'Drei Wholesale', 'mobile', 'AT', 'mvno@drei.com', 'https://www.drei.at/de/business/wholesale/', 'manual'),
+  ('magenta-business-partners', 'Magenta Business Partners', 'mobile', 'AT', 'sales.businesspartner@magenta.at', 'https://www.magenta.at/business/unternehmen/partner', 'manual'),
+  ('yesss-retail', 'yesss!', 'mobile', 'AT', null, 'https://www.yesss.at/handelspartner', 'manual'),
+  ('spusu', 'spusu', 'mobile', 'AT', 'office@spusu.at', 'https://www.spusu.at/', 'manual'),
+  ('wiener-linien', 'Wiener Linien', 'transport', 'AT', 'business@wienerlinien.at', 'https://www.wienerlinien.at/b2b/ticketvertriebsschnittstelle', 'rest_api'),
+  ('rsg-group', 'RSG Group / McFIT', 'gym', 'AT', null, 'https://rsggroup.com/en/contact/', 'manual'),
+  ('fitinn', 'FITINN', 'gym', 'AT', null, 'https://fitinn.at/', 'manual'),
+  ('a1-select', 'A1 Select / digital service distribution', 'streaming', 'AT', null, 'https://www.a1.net/', 'manual')
+on conflict (slug) do nothing;
+
 create index if not exists comparex_supplier_products_supplier_idx
   on public.comparex_supplier_products(supplier_id);
 create index if not exists comparex_supplier_products_sale_idx
   on public.comparex_supplier_products(sale_status, category, country_code);
+
+-- Database-level gate: a product cannot become sellable until its supplier
+-- has verified contractual resale rights and a tested fulfilment path.
+create or replace function public.comparex_guard_sellable_supplier_product()
+returns trigger
+language plpgsql
+as $
+declare
+  supplier_is_approved boolean;
+begin
+  if new.sale_status = 'sellable' then
+    select (
+      contract_verified
+      and resale_rights_verified
+      and fulfilment_tested
+      and integration_status in ('contracted','sandbox','live')
+    ) into supplier_is_approved
+    from public.comparex_suppliers
+    where id = new.supplier_id;
+
+    if coalesce(supplier_is_approved, false) is not true then
+      raise exception 'Supplier must have verified contract, resale rights and tested fulfilment before a product can be sold.';
+    end if;
+    if new.price_verified_at is null or new.contract_reference is null then
+      raise exception 'Sellable products require a verified price and contract reference.';
+    end if;
+  end if;
+  return new;
+end;
+$;
+
+drop trigger if exists comparex_sellable_supplier_guard on public.comparex_supplier_products;
+create trigger comparex_sellable_supplier_guard
+before insert or update of sale_status, supplier_id, price_verified_at, contract_reference
+on public.comparex_supplier_products
+for each row execute function public.comparex_guard_sellable_supplier_product();
+
+
 
 create table if not exists public.comparex_payment_events (
   id uuid primary key default gen_random_uuid(),
