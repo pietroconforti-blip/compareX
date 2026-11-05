@@ -85,7 +85,7 @@ create index if not exists comparex_supplier_products_sale_idx
 create or replace function public.comparex_guard_sellable_supplier_product()
 returns trigger
 language plpgsql
-as $
+as $function$
 declare
   supplier_is_approved boolean;
 begin
@@ -108,7 +108,7 @@ begin
   end if;
   return new;
 end;
-$;
+$function$;
 
 drop trigger if exists comparex_sellable_supplier_guard on public.comparex_supplier_products;
 create trigger comparex_sellable_supplier_guard
@@ -121,7 +121,7 @@ for each row execute function public.comparex_guard_sellable_supplier_product();
 create or replace function public.comparex_pause_products_when_supplier_unapproved()
 returns trigger
 language plpgsql
-as $
+as $function$
 begin
   if (
     not new.contract_verified
@@ -135,7 +135,7 @@ begin
   end if;
   return new;
 end;
-$;
+$function$;
 
 drop trigger if exists comparex_supplier_approval_change on public.comparex_suppliers;
 create trigger comparex_supplier_approval_change
@@ -198,7 +198,7 @@ alter table public.package_order_drafts
   add column if not exists customer_terms_version text,
   add column if not exists seller_terms_version text;
 
-do $
+do $block$
 begin
   if not exists (
     select 1 from pg_constraint
@@ -214,7 +214,7 @@ begin
       ));
   end if;
 end;
-$;
+$block$;
 
 create unique index if not exists package_order_drafts_stripe_session_uidx
   on public.package_order_drafts(stripe_checkout_session_id)
