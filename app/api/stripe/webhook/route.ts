@@ -112,10 +112,19 @@ export async function POST(request: Request) {
           })
           .eq("id", orderId)
           .eq("stripe_checkout_session_id", session.id)
-          .select("id")
+          .select("id,estimated_monthly_total,currency")
           .maybeSingle();
 
-        if (orderError || !updatedOrder) {
+        const expectedAmount = updatedOrder ? Math.round(Number(updatedOrder.estimated_monthly_total) * 100) : null;
+        const sessionMatchesOrder = Boolean(
+          updatedOrder &&
+          session.client_reference_id === orderId &&
+          session.mode === "payment" &&
+          session.currency === String(updatedOrder.currency ?? "EUR").toLowerCase() &&
+          session.amount_total === expectedAmount
+        );
+
+        if (orderError || !updatedOrder || !sessionMatchesOrder) {
           await supabase.from("comparex_payment_events")
             .update({ processing_status: "failed" })
             .eq("id", paymentEventId);
