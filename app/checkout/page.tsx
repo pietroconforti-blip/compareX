@@ -35,8 +35,41 @@ function CheckoutContent() {
   const [paymentError, setPaymentError] = useState("");
   const [stripeReady, setStripeReady] = useState(false);
   const [checkoutClientSecret, setCheckoutClientSecret] = useState("");
+  const [returnStatus, setReturnStatus] = useState<"loading" | "paid_test" | "not_paid" | "expired" | "error" | null>(null);
+  const [returnMessage, setReturnMessage] = useState("");
   const checkoutContainerRef = useRef<HTMLDivElement>(null);
   const embeddedCheckoutRef = useRef<EmbeddedCheckoutInstance | null>(null);
+
+  useEffect(() => {
+    const returnedSessionId = params.get("session_id");
+    if (!returnedSessionId) return;
+    if (!returnedSessionId.startsWith("cs_test_")) {
+      setReturnStatus("error");
+      setReturnMessage("ID sessione test non valido.");
+      return;
+    }
+    let active = true;
+    setReturnStatus("loading");
+    fetch("/api/checkout/session-status?session_id=" + encodeURIComponent(returnedSessionId), { cache: "no-store" })
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Verifica pagamento non disponibile.");
+        if (active) {
+          setReturnStatus(data.status);
+          setReturnMessage(data.status === "paid_test"
+            ? "Stripe conferma il pagamento nell'ambiente test. Nessun servizio è stato prenotato o attivato."
+            : data.status === "expired" ? "La sessione di pagamento è scaduta."
+            : "Il pagamento non risulta completato. Nessun servizio è stato attivato.");
+        }
+      })
+      .catch((error: unknown) => {
+        if (active) {
+          setReturnStatus("error");
+          setReturnMessage(error instanceof Error ? error.message : "Impossibile verificare il pagamento.");
+        }
+      });
+    return () => { active = false; };
+  }, [params]);
 
   useEffect(() => {
     const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
@@ -102,6 +135,10 @@ function CheckoutContent() {
     <p className="mt-8 text-xs font-bold uppercase tracking-[0.16em] text-blue-700">CompareX checkout</p>
     <h1 className="mt-3 text-4xl font-bold tracking-tight">Completa i tuoi dati</h1>
     <p className="mt-3 max-w-2xl leading-7 text-slate-600">Il pacchetto rimane su CompareX. Inserisci i dati di contatto per preparare la richiesta; il checkout di pagamento qui sotto è ancora una dimostrazione in modalità test.</p>
+    {returnStatus && <div role="status" className={"mt-5 rounded-2xl border p-4 text-sm leading-6 " + (returnStatus === "paid_test" ? "border-emerald-200 bg-emerald-50 text-emerald-900" : returnStatus === "loading" ? "border-blue-200 bg-blue-50 text-blue-900" : "border-amber-200 bg-amber-50 text-amber-900")}>
+      <p className="font-bold">{returnStatus === "loading" ? "Verifica pagamento…" : returnStatus === "paid_test" ? "Pagamento test completato" : returnStatus === "expired" ? "Sessione scaduta" : "Pagamento non confermato"}</p>
+      <p className="mt-1">{returnMessage || "Stiamo verificando la sessione direttamente con Stripe."}</p>
+    </div>}
     <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_380px]">
       <form onSubmit={submit} className="space-y-5 rounded-3xl border border-[#d5dceb] bg-white p-6 shadow-sm md:p-8">
         <h2 className="text-xl font-bold">Dati del cliente</h2>
