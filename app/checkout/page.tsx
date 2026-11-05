@@ -1,16 +1,21 @@
 "use client";
 
 import { Suspense, useMemo, useState } from "react";
+import { offers as baseOffers } from "@/lib/home-data";
 import { useSearchParams } from "next/navigation";
 
-type PackageItem = { category: string; name: string; price: number; priceLabel?: string; location?: string; sourceUrl?: string };
+type PackageItem = { id: number; category: string; name: string; price: number; priceLabel?: string; location?: string; sourceUrl?: string };
 function CheckoutContent() {
   const params = useSearchParams();
   const items = useMemo<PackageItem[]>(() => {
     try {
       const parsed = JSON.parse(params.get("items") || "[]");
       if (!Array.isArray(parsed)) return [];
-      return parsed.filter((item) => item && typeof item.name === "string" && typeof item.category === "string" && Number.isFinite(Number(item.price)) && Number(item.price) >= 0).map((item) => ({ category: String(item.category), name: String(item.name), price: Number(item.price), priceLabel: typeof item.priceLabel === "string" ? item.priceLabel : undefined, location: typeof item.location === "string" ? item.location : "", sourceUrl: typeof item.sourceUrl === "string" ? item.sourceUrl : undefined }));
+      // Display only canonical offers from the server-maintained starter catalogue.
+      // Browser-supplied names and prices are never trusted for checkout.
+      return parsed.map((item) => baseOffers.find((offer) => offer.id === Number(item?.id)))
+        .filter((offer): offer is (typeof baseOffers)[number] => Boolean(offer))
+        .map((offer) => ({ id: offer.id, category: offer.category, name: offer.name, price: offer.price, priceLabel: offer.priceLabel, location: offer.location, sourceUrl: offer.sourceUrl }));
     } catch { return []; }
   }, [params]);
   const total = items.reduce((sum, item) => sum + item.price, 0);
@@ -32,7 +37,7 @@ function CheckoutContent() {
     setPaymentBusy(true);
     setPaymentError("");
     try {
-      const response = await fetch("/api/checkout/session", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items, email }) });
+      const response = await fetch("/api/checkout/session", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ offerIds: items.map((item) => item.id), email }) });
       const data = await response.json();
       if (!response.ok || typeof data.url !== "string") throw new Error(data.error || "Checkout di prova non disponibile.");
       window.location.href = data.url;
@@ -49,7 +54,7 @@ function CheckoutContent() {
     if (!consent) { setMessage("Devi confermare l'informativa sulla privacy per inviare la richiesta."); return; }
     setBusy(true);
     try {
-      const response = await fetch("/api/orders", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ customer: { name, email, phone }, items, destination, privacyConsent: consent }) });
+      const response = await fetch("/api/orders", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ customer: { name, email, phone }, offerIds: items.map((item) => item.id), destination, privacyConsent: consent }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Non è stato possibile salvare la richiesta.");
       setSuccess(true);
