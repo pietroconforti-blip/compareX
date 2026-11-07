@@ -39,6 +39,8 @@ function CheckoutContent() {
   const [returnMessage, setReturnMessage] = useState("");
   const checkoutContainerRef = useRef<HTMLDivElement>(null);
   const embeddedCheckoutRef = useRef<EmbeddedCheckoutInstance | null>(null);
+  const checkoutRequestIdRef = useRef<string>("");
+  const linkedTestCheckoutEnabled = process.env.NEXT_PUBLIC_COMPAREX_TEST_CHECKOUT_ENABLED === "true" && process.env.NEXT_PUBLIC_COMPAREX_ORDER_LINKED_CHECKOUT_ENABLED === "true";
 
   useEffect(() => {
     const returnedSessionId = params.get("session_id");
@@ -94,13 +96,15 @@ function CheckoutContent() {
   }, [checkoutClientSecret, stripeReady]);
 
   async function startTestCheckout() {
+    if (items.length < 2) { setPaymentError("Seleziona almeno due offerte valide."); return; }
     if (name.trim().length < 2) { setPaymentError("Inserisci prima nome e cognome."); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setPaymentError("Inserisci prima un indirizzo email valido."); return; }
     if (!consent) { setPaymentError("Conferma la nota privacy prima di continuare."); return; }
     setPaymentBusy(true);
     setPaymentError("");
     try {
-      const response = await fetch("/api/checkout/session", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ offerIds: items.map((item) => item.id), email }) });
+      if (!checkoutRequestIdRef.current) checkoutRequestIdRef.current = window.crypto.randomUUID();
+      const response = await fetch("/api/checkout/session", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ offerIds: items.map((item) => item.id), customer: { name, email, phone }, destination, privacyConsent: consent, checkoutRequestId: checkoutRequestIdRef.current }) });
       const data = await response.json();
       if (!response.ok || typeof data.clientSecret !== "string") throw new Error(data.error || "Checkout di prova non disponibile.");
       setCheckoutClientSecret(data.clientSecret);
@@ -114,6 +118,10 @@ function CheckoutContent() {
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage("");
+    if (linkedTestCheckoutEnabled) {
+      await startTestCheckout();
+      return;
+    }
     if (items.length < 2) { setMessage("Torna al Package Builder e seleziona almeno due servizi."); return; }
     if (!consent) { setMessage("Devi confermare l'informativa sulla privacy per inviare la richiesta."); return; }
     setBusy(true);
@@ -129,7 +137,7 @@ function CheckoutContent() {
   }
 
   return <main className="min-h-screen bg-[#f7f9fd] px-5 py-10 text-[#0c1222]">
-    {process.env.NEXT_PUBLIC_COMPAREX_TEST_CHECKOUT_ENABLED === "true" && <Script src="https://js.stripe.com/v3/" strategy="afterInteractive" onReady={() => setStripeReady(true)} />}
+    {linkedTestCheckoutEnabled && <Script src="https://js.stripe.com/v3/" strategy="afterInteractive" onReady={() => setStripeReady(true)} />}
     <div className="mx-auto max-w-5xl">
     <a href="/package-builder" className="font-semibold text-[#1a3470]">← Torna al pacchetto</a>
     <p className="mt-8 text-xs font-bold uppercase tracking-[0.16em] text-blue-700">CompareX checkout</p>
@@ -142,20 +150,19 @@ function CheckoutContent() {
     <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_380px]">
       <form onSubmit={submit} className="space-y-5 rounded-3xl border border-[#d5dceb] bg-white p-6 shadow-sm md:p-8">
         <h2 className="text-xl font-bold">Dati del cliente</h2>
-        <label className="block text-sm font-semibold">Nome e cognome<input required minLength={2} maxLength={120} autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 font-normal" /></label>
-        <label className="block text-sm font-semibold">Email<input required type="email" maxLength={254} autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 font-normal" /></label>
-        <label className="block text-sm font-semibold">Telefono (facoltativo)<input type="tel" maxLength={40} autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 font-normal" /></label>
-        <label className="flex items-start gap-3 text-sm leading-6 text-slate-600"><input required type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-1 h-4 w-4" /><span>Ho letto la <a href="/privacy" target="_blank" className="font-semibold text-[#1a3470] underline">nota privacy pre-lancio</a> e chiedo di usare questi dati per preparare la mia richiesta. So che la registrazione è ancora disattivata e non verrà salvato nulla finché il servizio non sarà pronto.</span></label>
+        <label className="block text-sm font-semibold">Nome e cognome<input required minLength={2} maxLength={120} autoComplete="name" value={name} onChange={(e) => { checkoutRequestIdRef.current = ""; setName(e.target.value); }} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 font-normal" /></label>
+        <label className="block text-sm font-semibold">Email<input required type="email" maxLength={254} autoComplete="email" value={email} onChange={(e) => { checkoutRequestIdRef.current = ""; setEmail(e.target.value); }} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 font-normal" /></label>
+        <label className="block text-sm font-semibold">Telefono (facoltativo)<input type="tel" maxLength={40} autoComplete="tel" value={phone} onChange={(e) => { checkoutRequestIdRef.current = ""; setPhone(e.target.value); }} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 font-normal" /></label>
+        <label className="flex items-start gap-3 text-sm leading-6 text-slate-600"><input required type="checkbox" checked={consent} onChange={(e) => { checkoutRequestIdRef.current = ""; setConsent(e.target.checked); }} className="mt-1 h-4 w-4" /><span>Ho letto la <a href="/privacy" target="_blank" className="font-semibold text-[#1a3470] underline">nota privacy pre-lancio</a>. Per i test uso esclusivamente dati fittizi: non inserisco dati personali reali.</span></label>
         {message && <p role="status" className={"rounded-xl p-4 text-sm " + (success ? "bg-emerald-50 text-emerald-900" : "bg-amber-50 text-amber-900")}>{message}</p>}
-        <button type="submit" disabled={busy || success} className="w-full rounded-xl bg-[#1a3470] px-5 py-4 font-bold text-white disabled:opacity-60">{busy ? "Salvataggio…" : success ? "Richiesta salvata" : "Salva i dati e prepara il pacchetto →"}</button>
-        {process.env.NEXT_PUBLIC_COMPAREX_TEST_CHECKOUT_ENABLED === "true" && <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4">
+        <button type="submit" disabled={busy || paymentBusy || success} className="w-full rounded-xl bg-[#1a3470] px-5 py-4 font-bold text-white disabled:opacity-60">{linkedTestCheckoutEnabled ? (paymentBusy ? "Preparazione pagamento…" : "Continua al pagamento test →") : busy ? "Salvataggio…" : success ? "Richiesta salvata" : "Salva i dati e prepara il pacchetto →"}</button>
+        {linkedTestCheckoutEnabled && <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4">
           <p className="font-bold text-blue-950">Pagamento incorporato in CompareX (solo test)</p>
-          <p className="mt-1 text-sm leading-6 text-blue-900">Il modulo Stripe apparirà direttamente qui, senza aprire una pagina di pagamento esterna. È un addebito dimostrativo una tantum sull'ambiente test: gli importi sono stime mensili e nessun servizio viene prenotato o attivato.</p>
+          <p className="mt-1 text-sm leading-6 text-blue-900">Il modulo Stripe apparirà direttamente qui, senza aprire una pagina di pagamento esterna. Usa esclusivamente dati fittizi. È un addebito dimostrativo una tantum nell'ambiente test: gli importi sono stime mensili e nessun servizio viene prenotato o attivato.</p>
           {paymentError && <p role="alert" className="mt-3 rounded-lg bg-white p-3 text-sm text-red-700">{paymentError}</p>}
-          {!checkoutClientSecret && <button type="button" onClick={startTestCheckout} disabled={paymentBusy || items.length < 2} className="mt-3 w-full rounded-xl border border-[#1a3470] bg-white px-5 py-3 font-bold text-[#1a3470] disabled:opacity-60">{paymentBusy ? "Preparazione pagamento…" : "Mostra pagamento di prova →"}</button>}
           {checkoutClientSecret && <div className="mt-4 rounded-xl bg-white p-3"><div ref={checkoutContainerRef} /><p className="mt-3 text-xs leading-5 text-slate-500">Stripe opera in modalità test. Usa solo i dati di carta di prova Stripe, mai una carta reale.</p></div>}
         </div>}
-        <p className="text-xs leading-5 text-slate-500">Questa fase non è una prenotazione confermata. Non inserire documenti d'identità o dati bancari in questo modulo.</p>
+        <p className="text-xs leading-5 text-slate-500">Questa fase non è una prenotazione confermata. Usa soltanto dati fittizi; non inserire dati personali reali, documenti d'identità o dati bancari.</p>
       </form>
       <aside className="h-fit rounded-3xl border border-[#d5dceb] bg-white p-6 shadow-sm lg:sticky lg:top-6"><p className="text-xs font-bold uppercase tracking-wider text-blue-700">Riepilogo</p><h2 className="mt-2 text-2xl font-bold">Il tuo pacchetto</h2><p className="mt-1 text-sm text-slate-500">Destinazione: {destination} · stima mensile</p>
         <div className="mt-5 space-y-4">{items.map((item, index) => <div key={item.category + "-" + item.name + "-" + index} className="border-b border-slate-100 pb-4"><p className="text-xs font-semibold uppercase text-slate-500">{item.category}</p><p className="mt-1 font-semibold">{item.name}</p><p className="mt-1 text-sm text-slate-600">€{item.price.toFixed(2)} / mese (stima)</p></div>)}{items.length === 0 && <p className="text-sm text-amber-800">Nessun pacchetto verificato disponibile. Alcune offerte selezionate non sono ancora abilitate al checkout: torna al builder e scegli almeno due offerte del catalogo verificato.</p>}</div>
