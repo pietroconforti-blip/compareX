@@ -42,12 +42,25 @@ function toRanked(o: Offer, score: number, reasons: string[]): Ranked {
   };
 }
 
+function detectLanguage(text: string): "it" | "de" | "en" {
+  const t = text.toLowerCase();
+  const it = /\b(camera|stanza|alloggio|appartamento|mobile|telefon|piano|palestra|trasporto|vienna|milano|studente|economico|sotto|meno di)\b/i.test(t);
+  const de = /\b(zimmer|wohnung|studentenheim|handy|mobilfunk|fitness|transport|wien|mailand|student|günstig|unter)\b/i.test(t);
+  if (it && !de) return "it";
+  if (de && !it) return "de";
+  if (it) return "it";
+  if (de) return "de";
+  return "en";
+}
+
 function rankLocal(query: string): {
   interpretation: string;
   categories: Category[];
   recommendations: Ranked[];
   mode: "local";
+  language: string;
 } {
+  const lang = detectLanguage(query);
   const categories = detectCategories(query);
   const budgets = detectBudgets(
     query,
@@ -72,33 +85,39 @@ function rankLocal(query: string): {
   }
   ranked.sort((a, b) => b.score - a.score || a.price - b.price);
 
-  const parts: string[] = [];
-  if (cats.length) {
-    parts.push(
-      `Looking for ${cats.map((c) => categoryLabels[c].toLowerCase()).join(", ")}`,
-    );
+  let interpretation = "";
+  if (lang === "it") {
+    const parts: string[] = [];
+    if (cats.length) parts.push(`Cerco ${cats.map((c) => categoryLabels[c].toLowerCase()).join(", ")}`);
+    if (preferences.vienna) parts.push("a Vienna");
+    if (preferences.milan) parts.push("a Milano");
+    if (preferences.student) parts.push("per studenti");
+    if (preferences.cheap) parts.push("al prezzo più basso");
+    interpretation = parts.length ? parts.join(" · ") + "." : "Ecco le migliori offerte per studenti.";
+  } else if (lang === "de") {
+    const parts: string[] = [];
+    if (cats.length) parts.push(`Suche nach ${cats.map((c) => categoryLabels[c].toLowerCase()).join(", ")}`);
+    if (preferences.vienna) parts.push("in Wien");
+    if (preferences.milan) parts.push("in Mailand");
+    if (preferences.student) parts.push("für Studierende");
+    if (preferences.cheap) parts.push("günstig");
+    interpretation = parts.length ? parts.join(" · ") + "." : "Hier sind die besten Angebote für Studierende.";
+  } else {
+    const parts: string[] = [];
+    if (cats.length) parts.push(`Looking for ${cats.map((c) => categoryLabels[c].toLowerCase()).join(", ")}`);
+    if (preferences.vienna) parts.push("in Vienna");
+    if (preferences.milan) parts.push("in Milan");
+    if (preferences.student) parts.push("for students");
+    if (preferences.cheap) parts.push("prioritizing lower prices");
+    interpretation = parts.length ? parts.join(" · ") + "." : "Showing top student-friendly offers.";
   }
-  const budgetVals = Object.entries(budgets);
-  if (budgetVals.length) {
-    parts.push(
-      `with budget hints: ${budgetVals
-        .map(([c, v]) => `${categoryLabels[c as Category]} ≤ €${v}`)
-        .join(", ")}`,
-    );
-  }
-  if (preferences.student) parts.push("preferring student-friendly options");
-  if (preferences.vienna) parts.push("focused on Vienna");
-  if (preferences.cheap) parts.push("prioritizing lower prices");
-  if (preferences.quality) parts.push("prioritizing quality");
 
   return {
-    interpretation:
-      parts.length > 0
-        ? parts.join(" · ") + "."
-        : "Showing top student-friendly offers across categories.",
+    interpretation,
     categories: cats,
     recommendations: ranked.slice(0, 6),
     mode: "local",
+    language: lang,
   };
 }
 
@@ -123,6 +142,7 @@ async function rankWithLlm(query: string): Promise<{
   recommendations: Ranked[];
   mode: "llm";
   provider: string;
+  language: string;
 } | null> {
   const xaiKey = process.env.XAI_API_KEY;
   const openaiKey = process.env.OPENAI_API_KEY;
@@ -146,23 +166,25 @@ async function rankWithLlm(query: string): Promise<{
     return null;
   }
 
+  const lang = detectLanguage(query);
   const catalog = catalogForPrompt();
-  const system = `You are CompareX AI, a helpful assistant for students comparing housing, mobile plans, transport, gyms and streaming in Austria and Italy.
+  const system = `You are CompareX AI, a helpful multilingual assistant for students comparing housing, mobile plans, transport, gyms and streaming in Austria and Italy (Vienna & Milan focus).
 
 RULES:
+- Understand the user's request in ANY language (Italian, German, English, Spanish, French, etc.). Reply in the SAME language as the user.
 - Recommend ONLY offers from the provided catalog. Never invent products or prices.
 - Reply with valid JSON only, no markdown.
 - JSON shape:
 {
-  "interpretation": "short friendly sentence explaining what the user wants",
+  "interpretation": "short friendly sentence in the user's language explaining what they want",
   "categories": ["housing"|"mobile"|"transport"|"gym"|"streaming"],
   "recommendations": [
-    { "id": number, "reasons": ["short reason", "..."], "score": number }
+    { "id": number, "reasons": ["short reason in user's language"], "score": number }
   ]
 }
 - Pick at most 6 offers, best first. score from 1 to 10.
-- Prefer student-friendly and budget-fit when the user mentions students or price limits.
-- If the query is vague, still suggest solid student defaults.`;
+- Prefer student-friendly and budget-fit when relevant.
+- If vague, suggest solid student defaults for Vienna/Milan.`;
 
   const user = `User request: ${query}
 
@@ -225,13 +247,7 @@ ${JSON.stringify(catalog)}`;
 
   if (recommendations.length === 0) return null;
 
-  const validCats = new Set([
-    "housing",
-    "mobile",
-    "transport",
-    "gym",
-    "streaming",
-  ]);
+  const validCats = new Set(["housing", "mobile", "transport", "gym", "streaming"]);
   const categories = (parsed.categories ?? [])
     .map(String)
     .filter((c): c is Category => validCats.has(c));
@@ -244,6 +260,7 @@ ${JSON.stringify(catalog)}`;
     recommendations: recommendations.slice(0, 6),
     mode: "llm",
     provider,
+    language: lang,
   };
 }
 
@@ -253,7 +270,7 @@ export async function POST(req: NextRequest) {
     const query = String(body?.query ?? "").trim();
     if (!query) {
       return NextResponse.json(
-        { error: "Write what you need, e.g. a room under €500 in Vienna" },
+        { error: "Write what you need, e.g. a room under €500 in Vienna / una stanza sotto 500 a Vienna" },
         { status: 400 },
       );
     }
@@ -268,6 +285,7 @@ export async function POST(req: NextRequest) {
         recommendations: llm.recommendations,
         mode: llm.mode,
         provider: llm.provider,
+        language: llm.language,
         tip: `Powered by ${llm.provider}. Recommendations only use offers on CompareX.`,
       });
     }
@@ -277,7 +295,7 @@ export async function POST(req: NextRequest) {
       query,
       assistant: "CompareX AI",
       ...local,
-      tip: "Local ranking (add XAI_API_KEY or OPENAI_API_KEY on Vercel for full LLM).",
+      tip: "Local multilingual ranking (add XAI_API_KEY on Vercel for full Grok).",
     });
   } catch (e) {
     console.error(e);
@@ -297,8 +315,8 @@ export async function GET(req: NextRequest) {
       llmReady: hasLlm,
       examples: [
         "I need a student room under €450 in Vienna",
-        "Cheap mobile plan with lots of data in Austria",
-        "Gym and transport for a student budget",
+        "Cerco una stanza per studenti a Milano sotto 500",
+        "Günstiges Handy und Fitness in Wien",
       ],
     });
   }
