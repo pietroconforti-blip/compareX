@@ -19,6 +19,7 @@ export type Offer = {
 export type ScoredOffer = Offer & {
   score: number;
   reasons: string[];
+  rank?: "cheapest" | "best-value" | "best-overall" | null;
 };
 
 export type Bundle = {
@@ -29,342 +30,30 @@ export type Bundle = {
 };
 
 export const offers: Offer[] = [
-  {
-    id: 1,
-    name: "home4students Erlachplatz",
-    category: "housing",
-    price: 289,
-    priceLabel: "From €289 / month",
-    location: "Vienna",
-    quality: 7.6,
-    flexibility: 7.5,
-    studentFriendly: true,
-    transport: 8,
-    description: "Shared room entry price at home4students (10th district).",
-    tags: ["student", "budget", "vienna", "dorm", "home4students"],
-  },
-  {
-    id: 2,
-    name: "Akademikerhilfe Michaelerstraße",
-    category: "housing",
-    price: 316,
-    priceLabel: "From €316 / month",
-    location: "Vienna",
-    quality: 7.8,
-    flexibility: 7.8,
-    studentFriendly: true,
-    transport: 8.5,
-    description: "Non-profit Akademikerhilfe residence · strong student network.",
-    tags: ["student", "vienna", "akademikerhilfe", "dorm"],
-  },
-  {
-    id: 3,
-    name: "OeAD Brigittenauer Lände",
-    category: "housing",
-    price: 372,
-    priceLabel: "From €372 / month",
-    location: "Vienna",
-    quality: 8.0,
-    flexibility: 8.0,
-    studentFriendly: true,
-    transport: 8.5,
-    description: "OeAD international student housing · House Panorama.",
-    tags: ["student", "vienna", "oead", "international"],
-  },
-  {
-    id: 4,
-    name: "WIHAST network",
-    category: "housing",
-    price: 320,
-    priceLabel: "From ≈ €320 / month",
-    location: "Vienna",
-    quality: 7.7,
-    flexibility: 7.5,
-    studentFriendly: true,
-    transport: 8,
-    description: "Among the more affordable Vienna dorm networks on average.",
-    tags: ["student", "budget", "vienna", "wihast"],
-  },
-  {
-    id: 5,
-    name: "STUWO modern residences",
-    category: "housing",
-    price: 430,
-    priceLabel: "From ≈ €430 / month",
-    location: "Vienna",
-    quality: 9.0,
-    flexibility: 8.0,
-    studentFriendly: true,
-    transport: 9,
-    description: "Newer STUWO buildings · higher comfort band.",
-    tags: ["student", "modern", "vienna", "stuwo"],
-  },
-  {
-    id: 6,
-    name: "ÖJAB network",
-    category: "housing",
-    price: 301,
-    priceLabel: "From ≈ €301 / month",
-    location: "Vienna",
-    quality: 8.0,
-    flexibility: 8.2,
-    studentFriendly: true,
-    transport: 8.5,
-    description: "Large ÖJAB network with wide price range across houses.",
-    tags: ["student", "vienna", "oejab", "budget"],
-  },
-  {
-    id: 7,
-    name: "Bocconi residence (preferential band)",
-    category: "housing",
-    price: 615,
-    priceLabel: "≈ €615 / month",
-    location: "Milan",
-    quality: 9.0,
-    flexibility: 6.5,
-    studentFriendly: true,
-    transport: 8.5,
-    description: "University residence via Bocconi process · not open market.",
-    tags: ["student", "milan", "bocconi", "university"],
-  },
-  {
-    id: 8,
-    name: "Unimi DSU residences",
-    category: "housing",
-    price: 280,
-    priceLabel: "Subsidised · competitive",
-    location: "Milan",
-    quality: 8.0,
-    flexibility: 5.5,
-    studentFriendly: true,
-    transport: 8,
-    description: "University of Milan allocation · eligibility ranking required.",
-    tags: ["student", "milan", "unimi", "budget", "university"],
-  },
-  {
-    id: 9,
-    name: "Milan private single room (avg)",
-    category: "housing",
-    price: 700,
-    priceLabel: "≈ €650–800 / month",
-    location: "Milan",
-    quality: 7.5,
-    flexibility: 9.0,
-    studentFriendly: true,
-    transport: 8,
-    description: "Typical shared-flat single room on the private market.",
-    tags: ["student", "milan", "private", "room"],
-  },
-  {
-    id: 17,
-    name: "Vienna shared flat (budget)",
-    category: "housing",
-    price: 450,
-    priceLabel: "≈ €400–500 / month",
-    location: "Vienna",
-    quality: 7.2,
-    flexibility: 8.5,
-    studentFriendly: true,
-    transport: 7.5,
-    description: "Typical private shared-flat room in outer districts.",
-    tags: ["student", "vienna", "private", "budget", "shared"],
-  },
-  {
-    id: 18,
-    name: "Milan student residence (private)",
-    category: "housing",
-    price: 520,
-    priceLabel: "From €520 / month",
-    location: "Milan",
-    quality: 8.2,
-    flexibility: 7.0,
-    studentFriendly: true,
-    transport: 8.0,
-    description: "Modern private student residence with common areas.",
-    tags: ["student", "milan", "private", "modern"],
-  },
-  {
-    id: 10,
-    name: "Spusu Student",
-    category: "mobile",
-    price: 12,
-    priceLabel: "€12 / month",
-    location: "Austria",
-    quality: 8.0,
-    flexibility: 9.0,
-    studentFriendly: true,
-    transport: 5,
-    description: "Low-cost mobile plan suitable for students.",
-    tags: ["student", "cheap", "mobile", "data"],
-  },
-  {
-    id: 11,
-    name: "A1 Basic Mobile",
-    category: "mobile",
-    price: 18,
-    priceLabel: "€18 / month",
-    location: "Austria",
-    quality: 9.2,
-    flexibility: 8.0,
-    studentFriendly: true,
-    transport: 5,
-    description: "Reliable mobile plan with strong network coverage.",
-    tags: ["mobile", "network", "quality"],
-  },
-  {
-    id: 12,
-    name: "Premium Mobile Plan",
-    category: "mobile",
-    price: 25,
-    priceLabel: "€25 / month",
-    location: "Austria",
-    quality: 9.7,
-    flexibility: 8.5,
-    studentFriendly: false,
-    transport: 5,
-    description: "Premium mobile plan with more data and additional services.",
-    tags: ["mobile", "premium", "data"],
-  },
-  {
-    id: 19,
-    name: "HoT Student SIM",
-    category: "mobile",
-    price: 10,
-    priceLabel: "€10 / month",
-    location: "Austria",
-    quality: 7.8,
-    flexibility: 9.5,
-    studentFriendly: true,
-    transport: 5,
-    description: "Very affordable prepaid/student SIM with decent data.",
-    tags: ["student", "cheap", "mobile", "prepaid", "austria"],
-  },
-  {
-    id: 20,
-    name: "Iliad Italy Student",
-    category: "mobile",
-    price: 8,
-    priceLabel: "€8 / month",
-    location: "Italy",
-    quality: 8.3,
-    flexibility: 9.0,
-    studentFriendly: true,
-    transport: 5,
-    description: "Competitive Italian mobile plan popular with students.",
-    tags: ["student", "cheap", "mobile", "italy", "iliad"],
-  },
-  {
-    id: 13,
-    name: "Vienna Public Transport",
-    category: "transport",
-    price: 25,
-    priceLabel: "≈ €25 / month",
-    location: "Vienna",
-    quality: 9.0,
-    flexibility: 9.0,
-    studentFriendly: true,
-    transport: 10,
-    description: "Public transport option for Vienna students.",
-    tags: ["vienna", "transport", "student"],
-  },
-  {
-    id: 14,
-    name: "ATM Under 27 Milan",
-    category: "transport",
-    price: 22,
-    priceLabel: "≈ €22 / month",
-    location: "Milan",
-    quality: 8.8,
-    flexibility: 9.0,
-    studentFriendly: true,
-    transport: 10,
-    description: "Indicative young/student-oriented city transport pass band.",
-    tags: ["milan", "transport", "student", "atm"],
-  },
-  {
-    id: 15,
-    name: "Fit4Students",
-    category: "gym",
-    price: 25,
-    priceLabel: "€25 / month",
-    location: "Vienna",
-    quality: 8.0,
-    flexibility: 8.5,
-    studentFriendly: true,
-    transport: 8,
-    description: "Affordable gym membership designed for students.",
-    tags: ["gym", "student", "fitness", "vienna"],
-  },
-  {
-    id: 21,
-    name: "McFit Student",
-    category: "gym",
-    price: 20,
-    priceLabel: "€20 / month",
-    location: "Vienna",
-    quality: 7.5,
-    flexibility: 8.0,
-    studentFriendly: true,
-    transport: 7.5,
-    description: "Budget gym chain with student rates in multiple locations.",
-    tags: ["gym", "student", "budget", "vienna", "fitness"],
-  },
-  {
-    id: 22,
-    name: "Milan gym student pass",
-    category: "gym",
-    price: 28,
-    priceLabel: "€28 / month",
-    location: "Milan",
-    quality: 8.1,
-    flexibility: 8.2,
-    studentFriendly: true,
-    transport: 8,
-    description: "Typical student-friendly gym membership in Milan.",
-    tags: ["gym", "student", "milan", "fitness"],
-  },
-  {
-    id: 16,
-    name: "Netflix Basic",
-    category: "streaming",
-    price: 8,
-    priceLabel: "€8 / month",
-    location: "Austria",
-    quality: 8.5,
-    flexibility: 8.5,
-    studentFriendly: true,
-    transport: 5,
-    description: "Affordable streaming option.",
-    tags: ["streaming", "movies", "series"],
-  },
-  {
-    id: 23,
-    name: "Disney+ Student",
-    category: "streaming",
-    price: 7,
-    priceLabel: "€7 / month",
-    location: "Austria",
-    quality: 8.7,
-    flexibility: 8.0,
-    studentFriendly: true,
-    transport: 5,
-    description: "Disney+ with student discount where available.",
-    tags: ["streaming", "disney", "student", "movies"],
-  },
-  {
-    id: 24,
-    name: "Spotify Student",
-    category: "streaming",
-    price: 5,
-    priceLabel: "€5 / month",
-    location: "Austria",
-    quality: 9.0,
-    flexibility: 9.0,
-    studentFriendly: true,
-    transport: 5,
-    description: "Spotify Premium student plan with ad-free music.",
-    tags: ["streaming", "spotify", "student", "music"],
-  },
+  { id: 1, name: "home4students Erlachplatz", category: "housing", price: 289, priceLabel: "From €289 / month", location: "Vienna", quality: 7.6, flexibility: 7.5, studentFriendly: true, transport: 8, description: "Shared room entry price at home4students (10th district).", tags: ["student", "budget", "vienna", "dorm", "home4students"] },
+  { id: 2, name: "Akademikerhilfe Michaelerstraße", category: "housing", price: 316, priceLabel: "From €316 / month", location: "Vienna", quality: 7.8, flexibility: 7.8, studentFriendly: true, transport: 8.5, description: "Non-profit Akademikerhilfe residence · strong student network.", tags: ["student", "vienna", "akademikerhilfe", "dorm"] },
+  { id: 3, name: "OeAD Brigittenauer Lände", category: "housing", price: 372, priceLabel: "From €372 / month", location: "Vienna", quality: 8.0, flexibility: 8.0, studentFriendly: true, transport: 8.5, description: "OeAD international student housing · House Panorama.", tags: ["student", "vienna", "oead", "international"] },
+  { id: 4, name: "WIHAST network", category: "housing", price: 320, priceLabel: "From ≈ €320 / month", location: "Vienna", quality: 7.7, flexibility: 7.5, studentFriendly: true, transport: 8, description: "Among the more affordable Vienna dorm networks on average.", tags: ["student", "budget", "vienna", "wihast"] },
+  { id: 5, name: "STUWO modern residences", category: "housing", price: 430, priceLabel: "From ≈ €430 / month", location: "Vienna", quality: 9.0, flexibility: 8.0, studentFriendly: true, transport: 9, description: "Newer STUWO buildings · higher comfort band.", tags: ["student", "modern", "vienna", "stuwo"] },
+  { id: 6, name: "ÖJAB network", category: "housing", price: 301, priceLabel: "From ≈ €301 / month", location: "Vienna", quality: 8.0, flexibility: 8.2, studentFriendly: true, transport: 8.5, description: "Large ÖJAB network with wide price range across houses.", tags: ["student", "vienna", "oejab", "budget"] },
+  { id: 7, name: "Bocconi residence (preferential band)", category: "housing", price: 615, priceLabel: "≈ €615 / month", location: "Milan", quality: 9.0, flexibility: 6.5, studentFriendly: true, transport: 8.5, description: "University residence via Bocconi process · not open market.", tags: ["student", "milan", "bocconi", "university"] },
+  { id: 8, name: "Unimi DSU residences", category: "housing", price: 280, priceLabel: "Subsidised · competitive", location: "Milan", quality: 8.0, flexibility: 5.5, studentFriendly: true, transport: 8, description: "University of Milan allocation · eligibility ranking required.", tags: ["student", "milan", "unimi", "budget", "university"] },
+  { id: 9, name: "Milan private single room (avg)", category: "housing", price: 700, priceLabel: "≈ €650–800 / month", location: "Milan", quality: 7.5, flexibility: 9.0, studentFriendly: true, transport: 8, description: "Typical shared-flat single room on the private market.", tags: ["student", "milan", "private", "room"] },
+  { id: 17, name: "Vienna shared flat (budget)", category: "housing", price: 450, priceLabel: "≈ €400–500 / month", location: "Vienna", quality: 7.2, flexibility: 8.5, studentFriendly: true, transport: 7.5, description: "Typical private shared-flat room in outer districts.", tags: ["student", "vienna", "private", "budget", "shared"] },
+  { id: 18, name: "Milan student residence (private)", category: "housing", price: 520, priceLabel: "From €520 / month", location: "Milan", quality: 8.2, flexibility: 7.0, studentFriendly: true, transport: 8.0, description: "Modern private student residence with common areas.", tags: ["student", "milan", "private", "modern"] },
+  { id: 10, name: "Spusu Student", category: "mobile", price: 12, priceLabel: "€12 / month", location: "Austria", quality: 8.0, flexibility: 9.0, studentFriendly: true, transport: 5, description: "Low-cost mobile plan suitable for students.", tags: ["student", "cheap", "mobile", "data"] },
+  { id: 11, name: "A1 Basic Mobile", category: "mobile", price: 18, priceLabel: "€18 / month", location: "Austria", quality: 9.2, flexibility: 8.0, studentFriendly: true, transport: 5, description: "Reliable mobile plan with strong network coverage.", tags: ["mobile", "network", "quality"] },
+  { id: 12, name: "Premium Mobile Plan", category: "mobile", price: 25, priceLabel: "€25 / month", location: "Austria", quality: 9.7, flexibility: 8.5, studentFriendly: false, transport: 5, description: "Premium mobile plan with more data and additional services.", tags: ["mobile", "premium", "data"] },
+  { id: 19, name: "HoT Student SIM", category: "mobile", price: 10, priceLabel: "€10 / month", location: "Austria", quality: 7.8, flexibility: 9.5, studentFriendly: true, transport: 5, description: "Very affordable prepaid/student SIM with decent data.", tags: ["student", "cheap", "mobile", "prepaid", "austria"] },
+  { id: 20, name: "Iliad Italy Student", category: "mobile", price: 8, priceLabel: "€8 / month", location: "Italy", quality: 8.3, flexibility: 9.0, studentFriendly: true, transport: 5, description: "Competitive Italian mobile plan popular with students.", tags: ["student", "cheap", "mobile", "italy", "iliad"] },
+  { id: 13, name: "Vienna Public Transport", category: "transport", price: 25, priceLabel: "≈ €25 / month", location: "Vienna", quality: 9.0, flexibility: 9.0, studentFriendly: true, transport: 10, description: "Public transport option for Vienna students.", tags: ["vienna", "transport", "student"] },
+  { id: 14, name: "ATM Under 27 Milan", category: "transport", price: 22, priceLabel: "≈ €22 / month", location: "Milan", quality: 8.8, flexibility: 9.0, studentFriendly: true, transport: 10, description: "Indicative young/student-oriented city transport pass band.", tags: ["milan", "transport", "student", "atm"] },
+  { id: 15, name: "Fit4Students", category: "gym", price: 25, priceLabel: "€25 / month", location: "Vienna", quality: 8.0, flexibility: 8.5, studentFriendly: true, transport: 8, description: "Affordable gym membership designed for students.", tags: ["gym", "student", "fitness", "vienna"] },
+  { id: 21, name: "McFit Student", category: "gym", price: 20, priceLabel: "€20 / month", location: "Vienna", quality: 7.5, flexibility: 8.0, studentFriendly: true, transport: 7.5, description: "Budget gym chain with student rates in multiple locations.", tags: ["gym", "student", "budget", "vienna", "fitness"] },
+  { id: 22, name: "Milan gym student pass", category: "gym", price: 28, priceLabel: "€28 / month", location: "Milan", quality: 8.1, flexibility: 8.2, studentFriendly: true, transport: 8, description: "Typical student-friendly gym membership in Milan.", tags: ["gym", "student", "milan", "fitness"] },
+  { id: 16, name: "Netflix Basic", category: "streaming", price: 8, priceLabel: "€8 / month", location: "Austria", quality: 8.5, flexibility: 8.5, studentFriendly: true, transport: 5, description: "Affordable streaming option.", tags: ["streaming", "movies", "series"] },
+  { id: 23, name: "Disney+ Student", category: "streaming", price: 7, priceLabel: "€7 / month", location: "Austria", quality: 8.7, flexibility: 8.0, studentFriendly: true, transport: 5, description: "Disney+ with student discount where available.", tags: ["streaming", "disney", "student", "movies"] },
+  { id: 24, name: "Spotify Student", category: "streaming", price: 5, priceLabel: "€5 / month", location: "Austria", quality: 9.0, flexibility: 9.0, studentFriendly: true, transport: 5, description: "Spotify Premium student plan with ad-free music.", tags: ["streaming", "spotify", "student", "music"] },
 ];
 
 export const categoryLabels: Record<Category, string> = {
@@ -384,82 +73,32 @@ export const categoryIcons: Record<Category, string> = {
 };
 
 export function normalizeSearchText(text: string): string {
-  return text
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/€/g, " euro ");
+  return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/€/g, " euro ");
 }
 
 export const categoryKeywords: Record<Category, string[]> = {
-  housing: [
-    "house", "housing", "room", "bedroom", "apartment",
-    "flat", "rent", "accommodation", "dorm", "student residence",
-    "casa", "stanza", "camera", "appartamento", "affitto",
-    "alloggio", "monolocale", "wohn", "zimmer", "wohnung", "miete",
-    "studentenheim", "residenza",
-  ],
-  mobile: [
-    "mobile", "phone", "telephone", "cellphone", "sim",
-    "tariff", "phone plan", "mobile plan", "data plan",
-    "abbonamento", "telefonia", "cellulare", "telefono",
-    "tariffa", "gb", "handy", "mobilfunk",
-  ],
-  transport: [
-    "transport", "public transport", "metro", "subway",
-    "tram", "bus", "u-bahn", "travel pass", "transport pass",
-    "trasporti", "trasporto", "abbonamento trasporti",
-    "mezzi pubblici", "autobus", "treno", "jahreskarte", "atm",
-  ],
-  gym: [
-    "gym", "fitness", "workout", "gym membership",
-    "palestra", "allenamento", "fitnessstudio",
-  ],
-  streaming: [
-    "streaming", "netflix", "disney+", "spotify", "youtube premium",
-    "movies", "series", "film", "serie tv", "musica in streaming",
-  ],
+  housing: ["house", "housing", "room", "bedroom", "apartment", "flat", "rent", "accommodation", "dorm", "student residence", "casa", "stanza", "camera", "appartamento", "affitto", "alloggio", "monolocale", "wohn", "zimmer", "wohnung", "miete", "studentenheim", "residenza"],
+  mobile: ["mobile", "phone", "telephone", "cellphone", "sim", "tariff", "phone plan", "mobile plan", "data plan", "abbonamento", "telefonia", "cellulare", "telefono", "tariffa", "gb", "handy", "mobilfunk"],
+  transport: ["transport", "public transport", "metro", "subway", "tram", "bus", "u-bahn", "travel pass", "transport pass", "trasporti", "trasporto", "abbonamento trasporti", "mezzi pubblici", "autobus", "treno", "jahreskarte", "atm"],
+  gym: ["gym", "fitness", "workout", "gym membership", "palestra", "allenamento", "fitnessstudio"],
+  streaming: ["streaming", "netflix", "disney+", "spotify", "youtube premium", "movies", "series", "film", "serie tv", "musica in streaming"],
 };
 
 export function detectCategories(text: string): Category[] {
   const t = normalizeSearchText(text);
-  const detected = (Object.keys(categoryKeywords) as Category[]).filter((category) =>
-    categoryKeywords[category].some((keyword) => t.includes(keyword)),
-  );
-  const explicitMobile = [
-    "mobile", "phone", "telephone", "cellphone", "sim",
-    "tariff", "phone plan", "mobile plan", "data plan",
-    "telefonia", "cellulare", "telefono", "tariffa", "gb",
-    "handy", "mobilfunk",
-  ].some((keyword) => t.includes(keyword));
-  const explicitOtherSubscription = [
-    "netflix", "disney+", "spotify", "youtube premium",
-    "streaming", "palestra", "gym", "fitness",
-    "trasporti", "mezzi pubblici", "transport pass",
-  ].some((keyword) => t.includes(keyword));
-  if (
-    t.includes("abbonamento") &&
-    !explicitMobile &&
-    !explicitOtherSubscription &&
-    !detected.includes("mobile")
-  ) {
+  const detected = (Object.keys(categoryKeywords) as Category[]).filter((category) => categoryKeywords[category].some((keyword) => t.includes(keyword)));
+  const explicitMobile = ["mobile", "phone", "telephone", "cellphone", "sim", "tariff", "phone plan", "mobile plan", "data plan", "telefonia", "cellulare", "telefono", "tariffa", "gb", "handy", "mobilfunk"].some((keyword) => t.includes(keyword));
+  const explicitOtherSubscription = ["netflix", "disney+", "spotify", "youtube premium", "streaming", "palestra", "gym", "fitness", "trasporti", "mezzi pubblici", "transport pass"].some((keyword) => t.includes(keyword));
+  if (t.includes("abbonamento") && !explicitMobile && !explicitOtherSubscription && !detected.includes("mobile")) {
     detected.push("mobile");
   }
   return detected;
 }
 
-export function detectBudgets(
-  text: string,
-  categories: Category[],
-): Partial<Record<Category, number>> {
+export function detectBudgets(text: string, categories: Category[]): Partial<Record<Category, number>> {
   const normalized = normalizeSearchText(text);
   const budgets: Partial<Record<Category, number>> = {};
-  const numberMatches = Array.from(normalized.matchAll(/\d+(?:[.,]\d+)?/g))
-    .map((match) => ({
-      value: Number(match[0].replace(",", ".")),
-      position: match.index ?? 0,
-    }))
-    .filter((item) => Number.isFinite(item.value));
+  const numberMatches = Array.from(normalized.matchAll(/\d+(?:[.,]\d+)?/g)).map((match) => ({ value: Number(match[0].replace(",", ".")), position: match.index ?? 0 })).filter((item) => Number.isFinite(item.value));
   if (numberMatches.length === 0 || categories.length === 0) return budgets;
   const occurrences: { category: Category; position: number }[] = [];
   for (const category of categories) {
@@ -474,12 +113,7 @@ export function detectBudgets(
     }
   }
   for (const number of numberMatches) {
-    const nearest = occurrences
-      .map((item) => ({
-        ...item,
-        distance: Math.abs(item.position - number.position),
-      }))
-      .sort((a, b) => a.distance - b.distance)[0];
+    const nearest = occurrences.map((item) => ({ ...item, distance: Math.abs(item.position - number.position) })).sort((a, b) => a.distance - b.distance)[0];
     if (nearest) budgets[nearest.category] = number.value;
   }
   return budgets;
@@ -488,84 +122,38 @@ export function detectBudgets(
 export function detectPreferences(text: string) {
   const t = text.toLowerCase();
   return {
-    student:
-      t.includes("student") ||
-      t.includes("student-friendly") ||
-      t.includes("student friendly") ||
-      t.includes("studente"),
+    student: t.includes("student") || t.includes("student-friendly") || t.includes("student friendly") || t.includes("studente"),
     quality: t.includes("quality") || t.includes("premium") || t.includes("best"),
-    cheap:
-      t.includes("cheap") ||
-      t.includes("cheapest") ||
-      t.includes("affordable") ||
-      t.includes("budget") ||
-      t.includes("economico"),
+    cheap: t.includes("cheap") || t.includes("cheapest") || t.includes("affordable") || t.includes("budget") || t.includes("economico"),
     vienna: t.includes("vienna") || t.includes("wien"),
     milan: t.includes("milan") || t.includes("milano"),
-    university:
-      t.includes("university") ||
-      t.includes("university nearby") ||
-      t.includes("fh wien") ||
-      t.includes("bocconi") ||
-      t.includes("politecnico"),
+    university: t.includes("university") || t.includes("university nearby") || t.includes("fh wien") || t.includes("bocconi") || t.includes("politecnico"),
   };
 }
 
-export function calculateScore(
-  offer: Offer,
-  preferences: ReturnType<typeof detectPreferences>,
-  budget?: number,
-): ScoredOffer {
+export function calculateScore(offer: Offer, preferences: ReturnType<typeof detectPreferences>, budget?: number): ScoredOffer {
   let score = 7;
   const reasons: string[] = [];
-  if (preferences.student && offer.studentFriendly) {
-    score += 1;
-    reasons.push("student-friendly");
-  }
-  if (preferences.quality) {
-    score += (offer.quality - 8) * 0.8;
-    if (offer.quality >= 9) reasons.push("high quality");
-  }
+  if (preferences.student && offer.studentFriendly) { score += 1; reasons.push("student-friendly"); }
+  if (preferences.quality) { score += (offer.quality - 8) * 0.8; if (offer.quality >= 9) reasons.push("high quality"); }
   if (preferences.cheap) {
-    if (offer.price <= 20) {
-      score += 1;
-      reasons.push("low price");
-    } else if (offer.price <= 50) {
-      score += 0.4;
-    } else if (offer.category === "housing" && offer.price <= 400) {
-      score += 0.6;
-      reasons.push("budget housing");
-    }
+    if (offer.price <= 20) { score += 1; reasons.push("low price"); }
+    else if (offer.price <= 50) { score += 0.4; }
+    else if (offer.category === "housing" && offer.price <= 400) { score += 0.6; reasons.push("budget housing"); }
   }
-  if (preferences.vienna && offer.location.toLowerCase().includes("vienna")) {
-    score += 0.8;
-    reasons.push("Vienna");
-  }
-  if (preferences.milan && offer.location.toLowerCase().includes("milan")) {
-    score += 0.8;
-    reasons.push("Milan");
-  }
-  if (preferences.university && offer.category === "housing") {
-    score += 0.6;
-    reasons.push("good university fit");
-  }
+  if (preferences.vienna && offer.location.toLowerCase().includes("vienna")) { score += 0.8; reasons.push("Vienna"); }
+  if (preferences.milan && offer.location.toLowerCase().includes("milan")) { score += 0.8; reasons.push("Milan"); }
+  if (preferences.university && offer.category === "housing") { score += 0.6; reasons.push("good university fit"); }
   if (budget !== undefined) {
-    if (offer.price <= budget) {
-      score += 1;
-      reasons.push(`within €${budget} budget`);
-    } else {
-      score -= Math.min(3, ((offer.price - budget) / Math.max(20, budget)) * 3);
-    }
+    if (offer.price <= budget) { score += 1; reasons.push(`within €${budget} budget`); }
+    else { score -= Math.min(3, ((offer.price - budget) / Math.max(20, budget)) * 3); }
   }
   score += (offer.flexibility - 7) * 0.15;
   score = Math.max(1, Math.min(10, score));
   return { ...offer, score: Number(score.toFixed(1)), reasons };
 }
 
-export function createBundles(
-  categoryResults: Record<Category, ScoredOffer[]>,
-  categories: Category[],
-): Bundle[] {
+export function createBundles(categoryResults: Record<Category, ScoredOffer[]>, categories: Category[]): Bundle[] {
   let combinations: ScoredOffer[][] = [[]];
   for (const category of categories) {
     const categoryOffers = categoryResults[category].slice(0, 3);
@@ -579,22 +167,25 @@ export function createBundles(
   }
   return combinations.map((bundleOffers) => {
     const totalPrice = bundleOffers.reduce((sum, offer) => sum + offer.price, 0);
-    const averageScore =
-      bundleOffers.reduce((sum, offer) => sum + offer.score, 0) /
-      bundleOffers.length;
-    const quality =
-      bundleOffers.reduce((sum, offer) => sum + offer.quality, 0) /
-      bundleOffers.length;
+    const averageScore = bundleOffers.reduce((sum, offer) => sum + offer.score, 0) / bundleOffers.length;
+    const quality = bundleOffers.reduce((sum, offer) => sum + offer.quality, 0) / bundleOffers.length;
     const score = Number((averageScore * 0.65 + quality * 0.35).toFixed(1));
-    return {
-      offers: bundleOffers,
-      totalPrice,
-      score,
-      quality: Number(quality.toFixed(1)),
-    };
+    return { offers: bundleOffers, totalPrice, score, quality: Number(quality.toFixed(1)) };
   });
 }
 
 export function formatPrice(price: number) {
   return `€${price.toFixed(0)}`;
+}
+
+/** Rank offers within a category: cheapest, best value (score/price), best overall. */
+export function rankOffers(scored: ScoredOffer[]): ScoredOffer[] {
+  if (scored.length === 0) return [];
+  const cheapest = [...scored].sort((a, b) => a.price - b.price)[0];
+  const bestOverall = [...scored].sort((a, b) => b.score - a.score)[0];
+  const bestValue = [...scored].sort((a, b) => (b.score / Math.max(a.price, 1)) - (a.score / Math.max(b.price, 1)))[0];
+  return scored.map((o) => ({
+    ...o,
+    rank: o.id === cheapest.id ? "cheapest" : o.id === bestValue.id ? "best-value" : o.id === bestOverall.id ? "best-overall" : null,
+  }));
 }
