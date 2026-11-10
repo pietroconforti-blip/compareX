@@ -14,27 +14,45 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "CompareX — Compare better. Choose better.",
+    default: "CompareX — Student Housing, Mobile, Transport & More | Austria & Italy",
     template: "%s | CompareX",
   },
   description:
-    "Find the right combination of housing, mobile plans, transport and more for student life in Austria and Italy — all in one place.",
+    "Compare student housing, mobile plans, transport, gyms and streaming in Vienna, Milan and beyond. AI-powered search and package builder for international students in Austria and Italy.",
   keywords: [
-    "student housing",
-    "mobile plans",
-    "Vienna",
-    "Austria",
-    "Italy",
-    "compare offers",
-    "student life",
+    "student housing Vienna",
+    "student housing Milan",
+    "student mobile plans Austria",
+    "student mobile plans Italy",
+    "Vienna public transport student",
+    "student gym Vienna",
+    "compare student offers",
+    "student life Austria",
+    "student life Italy",
+    "package builder students",
+    "AI student search",
+    "CompareX",
   ],
   authors: [{ name: "CompareX" }],
+  creator: "CompareX",
+  publisher: "CompareX",
   openGraph: {
     title: "CompareX — Compare better. Choose better.",
     description:
-      "Find the right combination of housing, mobile plans, transport and more for student life.",
+      "Find the best student housing, mobile, transport, gym and streaming deals in Austria and Italy. Build your perfect monthly package.",
     type: "website",
     locale: "en_US",
+    siteName: "CompareX",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "CompareX — Student offers in Austria & Italy",
+    description:
+      "AI-powered comparison of housing, mobile, transport and more for students.",
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 
