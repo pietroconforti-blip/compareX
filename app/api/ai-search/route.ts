@@ -23,6 +23,7 @@ type Ranked = {
   score: number;
   reasons: string[];
   searchUrl: string;
+  image?: string;
 };
 
 function toRanked(o: Offer, score: number, reasons: string[]): Ranked {
@@ -36,6 +37,7 @@ function toRanked(o: Offer, score: number, reasons: string[]): Ranked {
     description: o.description,
     score,
     reasons,
+    image: o.image,
     searchUrl: `/search?q=${encodeURIComponent(
       `${categoryLabels[o.category]} ${o.location}`.trim(),
     )}`,

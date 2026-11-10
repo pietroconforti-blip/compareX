@@ -23,6 +23,7 @@ type AiRec = {
   score: number;
   reasons: string[];
   searchUrl: string;
+  image?: string;
 };
 
 export default function Home() {
@@ -105,7 +106,6 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Hero - centered, clean */}
       <section className="border-b border-[#e2e8f0] bg-[#f8fafc]">
         <div className="mx-auto max-w-3xl px-6 py-16 text-center md:py-24">
           <p className="text-xs font-semibold uppercase tracking-widest text-[#1e40af]">Student life in Austria & Italy</p>
@@ -141,23 +141,29 @@ export default function Home() {
           {aiError && <p className="mt-4 text-sm text-red-600">{aiError}</p>}
 
           {(interpretation || recs.length > 0) && (
-            <div className="mx-auto mt-6 max-w-xl space-y-2 text-left">
+            <div className="mx-auto mt-6 max-w-2xl space-y-3 text-left">
               {interpretation && <p className="text-sm text-[#64748b]">{interpretation}</p>}
-              {recs.slice(0, 3).map((r) => (
-                <a key={r.id} href={r.searchUrl} className="card-hover block rounded-xl border border-[#e2e8f0] bg-white px-4 py-3 hover:border-[#1e40af]">
-                  <div className="flex items-baseline justify-between gap-3">
-                    <p className="font-medium">{r.name}</p>
-                    <p className="text-sm font-semibold text-[#1e40af]">{r.priceLabel}</p>
-                  </div>
-                  <p className="mt-0.5 text-xs text-[#64748b]">{r.location} · {categoryLabels[r.category]}</p>
-                </a>
-              ))}
+              <div className="grid gap-3 sm:grid-cols-2">
+                {recs.slice(0, 6).map((r) => (
+                  <a key={r.id} href={r.searchUrl} className="card-hover block overflow-hidden rounded-xl border border-[#e2e8f0] bg-white hover:border-[#1e40af]">
+                    {r.image && (
+                      <img src={r.image} alt={r.name} className="h-36 w-full object-cover" />
+                    )}
+                    <div className="p-4">
+                      <div className="flex items-baseline justify-between gap-3">
+                        <p className="font-medium">{r.name}</p>
+                        <p className="text-sm font-semibold text-[#1e40af]">{r.priceLabel}</p>
+                      </div>
+                      <p className="mt-0.5 text-xs text-[#64748b]">{r.location} · {categoryLabels[r.category]}</p>
+                    </div>
+                  </a>
+                ))}
+              </div>
             </div>
           )}
         </div>
       </section>
 
-      {/* Categories first - quick access */}
       <section className="mx-auto max-w-6xl px-6 py-14">
         <div className="mb-6">
           <h2 className="text-2xl font-semibold tracking-tight">Browse by category</h2>
@@ -173,7 +179,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Package builder */}
       <section className="border-t border-[#e2e8f0] bg-[#f8fafc]">
         <div className="mx-auto max-w-6xl px-6 py-14">
           <div className="mb-6 flex items-end justify-between">
