@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CompareX
+
+**Compare better. Choose better.**
+
+CompareX is a student-focused comparison platform for Austria and Italy. Students can find and compare housing, mobile plans, transport, gyms, and streaming offers — then build affordable monthly packages with AI assistance.
+
+Live demo: [compare-x on Vercel](https://compare-x.vercel.app) (or check your latest deployment)
+
+## Features
+
+- **AI Search** — Natural language queries ("student room under €500 in Vienna with cheap mobile")
+- **Package Builder** — Combine services and see estimated monthly totals
+- **Categories** — Housing, Mobile, Transport, Gym, Streaming
+- **Student-focused data** — Real offers for Vienna, Milan, and more
+- **Checkout** — Stripe-powered ordering flow
+- **Dashboard & Marketplace** — Student tools and peer listings
+- **Moving guide & Contact** — Practical help for international students
+
+## Tech Stack
+
+- **Next.js 16** (App Router)
+- **React 19** + **TypeScript**
+- **Tailwind CSS 4**
+- **Supabase** (backend / auth / data)
+- **Stripe** (payments)
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+git clone https://github.com/pietroconforti-blip/compareX.git
+cd compareX
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Create a `.env.local` file with your Supabase and Stripe keys (see `.env.example` if present, or the docs in `/docs`).
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+app/
+  api/          # Route handlers (AI search, housing, checkout, Stripe, etc.)
+  checkout/     # Checkout flow
+  dashboard/    # Student dashboard
+  search/       # Search results
+  package-builder/
+  ...
+lib/            # Shared data, scoring, Supabase client, supplier adapters
+docs/           # Integration roadmaps and outreach templates
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Contributing
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Pull requests are welcome. For major changes, open an issue first.
 
-## Deploy on Vercel
+## License
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Private / All rights reserved (unless otherwise stated).
