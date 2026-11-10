@@ -115,7 +115,7 @@ function rankLocal(query: string): {
   return {
     interpretation,
     categories: cats,
-    recommendations: ranked.slice(0, 6),
+    recommendations: ranked.slice(0, 8),
     mode: "local",
     language: lang,
   };
@@ -170,21 +170,23 @@ async function rankWithLlm(query: string): Promise<{
   const catalog = catalogForPrompt();
   const system = `You are CompareX AI, a helpful multilingual assistant for students comparing housing, mobile plans, transport, gyms and streaming in Austria and Italy (Vienna & Milan focus).
 
-RULES:
-- Understand the user's request in ANY language (Italian, German, English, Spanish, French, etc.). Reply in the SAME language as the user.
+CRITICAL RULES:
+- Understand the user's request in ANY language. Reply in the SAME language as the user.
+- If the user asks for MULTIPLE things (e.g. housing + mobile, gym + transport, room + phone), you MUST return recommendations for ALL of them.
+- Never ignore a requested category. Cover every category the user mentions.
 - Recommend ONLY offers from the provided catalog. Never invent products or prices.
 - Reply with valid JSON only, no markdown.
 - JSON shape:
 {
-  "interpretation": "short friendly sentence in the user's language explaining what they want",
+  "interpretation": "short friendly sentence in the user's language",
   "categories": ["housing"|"mobile"|"transport"|"gym"|"streaming"],
   "recommendations": [
     { "id": number, "reasons": ["short reason in user's language"], "score": number }
   ]
 }
-- Pick at most 6 offers, best first. score from 1 to 10.
-- Prefer student-friendly and budget-fit when relevant.
-- If vague, suggest solid student defaults for Vienna/Milan.`;
+- Return up to 8 offers. Include at least 2 offers per requested category when possible.
+- Prefer student-friendly and budget-fit options.
+- If the request is vague, still cover the most relevant student categories.`;
 
   const user = `User request: ${query}
 
@@ -257,7 +259,7 @@ ${JSON.stringify(catalog)}`;
       parsed.interpretation?.trim() ||
       "Here are the best matching offers from CompareX.",
     categories,
-    recommendations: recommendations.slice(0, 6),
+    recommendations: recommendations.slice(0, 8),
     mode: "llm",
     provider,
     language: lang,
