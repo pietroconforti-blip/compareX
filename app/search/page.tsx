@@ -108,8 +108,23 @@ function SearchResults() {
   const category = detectCategory(query);
   const providerTerm = ["home4students", "wiener linien", "spusu", "fitinn", "netflix", "a1"].find((term) => query.toLowerCase().includes(term)) ?? "";
 
-  const [country, setCountry] = useState<"All" | Country>(() => detectCountry(query));
+  const requestedCity = params.get("city");
+  const [country, setCountry] = useState<"All" | Country>(() => requestedCity === "Milan" ? "Italy" : requestedCity === "Vienna" ? "Austria" : detectCountry(query));
   const [budget, setBudget] = useState(() => getInitialBudget(query));
+
+  useEffect(() => {
+    if (requestedCity === "Vienna" || requestedCity === "Milan") return;
+    const savedCity = window.localStorage.getItem("comparex-city");
+    if (savedCity === "Vienna") setCountry("Austria");
+    if (savedCity === "Milan") setCountry("Italy");
+  }, [requestedCity]);
+
+  function changeCity(city: "Vienna" | "Milan") {
+    const nextCountry = city === "Vienna" ? "Austria" : "Italy";
+    setCountry(nextCountry);
+    window.localStorage.setItem("comparex-city", city);
+    router.replace(`/search?q=${encodeURIComponent(query)}&city=${city}`);
+  }
   const [sort, setSort] = useState<"price-asc" | "price-desc" | "data">("price-asc");
 
   const [offers, setOffers] = useState<MobileOffer[]>([]);
@@ -241,7 +256,13 @@ function SearchResults() {
             <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#203b72] text-lg font-bold text-white shadow-sm">C</span>
             <span className="text-xl font-bold">CompareX</span>
           </button>
-          <button onClick={() => router.push("/")} className="rounded-xl border border-[#e2e8f0] bg-white px-4 py-2 text-sm font-semibold shadow-sm transition hover:border-[#203b72] hover:bg-slate-50">← Home</button>
+          <div className="flex items-center gap-2">
+            <div className="inline-flex rounded-xl border border-[#e2e8f0] bg-white p-1 shadow-sm" role="group" aria-label="Choose your city">
+              <button type="button" onClick={() => changeCity("Vienna")} aria-pressed={country === "Austria"} className={`rounded-lg px-3 py-2 text-xs font-semibold transition sm:px-4 ${country === "Austria" ? "bg-[#203b72] text-white shadow-sm" : "text-[#475569] hover:bg-[#f1f5f9]"}`}>Vienna</button>
+              <button type="button" onClick={() => changeCity("Milan")} aria-pressed={country === "Italy"} className={`rounded-lg px-3 py-2 text-xs font-semibold transition sm:px-4 ${country === "Italy" ? "bg-[#203b72] text-white shadow-sm" : "text-[#475569] hover:bg-[#f1f5f9]"}`}>Milano</button>
+            </div>
+            <button onClick={() => router.push("/")} className="rounded-xl border border-[#e2e8f0] bg-white px-3 py-2 text-xs font-semibold shadow-sm transition hover:border-[#203b72] hover:bg-slate-50 sm:px-4 sm:text-sm">Home</button>
+          </div>
         </div>
       </header>
 
