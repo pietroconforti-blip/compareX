@@ -117,7 +117,8 @@ export default function Home() {
               ))}
               <a href="/package-builder" className="mt-1 block rounded-lg border-t border-[#e2e8f0] px-3 py-2 text-sm font-medium text-[#1e40af] hover:bg-[#eff6ff]">Package builder</a>
             </nav>
-          </details>
+            </details>
+          </div>
         </div>
       </header>
 
