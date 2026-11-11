@@ -70,7 +70,7 @@ export default function Home() {
   }
 
   function goSearch(q: string) {
-    window.location.href = `/search?q=${encodeURIComponent(`${q} ${city}`)}`;
+    window.location.href = `/search?q=${encodeURIComponent(q)}&city=${encodeURIComponent(city)}`;
   }
 
   async function runAiSearch(q: string) {
@@ -101,10 +101,15 @@ export default function Home() {
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#1e40af] text-sm font-bold text-white">C</div>
             <div>
               <div className="text-lg font-semibold tracking-tight">CompareX</div>
-              <div className="text-[11px] text-[#64748b]">Vienna & Milan</div>
+              <div className="text-[11px] text-[#64748b]">Student essentials</div>
             </div>
           </div>
-          <details className="relative">
+          <div className="flex items-center gap-2">
+            <div className="inline-flex rounded-xl border border-[#e2e8f0] bg-white p-1 shadow-sm" role="group" aria-label="Choose your city">
+              <button type="button" onClick={() => setCity("Vienna")} aria-pressed={city === "Vienna"} className={`rounded-lg px-3 py-2 text-xs font-semibold transition sm:px-4 ${city === "Vienna" ? "bg-[#203b72] text-white shadow-sm" : "text-[#475569] hover:bg-[#f1f5f9]"}`}>Vienna</button>
+              <button type="button" onClick={() => setCity("Milan")} aria-pressed={city === "Milan"} className={`rounded-lg px-3 py-2 text-xs font-semibold transition sm:px-4 ${city === "Milan" ? "bg-[#203b72] text-white shadow-sm" : "text-[#475569] hover:bg-[#f1f5f9]"}`}>Milano</button>
+            </div>
+            <details className="relative">
             <summary className="flex cursor-pointer list-none items-center gap-2 rounded-lg border border-[#e2e8f0] bg-white px-3.5 py-2 text-sm font-medium text-[#334155] hover:border-[#1e40af]">Menu</summary>
             <nav className="absolute right-0 top-full z-50 mt-2 w-52 rounded-xl border border-[#e2e8f0] bg-white p-1.5 shadow-lg">
               {[["student room", "Housing"], ["mobile plan", "Mobile"], ["transport", "Transport"], ["gym", "Gym"], ["streaming", "Streaming"]].map(([q, label]) => (
@@ -118,24 +123,12 @@ export default function Home() {
 
       <section className="border-b border-[#e2e8f0] bg-[#f8fafc]">
         <div className="mx-auto max-w-3xl px-6 py-16 text-center md:py-24">
-          <div className="mb-8 flex flex-col items-center gap-3">
-            <p className="text-xs font-semibold uppercase tracking-widest text-[#64748b]">Choose your city</p>
-            <div className="inline-flex rounded-xl border border-[#e2e8f0] bg-white p-1 shadow-sm" role="group" aria-label="Choose your city">
-              <button type="button" onClick={() => setCity("Vienna")} aria-pressed={city === "Vienna"} className={`rounded-lg px-6 py-3 text-sm font-semibold transition ${city === "Vienna" ? "bg-[#203b72] text-white shadow-sm" : "text-[#475569] hover:bg-[#f1f5f9]"}`}>
-                🇦🇹 Vienna
-              </button>
-              <button type="button" onClick={() => setCity("Milan")} aria-pressed={city === "Milan"} className={`rounded-lg px-6 py-3 text-sm font-semibold transition ${city === "Milan" ? "bg-[#203b72] text-white shadow-sm" : "text-[#475569] hover:bg-[#f1f5f9]"}`}>
-                🇮🇹 Milano
-              </button>
-            </div>
-            <p className="text-xs text-[#64748b]">Showing student offers for {city === "Vienna" ? "Vienna" : "Milano"}</p>
-          </div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-[#1e40af]">Student life in Austria & Italy</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-[#1e40af]">Student life in {city === "Vienna" ? "Vienna" : "Milano"}</p>
           <h1 className="mt-4 text-4xl font-semibold leading-tight tracking-tight md:text-5xl">
             Compare everything.<br />Choose better.
           </h1>
           <p className="mx-auto mt-4 max-w-md text-[#64748b]">
-            Housing, mobile, transport, gym — all in one place for students in Vienna and Milan.
+            Housing, mobile, transport, gym — all in one place for students in {city === "Vienna" ? "Vienna" : "Milano"}.
           </p>
 
           <form className="mx-auto mt-8 max-w-xl" onSubmit={(e) => { e.preventDefault(); runAiSearch(query); }}>
@@ -153,7 +146,7 @@ export default function Home() {
           </form>
 
           <div className="mt-4 flex flex-wrap justify-center gap-2">
-            {["Room under €450 Vienna", "Mobile under €15", "Near Bocconi"].map((chip) => (
+            {[city === "Vienna" ? "Room under €450 Vienna" : "Room under €650 Milano", "Mobile under €15", city === "Vienna" ? "Near FHWien" : "Near Bocconi"].map((chip) => (
               <button key={chip} onClick={() => { setQuery(chip); runAiSearch(chip); }} className="rounded-full border border-[#e2e8f0] bg-white px-3 py-1 text-xs text-[#64748b] hover:border-[#1e40af] hover:text-[#1e40af]">
                 {chip}
               </button>
