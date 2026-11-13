@@ -257,9 +257,9 @@ function SearchResults() {
             <span className="text-xl font-bold">CompareX</span>
           </button>
           <div className="flex items-center gap-2">
-            <div className="inline-flex rounded-xl border border-[#e2e8f0] bg-white p-1 shadow-sm" role="group" aria-label="Choose your city">
-              <button type="button" onClick={() => changeCity("Vienna")} aria-pressed={country === "Austria"} className={`rounded-lg px-3 py-2 text-xs font-semibold transition sm:px-4 ${country === "Austria" ? "bg-[#203b72] text-white shadow-sm" : "text-[#475569] hover:bg-[#f1f5f9]"}`}>Vienna</button>
-              <button type="button" onClick={() => changeCity("Milan")} aria-pressed={country === "Italy"} className={`rounded-lg px-3 py-2 text-xs font-semibold transition sm:px-4 ${country === "Italy" ? "bg-[#203b72] text-white shadow-sm" : "text-[#475569] hover:bg-[#f1f5f9]"}`}>Milano</button>
+            <div className="inline-flex rounded-xl border border-[#e2e8f0] bg-white p-1 shadow-sm" role="group" aria-label="Choose your country">
+              <button type="button" onClick={() => changeCity("Vienna")} aria-pressed={country === "Austria"} className={`rounded-lg px-3 py-2 text-xs font-semibold transition sm:px-4 ${country === "Austria" ? "bg-[#203b72] text-white shadow-sm" : "text-[#475569] hover:bg-[#f1f5f9]"}`}>Austria</button>
+              <button type="button" onClick={() => changeCity("Milan")} aria-pressed={country === "Italy"} className={`rounded-lg px-3 py-2 text-xs font-semibold transition sm:px-4 ${country === "Italy" ? "bg-[#203b72] text-white shadow-sm" : "text-[#475569] hover:bg-[#f1f5f9]"}`}>Italy</button>
             </div>
             <button onClick={() => router.push("/")} className="rounded-xl border border-[#e2e8f0] bg-white px-3 py-2 text-xs font-semibold shadow-sm transition hover:border-[#203b72] hover:bg-slate-50 sm:px-4 sm:text-sm">Home</button>
           </div>
@@ -298,7 +298,6 @@ function SearchResults() {
 
         {category === "housing" && (
           <>
-            <Filters country={country} setCountry={setCountry} budget={budget} setBudget={setBudget} budgetLabel="Maximum monthly price (€)" />
             <h2 className="mt-7 text-xl font-bold">{filteredHousing.length} housing listings</h2>
             {housingLastVerified && <p className="mt-1 text-xs text-slate-500">Last checked: {new Date(`${housingLastVerified}T00:00:00`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}. Confirm availability.</p>}
             {housingLoading && <p className="mt-5 text-slate-600">Loading housing…</p>}
