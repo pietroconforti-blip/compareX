@@ -60,7 +60,7 @@ function Filters({ country, setCountry, budget, setBudget, budgetLabel, sort, se
   );
 }
 
-function OfferCard({ badge, title, subtitle, price, body, href, images = [] }: { badge: string; title: string; subtitle: string; price: string; body: ReactNode; href: string; images?: string[]; }) {
+function OfferCard({ badge, title, subtitle, price, body, href, images = [], category = "", offerId = "" }: { badge: string; title: string; subtitle: string; price: string; body: ReactNode; href: string; images?: string[]; category?: string; offerId?: string; }) {
   const [rating, setRating] = useState(0);
   const brand = subtitle.split(/\s+/).slice(0, 2).join(" ");
   return (
@@ -92,7 +92,7 @@ function OfferCard({ badge, title, subtitle, price, body, href, images = [] }: {
           <p className="mt-1 text-[11px] text-slate-400">Local preview only — not saved.</p>
         </div>
         <div className="mt-auto pt-5">
-          <a href={`/offer?title=${encodeURIComponent(title)}&provider=${encodeURIComponent(subtitle)}&price=${encodeURIComponent(price)}&href=${encodeURIComponent(href)}&badge=${encodeURIComponent(badge)}`} className="block rounded-xl bg-[#203b72] px-4 py-3 text-center text-sm font-semibold text-white hover:bg-[#152a52]">View offer details →</a>
+          <a href={`/offer?title=${encodeURIComponent(title)}&provider=${encodeURIComponent(subtitle)}&price=${encodeURIComponent(price)}&href=${encodeURIComponent(href)}&badge=${encodeURIComponent(badge)}&category=${encodeURIComponent(category)}&offerId=${encodeURIComponent(offerId)}`} className="block rounded-xl bg-[#203b72] px-4 py-3 text-center text-sm font-semibold text-white hover:bg-[#152a52]">View offer details →</a>
           <a href={href} target="_blank" rel="noreferrer" className="mt-2 block rounded-xl border border-[#e2e8f0] px-4 py-3 text-center text-sm font-semibold text-[#203b72] hover:bg-slate-50">Visit provider website ↗</a>
           <a href="/package-builder" className="mt-2 block rounded-xl border border-[#e2e8f0] px-4 py-3 text-center text-sm font-semibold text-[#203b72] hover:bg-slate-50">Add to package →</a>
         </div>
@@ -281,7 +281,7 @@ function SearchResults() {
             {!loading && !loadError && filteredMobile.length === 0 && <div className="mt-5 rounded-2xl border border-[#e2e8f0] bg-white p-6">No mobile plans match these filters. Try another country or budget.</div>}
             <div className="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
               {filteredMobile.map((o) => (
-                <OfferCard key={o.id} badge={o.country} title={o.plan} subtitle={o.provider} price={`€${o.monthlyPrice}/month`} href={o.officialUrl} body={
+                <OfferCard key={o.id} badge={o.country} title={o.plan} subtitle={o.provider} price={`€${o.monthlyPrice}/month`} href={o.officialUrl} category="mobile" offerId={o.id} body={
                   <ul className="space-y-1">
                     <li>{o.dataGB} GB data</li>
                     {o.maxSpeed && <li>Max speed: {o.maxSpeed}</li>}
@@ -305,7 +305,7 @@ function SearchResults() {
             {!housingLoading && !housingError && filteredHousing.length === 0 && <div className="mt-5 rounded-2xl border border-[#e2e8f0] bg-white p-6">No housing matches these filters.</div>}
             <div className="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
               {filteredHousing.map((o) => (
-                <OfferCard key={o.id} badge={`${o.country} · ${o.city}`} title={o.property} subtitle={o.provider} price={o.priceLabel} href={o.officialUrl} images={o.images} body={
+                <OfferCard key={o.id} badge={`${o.country} · ${o.city}`} title={o.property} subtitle={o.provider} price={o.priceLabel} href={o.officialUrl} images={o.images} category="housing" offerId={o.id} body={
                   <ul className="space-y-1">
                     <li>{o.roomType}</li>
                     <li>{o.availability}</li>
@@ -326,7 +326,7 @@ function SearchResults() {
             {!genericLoading && !genericError && filteredGeneric.length === 0 && <div className="mt-5 rounded-2xl border border-[#e2e8f0] bg-white p-6">No offers match these filters.</div>}
             <div className="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
               {filteredGeneric.map((o) => (
-                <OfferCard key={o.id} badge={o.country} title={o.name} subtitle={o.provider} price={o.priceLabel} href={o.url} body={<p>{o.details}</p>} />
+                <OfferCard key={o.id} badge={o.country} title={o.name} subtitle={o.provider} price={o.priceLabel} href={o.url} category={category} offerId={o.id} body={<p>{o.details}</p>} />
               ))}
             </div>
           </>
