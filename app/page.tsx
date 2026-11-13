@@ -105,10 +105,6 @@ export default function Home() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <div className="inline-flex rounded-xl border border-[#e2e8f0] bg-white p-1 shadow-sm" role="group" aria-label="Choose your country">
-              <button type="button" onClick={() => setCity("Vienna")} aria-pressed={city === "Vienna"} className={`rounded-lg px-3 py-2 text-xs font-semibold transition sm:px-4 ${city === "Vienna" ? "bg-[#203b72] text-white shadow-sm" : "text-[#475569] hover:bg-[#f1f5f9]"}`}>Austria</button>
-              <button type="button" onClick={() => setCity("Milan")} aria-pressed={city === "Milan"} className={`rounded-lg px-3 py-2 text-xs font-semibold transition sm:px-4 ${city === "Milan" ? "bg-[#203b72] text-white shadow-sm" : "text-[#475569] hover:bg-[#f1f5f9]"}`}>Italy</button>
-            </div>
             <details className="relative">
             <summary className="flex cursor-pointer list-none items-center gap-2 rounded-lg border border-[#e2e8f0] bg-white px-3.5 py-2 text-sm font-medium text-[#334155] hover:border-[#1e40af]">Menu</summary>
             <nav className="absolute right-0 top-full z-50 mt-2 w-52 rounded-xl border border-[#e2e8f0] bg-white p-1.5 shadow-lg">
@@ -146,12 +142,33 @@ export default function Home() {
             </div>
           </form>
 
+          <div className="mt-3 flex justify-center">
+            <div className="inline-flex rounded-xl border border-[#e2e8f0] bg-white p-1 shadow-sm" role="group" aria-label="Choose your country">
+              <button type="button" onClick={() => setCity("Vienna")} aria-pressed={city === "Vienna"} className={`rounded-lg px-4 py-2 text-xs font-semibold transition ${city === "Vienna" ? "bg-[#203b72] text-white shadow-sm" : "text-[#475569] hover:bg-[#f1f5f9]"}`}>🇦🇹 Austria</button>
+              <button type="button" onClick={() => setCity("Milan")} aria-pressed={city === "Milan"} className={`rounded-lg px-4 py-2 text-xs font-semibold transition ${city === "Milan" ? "bg-[#203b72] text-white shadow-sm" : "text-[#475569] hover:bg-[#f1f5f9]"}`}>🇮🇹 Italy</button>
+            </div>
+          </div>
+
           <div className="mt-4 flex flex-wrap justify-center gap-2">
             {[city === "Vienna" ? "Room under €450 Vienna" : "Room under €650 Milano", "Mobile under €15", city === "Vienna" ? "Near FHWien" : "Near Bocconi"].map((chip) => (
               <button key={chip} onClick={() => { setQuery(chip); runAiSearch(chip); }} className="rounded-full border border-[#e2e8f0] bg-white px-3 py-1 text-xs text-[#64748b] hover:border-[#1e40af] hover:text-[#1e40af]">
                 {chip}
               </button>
             ))}
+          </div>
+
+          <div className="relative mx-auto mt-8 h-48 max-w-2xl overflow-hidden rounded-2xl shadow-sm sm:h-64">
+            <img
+              src={city === "Vienna" ? "https://images.contentstack.io/v3/assets/blt06f605a34f1194ff/blt12393c9e299ed438/66c730b83f4c1968bc1ce76d/iStock-1196925572-MOBILE-HEADER.jpg?auto=avif&format=webp&quality=100&width=1440" : "https://cdn.tourradar.com/s3/tour/1500x800/223479_61ad9ded8f29c.jpg"}
+              alt={city === "Vienna" ? "Panoramic view over Vienna's historic city centre" : "Panoramic view over Milan and the Duomo"}
+              className="h-full w-full object-cover"
+              loading="eager"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-slate-950/10 to-transparent" />
+            <div className="absolute bottom-4 left-5 text-left text-white">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/80">Explore your city</p>
+              <p className="mt-1 text-xl font-semibold">{city === "Vienna" ? "Make Vienna your home." : "Make Milan your home."}</p>
+            </div>
           </div>
 
           {aiError && <p className="mt-4 text-sm text-red-600">{aiError}</p>}
