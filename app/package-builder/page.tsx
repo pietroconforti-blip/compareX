@@ -5,6 +5,8 @@ import { offers as baseOffers, categoryLabels, categoryIcons, type Category, typ
 
 const categories = Object.keys(categoryLabels) as Category[];
 
+type SavedOffer = { id: string; title: string; provider: string; price: string; href: string; category: string; badge: string; };
+
 export default function PackageBuilderPage() {
   const [selected, setSelected] = useState<Category[]>(["housing", "mobile", "transport", "gym"]);
   const [catalogue, setCatalogue] = useState<Offer[]>(baseOffers);
@@ -13,11 +15,27 @@ export default function PackageBuilderPage() {
   const [location, setLocation] = useState<"Vienna" | "Milan">("Vienna");
   const [built, setBuilt] = useState(false);
   const [chosenOffers, setChosenOffers] = useState<Partial<Record<Category, string>>>({});
+  const [savedOffers, setSavedOffers] = useState<SavedOffer[]>([]);
   const resultRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (built) resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [built]);
+
+  useEffect(() => {
+    try {
+      const parsed = JSON.parse(window.localStorage.getItem("comparex-selected-offers") || "[]");
+      if (Array.isArray(parsed)) setSavedOffers(parsed);
+    } catch {
+      setSavedOffers([]);
+    }
+  }, []);
+
+  function removeSavedOffer(id: string) {
+    const next = savedOffers.filter((item) => item.id !== id);
+    setSavedOffers(next);
+    window.localStorage.setItem("comparex-selected-offers", JSON.stringify(next));
+  }
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -208,6 +226,22 @@ export default function PackageBuilderPage() {
       </header>
 
       <div className="mx-auto max-w-6xl px-6 py-10 md:py-14">
+        {savedOffers.length > 0 && <section id="saved-offers" className="mb-10 rounded-3xl border border-[#d5dceb] bg-white p-6 shadow-sm md:p-8">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div><p className="text-xs font-bold uppercase tracking-wider text-[#203b72]">Your saved selections</p><h2 className="mt-2 text-2xl font-bold">My package</h2><p className="mt-1 text-sm text-slate-500">{savedOffers.length} offer{savedOffers.length === 1 ? "" : "s"} saved from the offer details pages.</p></div>
+          </div>
+          <div className="mt-5 grid gap-3 md:grid-cols-2">
+            {savedOffers.map((item) => <article key={item.id} className="rounded-2xl border border-[#e2e8f0] p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{item.badge} · {item.provider}</p>
+              <h3 className="mt-2 font-bold">{item.title}</h3>
+              <p className="mt-2 text-lg font-bold text-[#203b72]">{item.price}</p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <a href={item.href} target="_blank" rel="noreferrer" className="rounded-lg bg-[#203b72] px-3 py-2 text-xs font-bold text-white">Continue to provider ↗</a>
+                <button type="button" onClick={() => removeSavedOffer(item.id)} className="rounded-lg border border-[#d5dceb] px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50">Remove</button>
+              </div>
+            </article>)}
+          </div>
+        </section>}
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#2563eb]">Personal package builder</p>
         <h1 className="mt-3 text-4xl font-bold tracking-tight md:text-5xl">Build your student life package.</h1>
         <p className="mt-4 max-w-2xl text-lg leading-7 text-slate-600">Choose where you plan to live, then select services and a budget. Your package will only include offers available in that city or country.</p>
