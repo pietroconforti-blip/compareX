@@ -110,7 +110,7 @@ function OfferDetails() {
                       <p className="mt-2 text-xs leading-5 text-slate-500">{item.availability}</p>
                       <div className="mt-auto grid gap-2 pt-5">
                         <button type="button" onClick={() => addResidenceToPackage(item)} className="rounded-xl border border-[#1a3470] px-4 py-3 text-sm font-bold text-[#1a3470] hover:bg-blue-50">{savedIds.includes(item.id) ? "Added to my package ✓" : "Add to my package"}</button>
-                        <a href={item.officialUrl} target="_blank" rel="noreferrer" className="rounded-xl bg-[#1a3470] px-4 py-3 text-center text-sm font-bold text-white hover:bg-[#12254f]">Direct checkout with STUWO ↗</a>
+                        <a href={item.officialUrl} target="_blank" rel="noreferrer" className="rounded-xl bg-[#1a3470] px-4 py-3 text-center text-sm font-bold text-white hover:bg-[#12254f]">Book directly with STUWO ↗</a>
                       </div>
                     </div>
                   </article>
