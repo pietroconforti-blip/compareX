@@ -105,7 +105,7 @@ function SearchResults() {
   const router = useRouter();
   const query = params.get("q") ?? "";
   const category = detectCategory(query);
-  const providerTerm = ["home4students", "wiener linien", "spusu", "fitinn", "netflix", "a1"].find((term) => query.toLowerCase().includes(term)) ?? "";
+  const providerTerm = ["home4students", "wiener linien", "spusu", "fitinn", "netflix", "a1", "stuwo"].find((term) => query.toLowerCase().includes(term)) ?? "";
 
   const requestedCity = params.get("city");
   const [country, setCountry] = useState<"All" | Country>(() => requestedCity === "Milan" ? "Italy" : requestedCity === "Vienna" ? "Austria" : detectCountry(query));
@@ -272,7 +272,6 @@ function SearchResults() {
 
         {category === "mobile" && (
           <>
-            <Filters country={country} setCountry={setCountry} budget={budget} setBudget={setBudget} budgetLabel="Maximum monthly price (€)" sort={sort} setSort={setSort} showSort />
             <h2 className="mt-7 text-xl font-bold">{filteredMobile.length} mobile plans</h2>
             {mobileLastVerified && <p className="mt-1 text-xs text-slate-500">Last checked: {new Date(`${mobileLastVerified}T00:00:00`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}. Not live quotes.</p>}
             {loading && <p className="mt-5 text-slate-600">Loading mobile plans…</p>}
