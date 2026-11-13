@@ -161,7 +161,7 @@ export default function Home() {
               {interpretation && <p className="text-sm text-[#64748b]">{interpretation}</p>}
               <div className="grid gap-3 sm:grid-cols-2">
                 {recs.slice(0, 6).map((r) => (
-                  <a key={r.id} href={r.searchUrl} className="card-hover block overflow-hidden rounded-xl border border-[#e2e8f0] bg-white hover:border-[#1e40af]">
+                  <a key={r.id} href={`${r.searchUrl}&query=${encodeURIComponent(text)}`} className="card-hover block overflow-hidden rounded-xl border border-[#e2e8f0] bg-white hover:border-[#1e40af]">
                     {r.image && (
                       <img src={r.image} alt={r.name} className="h-36 w-full object-cover" />
                     )}
