@@ -94,7 +94,6 @@ function OfferCard({ badge, title, subtitle, price, body, href, images = [], cat
         <div className="mt-auto pt-5">
           <a href={`/offer?title=${encodeURIComponent(title)}&provider=${encodeURIComponent(subtitle)}&price=${encodeURIComponent(price)}&href=${encodeURIComponent(href)}&badge=${encodeURIComponent(badge)}&category=${encodeURIComponent(category)}&offerId=${encodeURIComponent(offerId)}`} className="block rounded-xl bg-[#203b72] px-4 py-3 text-center text-sm font-semibold text-white hover:bg-[#152a52]">View offer details →</a>
           <a href={href} target="_blank" rel="noreferrer" className="mt-2 block rounded-xl border border-[#e2e8f0] px-4 py-3 text-center text-sm font-semibold text-[#203b72] hover:bg-slate-50">Visit provider website ↗</a>
-          <a href="/package-builder" className="mt-2 block rounded-xl border border-[#e2e8f0] px-4 py-3 text-center text-sm font-semibold text-[#203b72] hover:bg-slate-50">Add to package →</a>
         </div>
       </div>
     </article>
