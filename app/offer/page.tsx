@@ -30,6 +30,7 @@ function OfferDetails() {
   const related = useMemo(() => housing.filter((item) =>
     item.provider.toLowerCase() === provider.toLowerCase() && item.id !== offerId
   ), [housing, provider, offerId]);
+  const providerHref = related[0]?.officialUrl || housing.find((item) => item.provider.toLowerCase() === provider.toLowerCase())?.officialUrl || href;
 
   function addToPackage() {
     try {
@@ -73,7 +74,7 @@ function OfferDetails() {
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <button type="button" onClick={addToPackage} className="flex-1 rounded-xl border border-[#1a3470] px-5 py-4 text-sm font-bold text-[#1a3470] hover:bg-blue-50">{saved ? "Added to my package ✓" : "Add to my package +"}</button>
               {saved && <a href="/package-builder#saved-offers" className="flex-1 rounded-xl border border-[#d5dceb] px-5 py-4 text-center text-sm font-bold text-[#1a3470] hover:bg-slate-50">View my package →</a>}
-              <a href={href} target="_blank" rel="noreferrer" className="flex-1 rounded-xl bg-[#1a3470] px-5 py-4 text-center text-sm font-bold text-white hover:bg-[#12254f]">Checkout with provider ↗</a>
+              <a href={providerHref} target="_blank" rel="noreferrer" className="flex-1 rounded-xl bg-[#1a3470] px-5 py-4 text-center text-sm font-bold text-white hover:bg-[#12254f]">Checkout with provider ↗</a>
             </div>
             <p className="mt-3 text-xs leading-5 text-slate-500">Checkout opens the provider’s official booking or purchase page. CompareX does not charge you for third-party offers.</p>
           </div>
