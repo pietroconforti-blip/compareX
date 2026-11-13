@@ -81,7 +81,7 @@ export default function Home() {
     setRecs([]);
     setInterpretation("");
     try {
-      const res = await fetch("/api/ai-search", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query: `${text} ${city}` }) });
+      const res = await fetch("/api/ai-search", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query: text, country: city === "Vienna" ? "Austria" : "Italy" }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "AI search failed");
       setInterpretation(data.interpretation || "");
@@ -105,9 +105,9 @@ export default function Home() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <div className="inline-flex rounded-xl border border-[#e2e8f0] bg-white p-1 shadow-sm" role="group" aria-label="Choose your city">
-              <button type="button" onClick={() => setCity("Vienna")} aria-pressed={city === "Vienna"} className={`rounded-lg px-3 py-2 text-xs font-semibold transition sm:px-4 ${city === "Vienna" ? "bg-[#203b72] text-white shadow-sm" : "text-[#475569] hover:bg-[#f1f5f9]"}`}>Vienna</button>
-              <button type="button" onClick={() => setCity("Milan")} aria-pressed={city === "Milan"} className={`rounded-lg px-3 py-2 text-xs font-semibold transition sm:px-4 ${city === "Milan" ? "bg-[#203b72] text-white shadow-sm" : "text-[#475569] hover:bg-[#f1f5f9]"}`}>Milano</button>
+            <div className="inline-flex rounded-xl border border-[#e2e8f0] bg-white p-1 shadow-sm" role="group" aria-label="Choose your country">
+              <button type="button" onClick={() => setCity("Vienna")} aria-pressed={city === "Vienna"} className={`rounded-lg px-3 py-2 text-xs font-semibold transition sm:px-4 ${city === "Vienna" ? "bg-[#203b72] text-white shadow-sm" : "text-[#475569] hover:bg-[#f1f5f9]"}`}>Austria</button>
+              <button type="button" onClick={() => setCity("Milan")} aria-pressed={city === "Milan"} className={`rounded-lg px-3 py-2 text-xs font-semibold transition sm:px-4 ${city === "Milan" ? "bg-[#203b72] text-white shadow-sm" : "text-[#475569] hover:bg-[#f1f5f9]"}`}>Italy</button>
             </div>
             <details className="relative">
             <summary className="flex cursor-pointer list-none items-center gap-2 rounded-lg border border-[#e2e8f0] bg-white px-3.5 py-2 text-sm font-medium text-[#334155] hover:border-[#1e40af]">Menu</summary>
