@@ -38,7 +38,7 @@ function toRanked(o: Offer, score: number, reasons: string[]): Ranked {
     score,
     reasons,
     image: o.image,
-    searchUrl: `/offer?title=${encodeURIComponent(o.name)}&provider=${encodeURIComponent(o.location)}&price=${encodeURIComponent(o.priceLabel)}&badge=${encodeURIComponent(categoryLabels[o.category])}&href=${encodeURIComponent(o.sourceUrl || "/")}&offerId=${o.id}&category=${o.category}`,
+    searchUrl: `/offer?title=${encodeURIComponent(o.name)}&provider=${encodeURIComponent(o.name.startsWith("STUWO") ? "STUWO" : o.location)}&price=${encodeURIComponent(o.priceLabel)}&badge=${encodeURIComponent(categoryLabels[o.category])}&href=${encodeURIComponent(o.sourceUrl || "/")}&offerId=${o.id}&category=${o.category}`,
   };
 }
 
