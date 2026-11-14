@@ -328,34 +328,49 @@ export default function PackageBuilderPage() {
         </div>}
 
         {built && <section ref={resultRef} className="mt-8 scroll-mt-6 rounded-3xl border border-[#c7d7f5] bg-white p-6 shadow-sm md:p-8">
-          <p className="text-xs font-bold uppercase tracking-wider text-[#2563eb]">Package ready</p>
-          <div className="mt-2 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-            <div><h2 className="text-2xl font-bold">Your suggested combination</h2><p className="mt-1 text-slate-600">Estimated total: {formatPrice(total)} / month</p></div>
-<span className="inline-flex items-center justify-center rounded-xl border border-[#d5dceb] bg-slate-50 px-5 py-4 text-sm font-semibold text-slate-700">Choose providers below to continue ↘</span>
+          <p className="text-xs font-bold uppercase tracking-wider text-[#2563eb]">Package completed</p>
+          <div className="mt-2 flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+            <div>
+              <h2 className="text-2xl font-bold">Your package summary</h2>
+              <p className="mt-1 text-sm text-slate-500">{location} · {picks.length} selected services</p>
+            </div>
+            <div className="rounded-2xl bg-[#f2f6ff] px-5 py-4 sm:min-w-48">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Estimated monthly total</p>
+              <p className="mt-1 text-2xl font-bold text-[#1a3470]">{formatPrice(total)} <span className="text-sm font-medium text-slate-500">/ month</span></p>
+            </div>
           </div>
-<p className="mt-3 text-xs text-slate-500">Destination: {location}. Your package is based on the selected services and monthly budget. CompareX is currently a comparison tool: provider prices and availability must be confirmed on official pages.</p>
-          <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-slate-600">{selected.length} selected categories · Budget: {budget ? formatPrice(Number(budget)) : "Not specified"} / month</p>
-            <button type="button" onClick={() => setBuilt(false)} className="rounded-xl border border-[#d5dceb] px-4 py-2 text-sm font-semibold text-[#1a3470] hover:bg-blue-50">← Edit needs and budget</button>
-          </div>
-          <div className="mt-6 flex flex-col gap-3 rounded-2xl bg-[#f2f6ff] p-5 sm:flex-row sm:items-center sm:justify-between">
-            <div><p className="font-bold text-[#12254f]">Continue with the providers</p><p className="mt-1 text-sm text-slate-600">CompareX is currently a comparison platform, not a seller or payment intermediary. Use the official provider links below to check current terms and complete any purchase directly with the provider.</p></div>
-            <button type="button" onClick={async () => { const items = picks.map(({ category, name, price, priceLabel, location: offerLocation, sourceUrl }) => ({ category, name, price, priceLabel, location: offerLocation, sourceUrl })); const savedPackage = { items, destination: location, budget, savedAt: new Date().toISOString() }; try { localStorage.setItem("comparex-saved-package", JSON.stringify(savedPackage)); if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) { const supabase = createClient(); const { data: { user } } = await supabase.auth.getUser(); if (user) { const { error } = await supabase.from("comparex_customer_packages").insert({ user_id: user.id, destination: location, budget, items }); if (error) sessionStorage.setItem("comparex-package-sync-notice", "Your package is saved on this device, but cloud sync is not ready. Check that the CompareX database migration has been applied."); } } window.location.href = "/dashboard"; } catch { window.alert("Could not save this package. Please try again."); } }} disabled={picks.length < 2} className="shrink-0 rounded-xl bg-[#1a3470] px-5 py-3 font-bold text-white hover:bg-[#12254f] disabled:opacity-50">Save package →</button>
-          </div>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <div className="mt-5 divide-y divide-slate-100 rounded-2xl border border-slate-200">
             {picks.map((offer) => (
-              <div key={offer.id} className="rounded-xl border border-[#d5dceb] p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{categoryIcons[offer.category]} {categoryLabels[offer.category]}</p>
-                <label className="mt-2 block text-sm font-semibold">Recommended offer
-                  <select value={offer.name} onChange={(event) => setChosenOffers((current) => ({ ...current, [offer.category]: event.target.value }))} className="mt-2 w-full rounded-lg border border-[#d5dceb] bg-white px-3 py-2 text-sm font-medium">
-                    {(offersByCategory[offer.category] ?? []).map((alternative) => <option key={alternative.id} value={alternative.name}>{alternative.name} · {formatPrice(alternative.price)}/month</option>)}
-                  </select>
-                </label>
-                <p className="mt-2 text-sm text-slate-600">{offer.description}</p>
-                <p className="mt-2 font-bold text-[#1a3470]">{formatPrice(offer.price)} / month <span className="text-xs font-normal text-slate-500">(estimate)</span></p>
-                {offer.sourceUrl ? <a href={offer.sourceUrl} target="_blank" rel="noreferrer" className="mt-2 inline-flex text-sm font-semibold text-[#1a3470] underline underline-offset-4">View provider ↗</a> : <span className="mt-2 block text-xs text-slate-500">Provider link not available</span>}
+              <div key={offer.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{categoryIcons[offer.category]} {categoryLabels[offer.category]}</p>
+                  <p className="mt-1 font-semibold">{offer.name}</p>
+                </div>
+                <p className="font-bold text-[#1a3470]">{formatPrice(offer.price)} <span className="text-xs font-normal text-slate-500">/ month</span></p>
               </div>
             ))}
+          </div>
+          <p className="mt-4 text-xs leading-5 text-slate-500">Budget: {budget ? formatPrice(Number(budget)) : "Not specified"} / month. Prices are estimates and must be confirmed by each provider. No payment is collected by CompareX at this stage.</p>
+          <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <button type="button" onClick={() => setBuilt(false)} className="rounded-xl border border-[#d5dceb] px-5 py-3 font-semibold text-[#1a3470] hover:bg-blue-50">← Edit package</button>
+            <button type="button" onClick={async () => {
+              const items = picks.map(({ category, name, price, priceLabel, location: offerLocation, sourceUrl }) => ({ category, name, price, priceLabel, location: offerLocation, sourceUrl }));
+              const savedPackage = { items, destination: location, budget, savedAt: new Date().toISOString() };
+              try {
+                localStorage.setItem("comparex-saved-package", JSON.stringify(savedPackage));
+                if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) {
+                  const supabase = createClient();
+                  const { data: { user } } = await supabase.auth.getUser();
+                  if (user) {
+                    const { error } = await supabase.from("comparex_customer_packages").insert({ user_id: user.id, destination: location, budget, items });
+                    if (error) sessionStorage.setItem("comparex-package-sync-notice", "Your package is saved on this device, but cloud sync is not ready yet.");
+                  }
+                }
+                window.location.href = "/checkout";
+              } catch {
+                window.alert("Could not save this package. Please try again.");
+              }
+            }} disabled={picks.length < 2} className="rounded-xl bg-[#1a3470] px-6 py-4 font-bold text-white shadow-md hover:bg-[#12254f] disabled:opacity-50">Continue to checkout →</button>
           </div>
         </section>}
       </div>
