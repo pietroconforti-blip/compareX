@@ -55,7 +55,7 @@ function detectLanguage(text: string): "it" | "de" | "en" {
   return "en";
 }
 
-function rankLocal(query: string): {
+function rankLocal(query: string, market?: string): {
   interpretation: string;
   categories: Category[];
   recommendations: Ranked[];
@@ -69,6 +69,8 @@ function rankLocal(query: string): {
     categories.length ? categories : (["housing", "mobile"] as Category[]),
   );
   const preferences = detectPreferences(query);
+  if (market === "austria" && !preferences.vienna && !preferences.milan) preferences.vienna = true;
+  if (market === "italy" && !preferences.vienna && !preferences.milan) preferences.milan = true;
   const cats = categories.length
     ? categories
     : (["housing", "mobile", "transport"] as Category[]);
@@ -138,7 +140,7 @@ function catalogForPrompt() {
   }));
 }
 
-async function rankWithLlm(query: string): Promise<{
+async function rankWithLlm(query: string, market?: string): Promise<{
   interpretation: string;
   categories: Category[];
   recommendations: Ranked[];
@@ -190,7 +192,8 @@ CRITICAL RULES:
 - Prefer student-friendly and budget-fit options.
 - If the request is vague, still cover the most relevant student categories.`;
 
-  const user = `User request: ${query}
+  const marketHint = market === "austria" ? " Prefer Austria/Vienna offers unless the user specifies otherwise." : market === "italy" ? " Prefer Italy/Milan offers unless the user specifies otherwise." : "";
+  const user = `User request: ${query}${marketHint}
 
 Catalog:
 ${JSON.stringify(catalog)}`;
@@ -272,6 +275,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const query = String(body?.query ?? "").trim();
+    const market = String(body?.market ?? "").toLowerCase();
     if (!query) {
       return NextResponse.json(
         { error: "Write what you need, e.g. a room under €500 in Vienna / una stanza sotto 500 a Vienna" },
@@ -279,7 +283,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const llm = await rankWithLlm(query);
+    const llm = await rankWithLlm(query, market);
     if (llm) {
       return NextResponse.json({
         query,
@@ -294,7 +298,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const local = rankLocal(query);
+    const local = rankLocal(query, market);
     return NextResponse.json({
       query,
       assistant: "CompareX AI",
