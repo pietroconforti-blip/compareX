@@ -27,18 +27,19 @@ type Ranked = {
 };
 
 function toRanked(o: Offer, score: number, reasons: string[]): Ranked {
+  const city = ["Italy", "Milan"].includes(o.location) ? "Milan" : "Vienna";
   return {
     id: o.id,
-    name: o.name,
+    name: `Explore ${categoryLabels[o.category]}`,
     category: o.category,
-    priceLabel: o.priceLabel,
-    price: o.price,
-    location: o.location,
-    description: o.description,
+    priceLabel: "View current offers",
+    price: 0,
+    location: city,
+    description: "Browse provider listings, then confirm the current price, eligibility and terms on the provider's official website.",
     score,
     reasons,
+    searchUrl: `/search?q=${encodeURIComponent(o.category)}&city=${city}`,
     image: o.image,
-    searchUrl: `/offer?title=${encodeURIComponent(o.name)}&provider=${encodeURIComponent(o.name.startsWith("STUWO") ? "STUWO" : o.location)}&price=${encodeURIComponent(o.priceLabel)}&badge=${encodeURIComponent(categoryLabels[o.category])}&href=${encodeURIComponent(o.sourceUrl || "/")}&offerId=${o.id}&category=${o.category}`,
   };
 }
 
@@ -116,7 +117,7 @@ function rankLocal(query: string, country: "Austria" | "Italy"): {
   return {
     interpretation,
     categories: cats,
-    recommendations: ranked.slice(0, 8),
+    recommendations: ranked.filter((item, index, all) => all.findIndex((candidate) => candidate.category === item.category) === index).slice(0, 5),
     mode: "local",
     language: lang,
   };
@@ -260,7 +261,7 @@ ${JSON.stringify(catalog)}`;
       parsed.interpretation?.trim() ||
       "Here are the best matching offers from CompareX.",
     categories,
-    recommendations: recommendations.slice(0, 8),
+    recommendations: recommendations.filter((item, index, all) => all.findIndex((candidate) => candidate.category === item.category) === index).slice(0, 5),
     mode: "llm",
     provider,
     language: lang,
