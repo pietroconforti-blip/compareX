@@ -26,6 +26,8 @@ type AiRec = {
   image?: string;
 };
 
+type Market = "austria" | "italy";
+
 export default function Home() {
   const [query, setQuery] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
@@ -34,15 +36,31 @@ export default function Home() {
   const [recs, setRecs] = useState<AiRec[]>([]);
   const [packageBudget, setPackageBudget] = useState("900");
   const [packageCategories, setPackageCategories] = useState<Category[]>(["housing", "mobile", "transport"]);
+  const [market, setMarket] = useState<Market>("austria");
+
+  const preferences = useMemo(
+    () => ({
+      student: true,
+      quality: false,
+      cheap: false,
+      vienna: market === "austria",
+      milan: market === "italy",
+      university: false,
+    }),
+    [market],
+  );
 
   const packageCategoryResults = useMemo(() => {
     const output = {} as Record<Category, ReturnType<typeof calculateScore>[]>;
     for (const category of packageCategories) {
-      const scored = offers.filter((o) => o.category === category).map((o) => calculateScore(o, { student: true, quality: false, cheap: false, vienna: true, milan: false, university: false })).sort((a, b) => b.score - a.score);
+      const scored = offers
+        .filter((o) => o.category === category)
+        .map((o) => calculateScore(o, preferences))
+        .sort((a, b) => b.score - a.score);
       output[category] = rankOffers(scored);
     }
     return output;
-  }, [packageCategories]);
+  }, [packageCategories, preferences]);
 
   const packageBundles = useMemo(() => {
     if (packageCategories.length < 2) return [];
@@ -56,7 +74,7 @@ export default function Home() {
   const best = [...pool].sort((a, b) => b.score - a.score || a.totalPrice - b.totalPrice)[0] ?? null;
 
   function toggleCategory(category: Category) {
-    setPackageCategories((cur) => cur.includes(category) ? cur.filter((x) => x !== category) : [...cur, category]);
+    setPackageCategories((cur) => (cur.includes(category) ? cur.filter((x) => x !== category) : [...cur, category]));
   }
 
   function goSearch(q: string) {
@@ -71,7 +89,11 @@ export default function Home() {
     setRecs([]);
     setInterpretation("");
     try {
-      const res = await fetch("/api/ai-search", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query: text }) });
+      const res = await fetch("/api/ai-search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: text }),
+      });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "AI search failed");
       setInterpretation(data.interpretation || "");
@@ -95,12 +117,18 @@ export default function Home() {
             </div>
           </div>
           <details className="relative">
-            <summary className="flex cursor-pointer list-none items-center gap-2 rounded-lg border border-[#e2e8f0] bg-white px-3.5 py-2 text-sm font-medium text-[#334155] hover:border-[#1e40af]">Menu</summary>
+            <summary className="flex cursor-pointer list-none items-center gap-2 rounded-lg border border-[#e2e8f0] bg-white px-3.5 py-2 text-sm font-medium text-[#334155] hover:border-[#1e40af]">
+              Menu
+            </summary>
             <nav className="absolute right-0 top-full z-50 mt-2 w-52 rounded-xl border border-[#e2e8f0] bg-white p-1.5 shadow-lg">
               {[["student room", "Housing"], ["mobile plan", "Mobile"], ["transport", "Transport"], ["gym", "Gym"], ["streaming", "Streaming"]].map(([q, label]) => (
-                <button key={q} onClick={() => goSearch(q)} className="block w-full rounded-lg px-3 py-2 text-left text-sm text-[#334155] hover:bg-[#eff6ff] hover:text-[#1e40af]">{label}</button>
+                <button key={q} onClick={() => goSearch(q)} className="block w-full rounded-lg px-3 py-2 text-left text-sm text-[#334155] hover:bg-[#eff6ff] hover:text-[#1e40af]">
+                  {label}
+                </button>
               ))}
-              <a href="/package-builder" className="mt-1 block rounded-lg border-t border-[#e2e8f0] px-3 py-2 text-sm font-medium text-[#1e40af] hover:bg-[#eff6ff]">Package builder</a>
+              <a href="/package-builder" className="mt-1 block rounded-lg border-t border-[#e2e8f0] px-3 py-2 text-sm font-medium text-[#1e40af] hover:bg-[#eff6ff]">
+                Package builder
+              </a>
             </nav>
           </details>
         </div>
@@ -110,18 +138,36 @@ export default function Home() {
         <div className="mx-auto max-w-3xl px-6 py-16 text-center md:py-24">
           <p className="text-xs font-semibold uppercase tracking-widest text-[#1e40af]">Student life in Austria & Italy</p>
           <h1 className="mt-4 text-4xl font-semibold leading-tight tracking-tight md:text-5xl">
-            Compare everything.<br />Choose better.
+            Compare everything.
+            <br />
+            Choose better.
           </h1>
-          <p className="mx-auto mt-4 max-w-md text-[#64748b]">
-            Housing, mobile, transport, gym — all in one place for students in Vienna and Milan.
-          </p>
+          <p className="mx-auto mt-4 max-w-md text-[#64748b]">Housing, mobile, transport, gym — all in one place for students in Vienna and Milan.</p>
 
-          <form className="mx-auto mt-8 max-w-xl" onSubmit={(e) => { e.preventDefault(); runAiSearch(query); }}>
+          <div className="mt-6 flex justify-center gap-2">
+            {(["austria", "italy"] as Market[]).map((m) => (
+              <button
+                key={m}
+                onClick={() => setMarket(m)}
+                className={`rounded-full px-4 py-1.5 text-xs font-medium transition ${market === m ? "bg-[#1e40af] text-white" : "border border-[#e2e8f0] bg-white text-[#64748b] hover:border-[#1e40af]"}`}
+              >
+                {m === "austria" ? "Austria" : "Italy"}
+              </button>
+            ))}
+          </div>
+
+          <form
+            className="mx-auto mt-6 max-w-xl"
+            onSubmit={(e) => {
+              e.preventDefault();
+              runAiSearch(query);
+            }}
+          >
             <div className="flex items-center gap-2 rounded-xl border border-[#e2e8f0] bg-white p-1.5 shadow-sm focus-within:border-[#1e40af] focus-within:ring-2 focus-within:ring-[#1e40af]/20">
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Student room under 450 in Vienna…"
+                placeholder={market === "austria" ? "Student room under 450 in Vienna…" : "Stanza studente sotto 450 a Milano…"}
                 className="flex-1 bg-transparent px-3 py-2.5 text-sm outline-none placeholder:text-[#94a3b8]"
               />
               <button type="submit" disabled={aiLoading} className="rounded-lg bg-[#1e40af] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#1e3a8a] disabled:opacity-50">
@@ -131,8 +177,18 @@ export default function Home() {
           </form>
 
           <div className="mt-4 flex flex-wrap justify-center gap-2">
-            {["Room under €450 Vienna", "Mobile under €15", "Near Bocconi"].map((chip) => (
-              <button key={chip} onClick={() => { setQuery(chip); runAiSearch(chip); }} className="rounded-full border border-[#e2e8f0] bg-white px-3 py-1 text-xs text-[#64748b] hover:border-[#1e40af] hover:text-[#1e40af]">
+            {(market === "austria"
+              ? ["Room under €450 Vienna", "Mobile under €15", "Wiener Linien"]
+              : ["Stanza sotto €450 Milano", "Mobile under €15", "Near Bocconi"]
+            ).map((chip) => (
+              <button
+                key={chip}
+                onClick={() => {
+                  setQuery(chip);
+                  runAiSearch(chip);
+                }}
+                className="rounded-full border border-[#e2e8f0] bg-white px-3 py-1 text-xs text-[#64748b] hover:border-[#1e40af] hover:text-[#1e40af]"
+              >
                 {chip}
               </button>
             ))}
@@ -146,15 +202,16 @@ export default function Home() {
               <div className="grid gap-3 sm:grid-cols-2">
                 {recs.slice(0, 6).map((r) => (
                   <a key={r.id} href={r.searchUrl} className="card-hover block overflow-hidden rounded-xl border border-[#e2e8f0] bg-white hover:border-[#1e40af]">
-                    {r.image && (
-                      <img src={r.image} alt={r.name} className="h-36 w-full object-cover" />
-                    )}
+                    {r.image && <img src={r.image} alt={r.name} className="h-36 w-full object-cover" />}
                     <div className="p-4">
                       <div className="flex items-baseline justify-between gap-3">
                         <p className="font-medium">{r.name}</p>
                         <p className="text-sm font-semibold text-[#1e40af]">{r.priceLabel}</p>
                       </div>
-                      <p className="mt-0.5 text-xs text-[#64748b]">{r.location} · {categoryLabels[r.category]}</p>
+                      <p className="mt-0.5 text-xs text-[#64748b]">
+                        {r.location} · {categoryLabels[r.category]}
+                      </p>
+                      {r.reasons?.[0] && <p className="mt-1 text-xs text-[#475569]">{r.reasons[0]}</p>}
                     </div>
                   </a>
                 ))}
@@ -170,9 +227,17 @@ export default function Home() {
           <p className="mt-1 text-sm text-[#64748b]">Start with what you need most.</p>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {([["housing", "Housing", "Student rooms & residences"], ["mobile", "Mobile", "Data plans for students"], ["transport", "Transport", "Public transport passes"], ["gym", "Gym", "Student fitness options"], ["streaming", "Streaming", "Entertainment deals"]] as const).map(([key, label, desc]) => (
+          {([
+            ["housing", "Housing", "Student rooms & residences"],
+            ["mobile", "Mobile", "Data plans for students"],
+            ["transport", "Transport", "Public transport passes"],
+            ["gym", "Gym", "Student fitness options"],
+            ["streaming", "Streaming", "Entertainment deals"],
+          ] as const).map(([key, label, desc]) => (
             <button key={key} onClick={() => goSearch(key)} className="card-hover rounded-xl border border-[#e2e8f0] bg-white p-5 text-left hover:border-[#1e40af]">
-              <p className="font-semibold">{categoryIcons[key as Category]} {label}</p>
+              <p className="font-semibold">
+                {categoryIcons[key as Category]} {label}
+              </p>
               <p className="mt-1 text-sm text-[#64748b]">{desc}</p>
             </button>
           ))}
@@ -184,9 +249,23 @@ export default function Home() {
           <div className="mb-6 flex items-end justify-between">
             <div>
               <h2 className="text-2xl font-semibold tracking-tight">Build your package</h2>
-              <p className="mt-1 text-sm text-[#64748b]">Combine services and see one monthly total.</p>
+              <p className="mt-1 text-sm text-[#64748b]">Combine services and see one monthly total ({market === "austria" ? "Austria" : "Italy"} focus).</p>
             </div>
-            <a href="/package-builder" className="text-sm font-medium text-[#1e40af] hover:underline">Full builder →</a>
+            <a href="/package-builder" className="text-sm font-medium text-[#1e40af] hover:underline">
+              Full builder →
+            </a>
+          </div>
+
+          <div className="mb-4 flex items-center gap-3">
+            <label className="text-sm text-[#64748b]">Monthly budget</label>
+            <input
+              type="number"
+              value={packageBudget}
+              onChange={(e) => setPackageBudget(e.target.value)}
+              className="w-28 rounded-lg border border-[#e2e8f0] px-3 py-1.5 text-sm outline-none focus:border-[#1e40af]"
+              placeholder="900"
+            />
+            <span className="text-sm text-[#64748b]">€</span>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -209,12 +288,35 @@ export default function Home() {
             })}
           </div>
 
-          {best && (
+          {best ? (
             <div className="mt-6 rounded-xl border border-[#e2e8f0] bg-white p-5">
-              <p className="text-xs font-medium uppercase tracking-wider text-[#1e40af]">Estimated total</p>
-              <p className="mt-1 text-2xl font-semibold">{formatPrice(best.totalPrice)} <span className="text-sm font-normal text-[#64748b]">/ month</span></p>
-              <p className="mt-1 text-sm text-[#64748b]">{packageCategories.length} services · Score {best.score}</p>
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wider text-[#1e40af]">Best estimated package</p>
+                  <p className="mt-1 text-2xl font-semibold">
+                    {formatPrice(best.totalPrice)} <span className="text-sm font-normal text-[#64748b]">/ month</span>
+                  </p>
+                  <p className="mt-1 text-sm text-[#64748b]">
+                    {packageCategories.length} services · Score {best.score}
+                  </p>
+                </div>
+                <a href="/package-builder" className="shrink-0 rounded-lg bg-[#1e40af] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#1e3a8a]">
+                  Customize
+                </a>
+              </div>
+              <ul className="mt-4 space-y-2 border-t border-[#e2e8f0] pt-3">
+                {best.offers.map((o) => (
+                  <li key={o.id} className="flex items-center justify-between text-sm">
+                    <span className="text-[#334155]">
+                      {categoryIcons[o.category]} {o.name}
+                    </span>
+                    <span className="font-medium text-[#1e40af]">{o.priceLabel}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
+          ) : (
+            <p className="mt-6 text-sm text-[#64748b]">Select at least two categories to see a package estimate.</p>
           )}
         </div>
       </section>
@@ -224,8 +326,12 @@ export default function Home() {
           <p className="font-semibold text-[#0f172a]">CompareX</p>
           <p className="mt-1">Student comparison for Vienna & Milan</p>
           <div className="mt-3 flex justify-center gap-5 text-xs">
-            <a href="/privacy" className="hover:text-[#1e40af]">Privacy</a>
-            <a href="/contact" className="hover:text-[#1e40af]">Contact</a>
+            <a href="/privacy" className="hover:text-[#1e40af]">
+              Privacy
+            </a>
+            <a href="/contact" className="hover:text-[#1e40af]">
+              Contact
+            </a>
           </div>
         </div>
       </footer>
