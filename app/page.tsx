@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   type Category,
   offers,
@@ -28,6 +28,16 @@ type AiRec = {
 
 export default function Home() {
   const [query, setQuery] = useState("");
+  const [city, setCity] = useState<"Vienna" | "Milan">("Vienna");
+
+  useEffect(() => {
+    const savedCity = window.localStorage.getItem("comparex-city");
+    if (savedCity === "Vienna" || savedCity === "Milan") setCity(savedCity);
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem("comparex-city", city);
+  }, [city]);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState("");
   const [interpretation, setInterpretation] = useState("");
@@ -38,11 +48,11 @@ export default function Home() {
   const packageCategoryResults = useMemo(() => {
     const output = {} as Record<Category, ReturnType<typeof calculateScore>[]>;
     for (const category of packageCategories) {
-      const scored = offers.filter((o) => o.category === category).map((o) => calculateScore(o, { student: true, quality: false, cheap: false, vienna: true, milan: false, university: false })).sort((a, b) => b.score - a.score);
+      const scored = offers.filter((o) => o.category === category && (city === "Vienna" ? ["Vienna", "Austria"].includes(o.location) : ["Milan", "Italy"].includes(o.location))).map((o) => calculateScore(o, { student: true, quality: false, cheap: false, vienna: city === "Vienna", milan: city === "Milan", university: false })).sort((a, b) => b.score - a.score);
       output[category] = rankOffers(scored);
     }
     return output;
-  }, [packageCategories]);
+  }, [packageCategories, city]);
 
   const packageBundles = useMemo(() => {
     if (packageCategories.length < 2) return [];
@@ -60,7 +70,7 @@ export default function Home() {
   }
 
   function goSearch(q: string) {
-    window.location.href = `/search?q=${encodeURIComponent(q)}`;
+    window.location.href = `/search?q=${encodeURIComponent(q)}&city=${encodeURIComponent(city)}`;
   }
 
   async function runAiSearch(q: string) {
@@ -71,7 +81,7 @@ export default function Home() {
     setRecs([]);
     setInterpretation("");
     try {
-      const res = await fetch("/api/ai-search", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query: text }) });
+      const res = await fetch("/api/ai-search", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query: text, country: city === "Vienna" ? "Austria" : "Italy" }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "AI search failed");
       setInterpretation(data.interpretation || "");
@@ -91,10 +101,11 @@ export default function Home() {
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#1e40af] text-sm font-bold text-white">C</div>
             <div>
               <div className="text-lg font-semibold tracking-tight">CompareX</div>
-              <div className="text-[11px] text-[#64748b]">Vienna & Milan</div>
+              <div className="text-[11px] text-[#64748b]">Student essentials</div>
             </div>
           </div>
-          <details className="relative">
+          <div className="flex items-center gap-2">
+            <details className="relative">
             <summary className="flex cursor-pointer list-none items-center gap-2 rounded-lg border border-[#e2e8f0] bg-white px-3.5 py-2 text-sm font-medium text-[#334155] hover:border-[#1e40af]">Menu</summary>
             <nav className="absolute right-0 top-full z-50 mt-2 w-52 rounded-xl border border-[#e2e8f0] bg-white p-1.5 shadow-lg">
               {[["student room", "Housing"], ["mobile plan", "Mobile"], ["transport", "Transport"], ["gym", "Gym"], ["streaming", "Streaming"]].map(([q, label]) => (
@@ -102,18 +113,19 @@ export default function Home() {
               ))}
               <a href="/package-builder" className="mt-1 block rounded-lg border-t border-[#e2e8f0] px-3 py-2 text-sm font-medium text-[#1e40af] hover:bg-[#eff6ff]">Package builder</a>
             </nav>
-          </details>
+            </details>
+          </div>
         </div>
       </header>
 
       <section className="border-b border-[#e2e8f0] bg-[#f8fafc]">
         <div className="mx-auto max-w-3xl px-6 py-16 text-center md:py-24">
-          <p className="text-xs font-semibold uppercase tracking-widest text-[#1e40af]">Student life in Austria & Italy</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-[#1e40af]">Student life in {city === "Vienna" ? "Vienna" : "Milano"}</p>
           <h1 className="mt-4 text-4xl font-semibold leading-tight tracking-tight md:text-5xl">
             Compare everything.<br />Choose better.
           </h1>
           <p className="mx-auto mt-4 max-w-md text-[#64748b]">
-            Housing, mobile, transport, gym — all in one place for students in Vienna and Milan.
+            Housing, mobile, transport, gym — all in one place for students in {city === "Vienna" ? "Vienna" : "Milano"}.
           </p>
 
           <form className="mx-auto mt-8 max-w-xl" onSubmit={(e) => { e.preventDefault(); runAiSearch(query); }}>
@@ -121,7 +133,7 @@ export default function Home() {
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Student room under 450 in Vienna…"
+                placeholder={`Student room under 450 in ${city}…`}
                 className="flex-1 bg-transparent px-3 py-2.5 text-sm outline-none placeholder:text-[#94a3b8]"
               />
               <button type="submit" disabled={aiLoading} className="rounded-lg bg-[#1e40af] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#1e3a8a] disabled:opacity-50">
@@ -130,12 +142,33 @@ export default function Home() {
             </div>
           </form>
 
+          <div className="mt-3 flex justify-center">
+            <div className="inline-flex rounded-xl border border-[#e2e8f0] bg-white p-1 shadow-sm" role="group" aria-label="Choose your country">
+              <button type="button" onClick={() => setCity("Vienna")} aria-pressed={city === "Vienna"} className={`rounded-lg px-4 py-2 text-xs font-semibold transition ${city === "Vienna" ? "bg-[#203b72] text-white shadow-sm" : "text-[#475569] hover:bg-[#f1f5f9]"}`}>🇦🇹 Austria</button>
+              <button type="button" onClick={() => setCity("Milan")} aria-pressed={city === "Milan"} className={`rounded-lg px-4 py-2 text-xs font-semibold transition ${city === "Milan" ? "bg-[#203b72] text-white shadow-sm" : "text-[#475569] hover:bg-[#f1f5f9]"}`}>🇮🇹 Italy</button>
+            </div>
+          </div>
+
           <div className="mt-4 flex flex-wrap justify-center gap-2">
-            {["Room under €450 Vienna", "Mobile under €15", "Near Bocconi"].map((chip) => (
+            {[city === "Vienna" ? "Room under €450 Vienna" : "Room under €650 Milano", "Mobile under €15", city === "Vienna" ? "Near FHWien" : "Near Bocconi"].map((chip) => (
               <button key={chip} onClick={() => { setQuery(chip); runAiSearch(chip); }} className="rounded-full border border-[#e2e8f0] bg-white px-3 py-1 text-xs text-[#64748b] hover:border-[#1e40af] hover:text-[#1e40af]">
                 {chip}
               </button>
             ))}
+          </div>
+
+          <div className="relative mx-auto mt-8 h-48 max-w-2xl overflow-hidden rounded-2xl shadow-sm sm:h-64">
+            <img
+              src={city === "Vienna" ? "https://images.contentstack.io/v3/assets/blt06f605a34f1194ff/blt12393c9e299ed438/66c730b83f4c1968bc1ce76d/iStock-1196925572-MOBILE-HEADER.jpg?auto=avif&format=webp&quality=100&width=1440" : "https://cdn.tourradar.com/s3/tour/1500x800/223479_61ad9ded8f29c.jpg"}
+              alt={city === "Vienna" ? "Panoramic view over Vienna's historic city centre" : "Panoramic view over Milan and the Duomo"}
+              className="h-full w-full object-cover"
+              loading="eager"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-slate-950/10 to-transparent" />
+            <div className="absolute bottom-4 left-5 text-left text-white">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/80">Explore your city</p>
+              <p className="mt-1 text-xl font-semibold">{city === "Vienna" ? "Make Vienna your home." : "Make Milan your home."}</p>
+            </div>
           </div>
 
           {aiError && <p className="mt-4 text-sm text-red-600">{aiError}</p>}
@@ -145,7 +178,7 @@ export default function Home() {
               {interpretation && <p className="text-sm text-[#64748b]">{interpretation}</p>}
               <div className="grid gap-3 sm:grid-cols-2">
                 {recs.slice(0, 6).map((r) => (
-                  <a key={r.id} href={r.searchUrl} className="card-hover block overflow-hidden rounded-xl border border-[#e2e8f0] bg-white hover:border-[#1e40af]">
+                  <a key={r.id} href={`${r.searchUrl}&query=${encodeURIComponent(query)}`} className="card-hover block overflow-hidden rounded-xl border border-[#e2e8f0] bg-white hover:border-[#1e40af]">
                     {r.image && (
                       <img src={r.image} alt={r.name} className="h-36 w-full object-cover" />
                     )}
@@ -222,7 +255,7 @@ export default function Home() {
       <footer className="border-t border-[#e2e8f0] py-8">
         <div className="mx-auto max-w-6xl px-6 text-center text-sm text-[#64748b]">
           <p className="font-semibold text-[#0f172a]">CompareX</p>
-          <p className="mt-1">Student comparison for Vienna & Milan</p>
+          <p className="mt-1">Student comparison for {city === "Vienna" ? "Vienna" : "Milano"}</p>
           <div className="mt-3 flex justify-center gap-5 text-xs">
             <a href="/privacy" className="hover:text-[#1e40af]">Privacy</a>
             <a href="/contact" className="hover:text-[#1e40af]">Contact</a>

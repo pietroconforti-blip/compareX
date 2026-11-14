@@ -38,9 +38,7 @@ function toRanked(o: Offer, score: number, reasons: string[]): Ranked {
     score,
     reasons,
     image: o.image,
-    searchUrl: `/search?q=${encodeURIComponent(
-      `${categoryLabels[o.category]} ${o.location}`.trim(),
-    )}`,
+    searchUrl: `/offer?title=${encodeURIComponent(o.name)}&provider=${encodeURIComponent(o.name.startsWith("STUWO") ? "STUWO" : o.location)}&price=${encodeURIComponent(o.priceLabel)}&badge=${encodeURIComponent(categoryLabels[o.category])}&href=${encodeURIComponent(o.sourceUrl || "/")}&offerId=${o.id}&category=${o.category}`,
   };
 }
 
@@ -55,7 +53,7 @@ function detectLanguage(text: string): "it" | "de" | "en" {
   return "en";
 }
 
-function rankLocal(query: string): {
+function rankLocal(query: string, country: "Austria" | "Italy"): {
   interpretation: string;
   categories: Category[];
   recommendations: Ranked[];
@@ -74,9 +72,10 @@ function rankLocal(query: string): {
     : (["housing", "mobile", "transport"] as Category[]);
 
   const ranked: Ranked[] = [];
+  const scopedOffers = offers.filter((o) => country === "Austria" ? ["Austria", "Vienna"].includes(o.location) : ["Italy", "Milan"].includes(o.location));
   for (const cat of cats) {
     const budget = budgets[cat];
-    const list = offers
+    const list = scopedOffers
       .filter((o) => o.category === cat)
       .map((o) => calculateScore(o, preferences, budget))
       .sort((a, b) => b.score - a.score || a.price - b.price)
@@ -123,8 +122,8 @@ function rankLocal(query: string): {
   };
 }
 
-function catalogForPrompt() {
-  return offers.map((o) => ({
+function catalogForPrompt(country: "Austria" | "Italy") {
+  return offers.filter((o) => country === "Austria" ? ["Austria", "Vienna"].includes(o.location) : ["Italy", "Milan"].includes(o.location)).map((o) => ({
     id: o.id,
     name: o.name,
     category: o.category,
@@ -138,7 +137,7 @@ function catalogForPrompt() {
   }));
 }
 
-async function rankWithLlm(query: string): Promise<{
+async function rankWithLlm(query: string, country: "Austria" | "Italy"): Promise<{
   interpretation: string;
   categories: Category[];
   recommendations: Ranked[];
@@ -169,7 +168,7 @@ async function rankWithLlm(query: string): Promise<{
   }
 
   const lang = detectLanguage(query);
-  const catalog = catalogForPrompt();
+  const catalog = catalogForPrompt(country);
   const system = `You are CompareX AI, a helpful multilingual assistant for students comparing housing, mobile plans, transport, gyms and streaming in Austria and Italy (Vienna & Milan focus).
 
 CRITICAL RULES:
@@ -234,7 +233,7 @@ ${JSON.stringify(catalog)}`;
     return null;
   }
 
-  const byId = new Map(offers.map((o) => [o.id, o]));
+  const byId = new Map(offers.filter((o) => country === "Austria" ? ["Austria", "Vienna"].includes(o.location) : ["Italy", "Milan"].includes(o.location)).map((o) => [o.id, o]));
   const recommendations: Ranked[] = [];
   for (const item of parsed.recommendations ?? []) {
     const offer = byId.get(Number(item.id));
@@ -279,7 +278,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const llm = await rankWithLlm(query);
+    const country = body?.country === "Italy" ? "Italy" : "Austria";
+    const llm = await rankWithLlm(query, country);
     if (llm) {
       return NextResponse.json({
         query,
@@ -294,7 +294,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const local = rankLocal(query);
+    const local = rankLocal(query, country);
     return NextResponse.json({
       query,
       assistant: "CompareX AI",
@@ -325,7 +325,8 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  const llm = await rankWithLlm(query.trim());
+  const country = req.nextUrl.searchParams.get("country") === "Italy" ? "Italy" : "Austria";
+  const llm = await rankWithLlm(query.trim(), country);
   if (llm) {
     return NextResponse.json({
       query,
@@ -336,6 +337,6 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     query,
     assistant: "CompareX AI",
-    ...rankLocal(query.trim()),
+    ...rankLocal(query.trim(), country),
   });
 }

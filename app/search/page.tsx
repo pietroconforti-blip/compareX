@@ -20,7 +20,7 @@ const categories = [
 function detectCategory(query: string) {
   const q = query.toLowerCase();
   if (/mobile|phone|tariff|sim|spusu|yesss|a1|telefonia|handy|smartphone/.test(q)) return "mobile";
-  if (/room|housing|rent|apartment|wohnung|zimmer|affitto|stanza|casa|home4students/.test(q)) return "housing";
+  if (/room|housing|rent|apartment|wohnung|zimmer|affitto|stanza|casa|home4students|stuwo|student residence|student dorm/.test(q)) return "housing";
   if (/transport|train|bus|metro|tram|trasporto|treno|autobus|wiener linien/.test(q)) return "transport";
   if (/gym|fitness|palestra|sport membership|fitinn/.test(q)) return "gym";
   if (/streaming|netflix|disney|spotify|subscription/.test(q)) return "streaming";
@@ -60,8 +60,7 @@ function Filters({ country, setCountry, budget, setBudget, budgetLabel, sort, se
   );
 }
 
-function OfferCard({ badge, title, subtitle, price, body, href, images = [] }: { badge: string; title: string; subtitle: string; price: string; body: ReactNode; href: string; images?: string[]; }) {
-  const [rating, setRating] = useState(0);
+function OfferCard({ badge, title, subtitle, price, body, href, images = [], category = "", offerId = "" }: { badge: string; title: string; subtitle: string; price: string; body: ReactNode; href: string; images?: string[]; category?: string; offerId?: string; }) {
   const brand = subtitle.split(/\s+/).slice(0, 2).join(" ");
   return (
     <article className="card-hover flex flex-col overflow-hidden rounded-2xl border border-[#e2e8f0] bg-white shadow-sm transition hover:shadow-lg">
@@ -81,20 +80,9 @@ function OfferCard({ badge, title, subtitle, price, body, href, images = [] }: {
         <p className="mt-1 text-sm text-slate-600">{subtitle}</p>
         <div className="mt-4 text-2xl font-bold text-[#203b72]">{price}</div>
         <div className="mt-3 text-sm leading-6 text-slate-600">{body}</div>
-        <div className="mt-4 rounded-xl bg-[#f8f9fc] p-3">
-          <p className="text-xs font-semibold text-slate-600">Rate this offer</p>
-          <div className="mt-1 flex items-center gap-1" aria-label="Rate this offer from one to five stars">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <button key={star} type="button" onClick={() => setRating(star)} aria-label={`Rate ${star} out of 5 stars`} aria-pressed={rating === star} className={`text-xl leading-none transition ${star <= rating ? "text-amber-400" : "text-slate-300"} hover:text-amber-400`}>★</button>
-            ))}
-            <span className="ml-2 text-xs text-slate-500">{rating ? `Your rating: ${rating}/5` : "Your feedback"}</span>
-          </div>
-          <p className="mt-1 text-[11px] text-slate-400">Local preview only — not saved.</p>
-        </div>
         <div className="mt-auto pt-5">
-          <a href={`/offer?title=${encodeURIComponent(title)}&provider=${encodeURIComponent(subtitle)}&price=${encodeURIComponent(price)}&href=${encodeURIComponent(href)}&badge=${encodeURIComponent(badge)}`} className="block rounded-xl bg-[#203b72] px-4 py-3 text-center text-sm font-semibold text-white hover:bg-[#152a52]">View offer details →</a>
+          <a href={`/offer?title=${encodeURIComponent(title)}&provider=${encodeURIComponent(subtitle)}&price=${encodeURIComponent(price)}&href=${encodeURIComponent(href)}&badge=${encodeURIComponent(badge)}&category=${encodeURIComponent(category)}&offerId=${encodeURIComponent(offerId)}`} className="block rounded-xl bg-[#203b72] px-4 py-3 text-center text-sm font-semibold text-white hover:bg-[#152a52]">View offer details →</a>
           <a href={href} target="_blank" rel="noreferrer" className="mt-2 block rounded-xl border border-[#e2e8f0] px-4 py-3 text-center text-sm font-semibold text-[#203b72] hover:bg-slate-50">Visit provider website ↗</a>
-          <a href="/package-builder" className="mt-2 block rounded-xl border border-[#e2e8f0] px-4 py-3 text-center text-sm font-semibold text-[#203b72] hover:bg-slate-50">Add to package →</a>
         </div>
       </div>
     </article>
@@ -106,10 +94,25 @@ function SearchResults() {
   const router = useRouter();
   const query = params.get("q") ?? "";
   const category = detectCategory(query);
-  const providerTerm = ["home4students", "wiener linien", "spusu", "fitinn", "netflix", "a1"].find((term) => query.toLowerCase().includes(term)) ?? "";
+  const providerTerm = ["home4students", "wiener linien", "spusu", "fitinn", "netflix", "a1", "stuwo"].find((term) => query.toLowerCase().includes(term)) ?? "";
 
-  const [country, setCountry] = useState<"All" | Country>(() => detectCountry(query));
+  const requestedCity = params.get("city");
+  const [country, setCountry] = useState<"All" | Country>(() => requestedCity === "Milan" ? "Italy" : requestedCity === "Vienna" ? "Austria" : detectCountry(query));
   const [budget, setBudget] = useState(() => getInitialBudget(query));
+
+  useEffect(() => {
+    if (requestedCity === "Vienna" || requestedCity === "Milan") return;
+    const savedCity = window.localStorage.getItem("comparex-city");
+    if (savedCity === "Vienna") setCountry("Austria");
+    if (savedCity === "Milan") setCountry("Italy");
+  }, [requestedCity]);
+
+  function changeCity(city: "Vienna" | "Milan") {
+    const nextCountry = city === "Vienna" ? "Austria" : "Italy";
+    setCountry(nextCountry);
+    window.localStorage.setItem("comparex-city", city);
+    router.replace(`/search?q=${encodeURIComponent(query)}&city=${city}`);
+  }
   const [sort, setSort] = useState<"price-asc" | "price-desc" | "data">("price-asc");
 
   const [offers, setOffers] = useState<MobileOffer[]>([]);
@@ -125,11 +128,6 @@ function SearchResults() {
   const [genericOffers, setGenericOffers] = useState<GenericOffer[]>([]);
   const [genericLoading, setGenericLoading] = useState(false);
   const [genericError, setGenericError] = useState("");
-
-  useEffect(() => {
-    const navigation = performance.getEntriesByType("navigation") as PerformanceNavigationTiming[];
-    if (navigation[0]?.type === "reload") router.replace("/");
-  }, [router]);
 
   useEffect(() => {
     let cancelled = false;
@@ -209,17 +207,22 @@ function SearchResults() {
       if (sort === "data") return b.dataGB - a.dataGB;
       return a.monthlyPrice - b.monthlyPrice;
     });
-  }, [offers, country, budget, sort]);
+  }, [offers, country, budget, sort, providerTerm]);
 
   const filteredHousing = useMemo(() => {
     let result = housingOffers.filter((o) => (country === "All" || o.country === country) && (!providerTerm || `${o.provider} ${o.property}`.toLowerCase().includes(providerTerm)));
     const max = Number(budget);
     if (budget.trim() !== "" && Number.isFinite(max)) result = result.filter((o) => o.pricePeriod === "year" || o.priceValue <= max);
     return [...result].sort((a, b) => {
+      // Search-only marketplace links have no comparable price (priceValue = 0).
+      // Keep them visible, but never rank them as the cheapest option.
+      const aUnpriced = a.priceValue <= 0;
+      const bUnpriced = b.priceValue <= 0;
+      if (aUnpriced !== bUnpriced) return aUnpriced ? 1 : -1;
       if (a.pricePeriod !== b.pricePeriod) return a.pricePeriod === "month" ? -1 : 1;
       return a.priceValue - b.priceValue;
     });
-  }, [housingOffers, country, budget]);
+  }, [housingOffers, country, budget, providerTerm]);
 
   const filteredGeneric = useMemo(() => {
     const max = budget.trim() === "" ? Infinity : Number(budget);
@@ -229,7 +232,7 @@ function SearchResults() {
       const matchBudget = !Number.isFinite(max) || o.priceValue <= max;
       return matchCountry && matchBudget;
     });
-  }, [genericOffers, country, budget]);
+  }, [genericOffers, country, budget, providerTerm]);
 
   const selected = categories.find((c) => c.id === category);
 
@@ -241,7 +244,13 @@ function SearchResults() {
             <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#203b72] text-lg font-bold text-white shadow-sm">C</span>
             <span className="text-xl font-bold">CompareX</span>
           </button>
-          <button onClick={() => router.push("/")} className="rounded-xl border border-[#e2e8f0] bg-white px-4 py-2 text-sm font-semibold shadow-sm transition hover:border-[#203b72] hover:bg-slate-50">← Home</button>
+          <div className="flex items-center gap-2">
+            <div className="inline-flex rounded-xl border border-[#e2e8f0] bg-white p-1 shadow-sm" role="group" aria-label="Choose your country">
+              <button type="button" onClick={() => changeCity("Vienna")} aria-pressed={country === "Austria"} className={`rounded-lg px-3 py-2 text-xs font-semibold transition sm:px-4 ${country === "Austria" ? "bg-[#203b72] text-white shadow-sm" : "text-[#475569] hover:bg-[#f1f5f9]"}`}>Austria</button>
+              <button type="button" onClick={() => changeCity("Milan")} aria-pressed={country === "Italy"} className={`rounded-lg px-3 py-2 text-xs font-semibold transition sm:px-4 ${country === "Italy" ? "bg-[#203b72] text-white shadow-sm" : "text-[#475569] hover:bg-[#f1f5f9]"}`}>Italy</button>
+            </div>
+            <button onClick={() => router.push("/")} className="rounded-xl border border-[#e2e8f0] bg-white px-3 py-2 text-xs font-semibold shadow-sm transition hover:border-[#203b72] hover:bg-slate-50 sm:px-4 sm:text-sm">Home</button>
+          </div>
         </div>
       </header>
 
@@ -252,7 +261,6 @@ function SearchResults() {
 
         {category === "mobile" && (
           <>
-            <Filters country={country} setCountry={setCountry} budget={budget} setBudget={setBudget} budgetLabel="Maximum monthly price (€)" sort={sort} setSort={setSort} showSort />
             <h2 className="mt-7 text-xl font-bold">{filteredMobile.length} mobile plans</h2>
             {mobileLastVerified && <p className="mt-1 text-xs text-slate-500">Last checked: {new Date(`${mobileLastVerified}T00:00:00`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}. Not live quotes.</p>}
             {loading && <p className="mt-5 text-slate-600">Loading mobile plans…</p>}
@@ -260,7 +268,7 @@ function SearchResults() {
             {!loading && !loadError && filteredMobile.length === 0 && <div className="mt-5 rounded-2xl border border-[#e2e8f0] bg-white p-6">No mobile plans match these filters. Try another country or budget.</div>}
             <div className="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
               {filteredMobile.map((o) => (
-                <OfferCard key={o.id} badge={o.country} title={o.plan} subtitle={o.provider} price={`€${o.monthlyPrice}/month`} href={o.officialUrl} body={
+                <OfferCard key={o.id} badge={o.country} title={o.plan} subtitle={o.provider} price={`€${o.monthlyPrice}/month`} href={o.officialUrl} category="mobile" offerId={o.id} body={
                   <ul className="space-y-1">
                     <li>{o.dataGB} GB data</li>
                     {o.maxSpeed && <li>Max speed: {o.maxSpeed}</li>}
@@ -277,7 +285,6 @@ function SearchResults() {
 
         {category === "housing" && (
           <>
-            <Filters country={country} setCountry={setCountry} budget={budget} setBudget={setBudget} budgetLabel="Maximum monthly price (€)" />
             <h2 className="mt-7 text-xl font-bold">{filteredHousing.length} housing listings</h2>
             {housingLastVerified && <p className="mt-1 text-xs text-slate-500">Last checked: {new Date(`${housingLastVerified}T00:00:00`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}. Confirm availability.</p>}
             {housingLoading && <p className="mt-5 text-slate-600">Loading housing…</p>}
@@ -285,7 +292,7 @@ function SearchResults() {
             {!housingLoading && !housingError && filteredHousing.length === 0 && <div className="mt-5 rounded-2xl border border-[#e2e8f0] bg-white p-6">No housing matches these filters.</div>}
             <div className="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
               {filteredHousing.map((o) => (
-                <OfferCard key={o.id} badge={`${o.country} · ${o.city}`} title={o.property} subtitle={o.provider} price={o.priceLabel} href={o.officialUrl} images={o.images} body={
+                <OfferCard key={o.id} badge={`${o.country} · ${o.city}`} title={o.property} subtitle={o.provider} price={o.priceLabel} href={o.officialUrl} images={o.images} category="housing" offerId={o.id} body={
                   <ul className="space-y-1">
                     <li>{o.roomType}</li>
                     <li>{o.availability}</li>
@@ -306,7 +313,7 @@ function SearchResults() {
             {!genericLoading && !genericError && filteredGeneric.length === 0 && <div className="mt-5 rounded-2xl border border-[#e2e8f0] bg-white p-6">No offers match these filters.</div>}
             <div className="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
               {filteredGeneric.map((o) => (
-                <OfferCard key={o.id} badge={o.country} title={o.name} subtitle={o.provider} price={o.priceLabel} href={o.url} body={<p>{o.details}</p>} />
+                <OfferCard key={o.id} badge={o.country} title={o.name} subtitle={o.provider} price={o.priceLabel} href={o.url} category={category} offerId={o.id} body={<p>{o.details}</p>} />
               ))}
             </div>
           </>
