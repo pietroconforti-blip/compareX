@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   type Category,
   offers,
@@ -37,6 +37,13 @@ export default function Home() {
   const [packageBudget, setPackageBudget] = useState("900");
   const [packageCategories, setPackageCategories] = useState<Category[]>(["housing", "mobile", "transport"]);
   const [market, setMarket] = useState<Market>("austria");
+  useEffect(() => {
+    const saved = localStorage.getItem("comparex-market");
+    if (saved === "austria" || saved === "italy") setMarket(saved);
+  }, []);
+  useEffect(() => {
+    localStorage.setItem("comparex-market", market);
+  }, [market]);
 
   const preferences = useMemo(
     () => ({
@@ -78,7 +85,7 @@ export default function Home() {
   }
 
   function goSearch(q: string) {
-    window.location.href = `/search?q=${encodeURIComponent(q)}`;
+    window.location.href = `/search?q=${encodeURIComponent(q)}&market=${market}`;
   }
 
   async function runAiSearch(q: string) {
@@ -92,7 +99,7 @@ export default function Home() {
       const res = await fetch("/api/ai-search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: text }),
+        body: JSON.stringify({ query: text, market }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "AI search failed");
@@ -304,13 +311,17 @@ export default function Home() {
                   Customize
                 </a>
               </div>
-              <ul className="mt-4 space-y-2 border-t border-[#e2e8f0] pt-3">
+              <ul className="mt-4 space-y-3 border-t border-[#e2e8f0] pt-3">
                 {best.offers.map((o) => (
-                  <li key={o.id} className="flex items-center justify-between text-sm">
-                    <span className="text-[#334155]">
-                      {categoryIcons[o.category]} {o.name}
-                    </span>
-                    <span className="font-medium text-[#1e40af]">{o.priceLabel}</span>
+                  <li key={o.id} className="flex items-start justify-between gap-3 text-sm">
+                    <div>
+                      <span className="text-[#334155]">
+                        {categoryIcons[o.category]} {o.name}
+                      </span>
+                      {o.description && <p className="mt-0.5 text-xs text-[#64748b] line-clamp-2">{o.description}</p>}
+                      {o.lastVerified && <p className="mt-0.5 text-[11px] text-[#94a3b8]">Verified {o.lastVerified}</p>}
+                    </div>
+                    <span className="shrink-0 font-medium text-[#1e40af]">{o.priceLabel}</span>
                   </li>
                 ))}
               </ul>
