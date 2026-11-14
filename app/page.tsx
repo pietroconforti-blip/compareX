@@ -111,7 +111,7 @@ export default function Home() {
               {[["student room", "Housing"], ["mobile plan", "Mobile"], ["transport", "Transport"], ["gym", "Gym"], ["streaming", "Streaming"]].map(([q, label]) => (
                 <button key={q} onClick={() => goSearch(q)} className="block w-full rounded-lg px-3 py-2 text-left text-sm text-[#334155] hover:bg-[#eff6ff] hover:text-[#1e40af]">{label}</button>
               ))}
-              <a href="/package-builder" className="mt-1 block rounded-lg border-t border-[#e2e8f0] px-3 py-2 text-sm font-medium text-[#1e40af] hover:bg-[#eff6ff]">Package builder</a>
+              <a href="/package-builder" className="mt-1 block rounded-lg border-t border-[#e2e8f0] px-3 py-2 text-sm font-medium text-[#1e40af] hover:bg-[#eff6ff]">Package builder</a><a href="/account" className="block rounded-lg px-3 py-2 text-sm font-medium text-[#1e40af] hover:bg-[#eff6ff]">CompareX One · My profile</a><a href="/mobile" className="block rounded-lg px-3 py-2 text-sm font-medium text-[#1e40af] hover:bg-[#eff6ff]">Mobile setup</a>
             </nav>
             </details>
           </div>
