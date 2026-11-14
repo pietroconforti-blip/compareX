@@ -93,12 +93,13 @@ function SearchResults() {
   const params = useSearchParams();
   const router = useRouter();
   const query = params.get("q") ?? "";
+  const originalQuery = params.get("query") ?? query;
   const category = detectCategory(query);
-  const providerTerm = ["home4students", "wiener linien", "spusu", "fitinn", "netflix", "a1", "stuwo"].find((term) => query.toLowerCase().includes(term)) ?? "";
+  const providerTerm = ["home4students", "wiener linien", "spusu", "fitinn", "netflix", "a1", "stuwo"].find((term) => originalQuery.toLowerCase().includes(term)) ?? "";
 
   const requestedCity = params.get("city");
   const [country, setCountry] = useState<"All" | Country>(() => requestedCity === "Milan" ? "Italy" : requestedCity === "Vienna" ? "Austria" : detectCountry(query));
-  const [budget, setBudget] = useState(() => getInitialBudget(query));
+  const [budget, setBudget] = useState(() => getInitialBudget(originalQuery));
 
   useEffect(() => {
     if (requestedCity === "Vienna" || requestedCity === "Milan") return;
@@ -111,7 +112,7 @@ function SearchResults() {
     const nextCountry = city === "Vienna" ? "Austria" : "Italy";
     setCountry(nextCountry);
     window.localStorage.setItem("comparex-city", city);
-    router.replace(`/search?q=${encodeURIComponent(query)}&city=${city}`);
+    router.replace(`/search?q=${encodeURIComponent(query)}&city=${city}&query=${encodeURIComponent(originalQuery)}`);
   }
   const [sort, setSort] = useState<"price-asc" | "price-desc" | "data">("price-asc");
 
@@ -259,7 +260,7 @@ function SearchResults() {
       <section className="mx-auto max-w-7xl px-6 py-10 md:py-14">
         <p className="text-sm font-semibold uppercase tracking-wider text-[#203b72]">CompareX · Search results</p>
         <h1 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">{selected?.title ?? "Explore services"}</h1>
-        <p className="mt-3 break-words text-slate-600">Your search: “{query}”</p>
+        <p className="mt-3 break-words text-slate-600">Your search: “{originalQuery}”</p>
 
         {category === "mobile" && (
           <>
@@ -270,7 +271,7 @@ function SearchResults() {
             {!loading && !loadError && filteredMobile.length === 0 && <div className="mt-5 rounded-2xl border border-[#e2e8f0] bg-white p-6">No mobile plans match these filters. Try another country or budget.</div>}
             <div className="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
               {filteredMobile.map((o) => (
-                <OfferCard key={o.id} badge={o.country} title={o.plan} subtitle={o.provider} price={`€${o.monthlyPrice}/month`} href={o.officialUrl} category="mobile" offerId={o.id} originalQuery={query} body={
+                <OfferCard key={o.id} badge={o.country} title={o.plan} subtitle={o.provider} price={`€${o.monthlyPrice}/month`} href={o.officialUrl} category="mobile" offerId={o.id} originalQuery={originalQuery} body={
                   <ul className="space-y-1">
                     <li>{o.dataGB} GB data</li>
                     {o.maxSpeed && <li>Max speed: {o.maxSpeed}</li>}
