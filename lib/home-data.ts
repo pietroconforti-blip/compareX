@@ -15,6 +15,7 @@ export type Offer = {
   tags: string[];
   sourceUrl?: string;
   image?: string;
+  lastVerified?: string;
 };
 
 export type ScoredOffer = Offer & {
@@ -45,7 +46,7 @@ const img = {
 };
 
 export const offers: Offer[] = [
-  { id: 1, name: "home4students Erlachplatz", category: "housing", price: 289, priceLabel: "From €289 / month", location: "Vienna", quality: 7.6, flexibility: 7.5, studentFriendly: true, transport: 8, description: "Shared room entry price at home4students (10th district).", tags: ["student", "budget", "vienna", "dorm", "home4students"], image: img.housingVienna1 },
+  { id: 1, name: "home4students Erlachplatz", category: "housing", price: 289, priceLabel: "From €289 / month", location: "Vienna", quality: 7.6, flexibility: 7.5, studentFriendly: true, transport: 8, description: "Shared room entry price at home4students (10th district).", tags: ["student", "budget", "vienna", "dorm", "home4students"], image: img.housingVienna1, lastVerified: "2026-10-21" },
   { id: 2, name: "Akademikerhilfe Michaelerstraße", category: "housing", price: 316, priceLabel: "From €316 / month", location: "Vienna", quality: 7.8, flexibility: 7.8, studentFriendly: true, transport: 8.5, description: "Non-profit Akademikerhilfe residence · strong student network.", tags: ["student", "vienna", "akademikerhilfe", "dorm"], image: img.housingVienna2 },
   { id: 3, name: "OeAD Brigittenauer Lände", category: "housing", price: 372, priceLabel: "From €372 / month", location: "Vienna", quality: 8.0, flexibility: 8.0, studentFriendly: true, transport: 8.5, description: "OeAD international student housing · House Panorama.", tags: ["student", "vienna", "oead", "international"], image: img.housingVienna3 },
   { id: 4, name: "WIHAST network", category: "housing", price: 320, priceLabel: "From ≈ €320 / month", location: "Vienna", quality: 7.7, flexibility: 7.5, studentFriendly: true, transport: 8, description: "Among the more affordable Vienna dorm networks on average.", tags: ["student", "budget", "vienna", "wihast"], image: img.housingVienna1 },
@@ -69,6 +70,15 @@ export const offers: Offer[] = [
   { id: 16, name: "Netflix Basic", category: "streaming", price: 8, priceLabel: "€8 / month", location: "Austria", quality: 8.5, flexibility: 8.5, studentFriendly: true, transport: 5, description: "Affordable streaming option.", tags: ["streaming", "movies", "series"], image: img.streaming },
   { id: 23, name: "Disney+ Student", category: "streaming", price: 7, priceLabel: "€7 / month", location: "Austria", quality: 8.7, flexibility: 8.0, studentFriendly: true, transport: 5, description: "Disney+ with student discount where available.", tags: ["streaming", "disney", "student", "movies"], image: img.streaming },
   { id: 24, name: "Spotify Student", category: "streaming", price: 5, priceLabel: "€5 / month", location: "Austria", quality: 9.0, flexibility: 9.0, studentFriendly: true, transport: 5, description: "Spotify Premium student plan with ad-free music.", tags: ["streaming", "spotify", "student", "music"], image: img.streaming },
+
+  { id: 25, name: "CampusX Milano", category: "housing", price: 480, priceLabel: "From €480 / month", location: "Milan", quality: 8.4, flexibility: 7.5, studentFriendly: true, transport: 8.2, description: "Modern student residence near Bicocca / Navigli options.", tags: ["student", "milan", "private", "modern"], image: img.housingMilan1, lastVerified: "2026-10-20" },
+  { id: 26, name: "The Student Hotel Milan", category: "housing", price: 650, priceLabel: "From €650 / month", location: "Milan", quality: 9.1, flexibility: 8.0, studentFriendly: true, transport: 9.0, description: "Hybrid student/hotel residences with flexible stays.", tags: ["student", "milan", "premium", "flexible"], image: img.housingMilan2, lastVerified: "2026-10-18" },
+  { id: 27, name: "Iliad Flash 100", category: "mobile", price: 9.99, priceLabel: "€9.99 / month", location: "Italy", quality: 8.5, flexibility: 9.0, studentFriendly: true, transport: 5, description: "Unlimited-style data plan popular with students in Italy.", tags: ["student", "cheap", "mobile", "italy", "iliad"], image: img.mobile, lastVerified: "2026-10-15" },
+  { id: 28, name: "Very Mobile Student", category: "mobile", price: 7.99, priceLabel: "€7.99 / month", location: "Italy", quality: 8.0, flexibility: 8.5, studentFriendly: true, transport: 5, description: "Affordable WindTre sub-brand plan with student promotions.", tags: ["student", "mobile", "italy", "budget"], image: img.mobile, lastVerified: "2026-10-15" },
+  { id: 29, name: "ATM Under 26 Milan", category: "transport", price: 20, priceLabel: "≈ €20 / month", location: "Milan", quality: 8.9, flexibility: 9.0, studentFriendly: true, transport: 10, description: "Age-based public transport pass for young people in Milan.", tags: ["milan", "transport", "student", "atm"], image: img.transportMilan, lastVerified: "2026-10-10" },
+  { id: 30, name: "McFit Milan student", category: "gym", price: 22, priceLabel: "€22 / month", location: "Milan", quality: 7.8, flexibility: 8.0, studentFriendly: true, transport: 7.8, description: "Budget gym chain with student rates across Milan.", tags: ["gym", "student", "milan", "fitness"], image: img.gym, lastVerified: "2026-10-12" },
+  { id: 31, name: "Spotify Student Italy", category: "streaming", price: 5.99, priceLabel: "€5.99 / month", location: "Italy", quality: 9.0, flexibility: 9.0, studentFriendly: true, transport: 5, description: "Spotify Premium student plan available in Italy.", tags: ["streaming", "spotify", "student", "italy"], image: img.streaming, lastVerified: "2026-10-01" },
+  { id: 32, name: "Disney+ Italy", category: "streaming", price: 8.99, priceLabel: "€8.99 / month", location: "Italy", quality: 8.6, flexibility: 8.0, studentFriendly: true, transport: 5, description: "Disney+ standard plan (student discounts may apply via partners).", tags: ["streaming", "disney", "italy"], image: img.streaming, lastVerified: "2026-10-01" },
 ];
 
 export const categoryLabels: Record<Category, string> = {
