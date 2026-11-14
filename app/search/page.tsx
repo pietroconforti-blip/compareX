@@ -20,7 +20,7 @@ const categories = [
 function detectCategory(query: string) {
   const q = query.toLowerCase();
   if (/mobile|phone|tariff|sim|spusu|yesss|a1|telefonia|handy|smartphone/.test(q)) return "mobile";
-  if (/room|housing|rent|apartment|wohnung|zimmer|affitto|stanza|casa|home4students/.test(q)) return "housing";
+  if (/room|housing|rent|apartment|wohnung|zimmer|affitto|stanza|casa|home4students|stuwo|student residence|student dorm/.test(q)) return "housing";
   if (/transport|train|bus|metro|tram|trasporto|treno|autobus|wiener linien/.test(q)) return "transport";
   if (/gym|fitness|palestra|sport membership|fitinn/.test(q)) return "gym";
   if (/streaming|netflix|disney|spotify|subscription/.test(q)) return "streaming";
@@ -141,11 +141,6 @@ function SearchResults() {
   const [genericError, setGenericError] = useState("");
 
   useEffect(() => {
-    const navigation = performance.getEntriesByType("navigation") as PerformanceNavigationTiming[];
-    if (navigation[0]?.type === "reload") router.replace("/");
-  }, [router]);
-
-  useEffect(() => {
     let cancelled = false;
     async function load() {
       try {
@@ -223,17 +218,22 @@ function SearchResults() {
       if (sort === "data") return b.dataGB - a.dataGB;
       return a.monthlyPrice - b.monthlyPrice;
     });
-  }, [offers, country, budget, sort]);
+  }, [offers, country, budget, sort, providerTerm]);
 
   const filteredHousing = useMemo(() => {
     let result = housingOffers.filter((o) => (country === "All" || o.country === country) && (!providerTerm || `${o.provider} ${o.property}`.toLowerCase().includes(providerTerm)));
     const max = Number(budget);
     if (budget.trim() !== "" && Number.isFinite(max)) result = result.filter((o) => o.pricePeriod === "year" || o.priceValue <= max);
     return [...result].sort((a, b) => {
+      // Search-only marketplace links have no comparable price (priceValue = 0).
+      // Keep them visible, but never rank them as the cheapest option.
+      const aUnpriced = a.priceValue <= 0;
+      const bUnpriced = b.priceValue <= 0;
+      if (aUnpriced !== bUnpriced) return aUnpriced ? 1 : -1;
       if (a.pricePeriod !== b.pricePeriod) return a.pricePeriod === "month" ? -1 : 1;
       return a.priceValue - b.priceValue;
     });
-  }, [housingOffers, country, budget]);
+  }, [housingOffers, country, budget, providerTerm]);
 
   const filteredGeneric = useMemo(() => {
     const max = budget.trim() === "" ? Infinity : Number(budget);
@@ -243,7 +243,7 @@ function SearchResults() {
       const matchBudget = !Number.isFinite(max) || o.priceValue <= max;
       return matchCountry && matchBudget;
     });
-  }, [genericOffers, country, budget]);
+  }, [genericOffers, country, budget, providerTerm]);
 
   const selected = categories.find((c) => c.id === category);
 
