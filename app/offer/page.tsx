@@ -19,16 +19,32 @@ function OfferDetails() {
   const budgetMatch = originalQuery.match(/(?:under|below|max|maximum|less than|unter|bis zu|sotto(?: i| a)?|meno di|around under)\s*€?\s*(\d+(?:[.,]\d+)?)/i);
   const initialBudget = budgetMatch ? Number(budgetMatch[1].replace(",", ".")) : null;
   const [housing, setHousing] = useState<HousingListing[]>([]);
+  const [housingLoading, setHousingLoading] = useState(true);
+  const [housingError, setHousingError] = useState(false);
   const [savedIds, setSavedIds] = useState<string[]>([]);
   const isHousing = category === "housing" || /residence|room|housing|student/i.test(badge + " " + title);
   const isProviderHub = isHousing && provider.trim().toLowerCase() === "stuwo";
 
   useEffect(() => {
-    if (!isHousing) return;
-    fetch("/api/housing", { cache: "no-store" })
-      .then((res) => res.ok ? res.json() : Promise.reject())
-      .then((data) => setHousing(data.offers ?? []))
-      .catch(() => setHousing([]));
+    let cancelled = false;
+    if (!isHousing) {
+      setHousingLoading(false);
+      return;
+    }
+    async function loadHousing() {
+      try {
+        const res = await fetch("/api/housing", { cache: "no-store" });
+        if (!res.ok) throw new Error("Could not load housing listings");
+        const data = await res.json();
+        if (!cancelled) setHousing(Array.isArray(data.offers) ? data.offers : []);
+      } catch {
+        if (!cancelled) setHousingError(true);
+      } finally {
+        if (!cancelled) setHousingLoading(false);
+      }
+    }
+    loadHousing();
+    return () => { cancelled = true; };
   }, [isHousing]);
 
   useEffect(() => {
@@ -117,7 +133,9 @@ function OfferDetails() {
                 );
               })}
             </div>
-            {related.length === 0 && <p className="mt-6 rounded-2xl border border-[#d5dceb] bg-white p-6 text-slate-600">Loading STUWO residences…</p>}
+            {housingLoading && <p className="mt-6 rounded-2xl border border-[#d5dceb] bg-white p-6 text-slate-600">Loading STUWO residences…</p>}
+            {!housingLoading && housingError && <p role="alert" className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-6 text-red-800">We could not load STUWO residences. Please refresh the page or visit STUWO directly.</p>}
+            {!housingLoading && !housingError && related.length === 0 && <p className="mt-6 rounded-2xl border border-[#d5dceb] bg-white p-6 text-slate-600">No matching STUWO residences were found.</p>}
             <p className="mt-7 text-xs leading-5 text-slate-500">Prices are advertised starting rents from STUWO’s official Vienna residence pages. Final rent depends on room category and contract period; availability must be confirmed with STUWO.</p>
           </>
         ) : (
@@ -139,7 +157,7 @@ function OfferDetails() {
                 </div>
                 <div className="mt-6 grid gap-3 sm:grid-cols-2">
                   <button type="button" onClick={addCurrentToPackage} className="rounded-xl border border-[#1a3470] px-5 py-4 text-sm font-bold text-[#1a3470] hover:bg-blue-50">{savedIds.includes(offerId || title) ? "Added to my package ✓" : "Add to my package"}</button>
-                  <a href={href} target="_blank" rel="noreferrer" className="rounded-xl bg-[#1a3470] px-5 py-4 text-center text-sm font-bold text-white hover:bg-[#12254f]">Direct checkout ↗</a>
+                  <a href={href} target="_blank" rel="noreferrer" className="rounded-xl bg-[#1a3470] px-5 py-4 text-center text-sm font-bold text-white hover:bg-[#12254f]">Visit provider website ↗</a>
                 </div>
               </div>
               <aside className="h-fit rounded-3xl border border-[#d5dceb] bg-white p-6 shadow-sm">
