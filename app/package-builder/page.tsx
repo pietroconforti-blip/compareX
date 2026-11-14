@@ -328,11 +328,11 @@ export default function PackageBuilderPage() {
         </div>}
 
         {built && <section ref={resultRef} className="mt-8 scroll-mt-6 rounded-3xl border border-[#c7d7f5] bg-white p-6 shadow-sm md:p-8">
-          <p className="text-xs font-bold uppercase tracking-wider text-[#2563eb]">Package completed</p>
+          <p className="text-xs font-bold uppercase tracking-wider text-[#2563eb]">Your package is ready</p>
           <div className="mt-2 flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
             <div>
               <h2 className="text-2xl font-bold">Your package summary</h2>
-              <p className="mt-1 text-sm text-slate-500">{location} · {picks.length} selected services</p>
+              <p className="mt-1 text-sm text-slate-500">A quick review before checkout · {location} · {picks.length} services</p>
             </div>
             <div className="rounded-2xl bg-[#f2f6ff] px-5 py-4 sm:min-w-48">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Estimated monthly total</p>
@@ -370,7 +370,7 @@ export default function PackageBuilderPage() {
               } catch {
                 window.alert("Could not save this package. Please try again.");
               }
-            }} disabled={picks.length < 2} className="rounded-xl bg-[#1a3470] px-6 py-4 font-bold text-white shadow-md hover:bg-[#12254f] disabled:opacity-50">Continue to checkout →</button>
+            }} disabled={picks.length < 2} className="rounded-xl bg-[#1a3470] px-6 py-4 font-bold text-white shadow-md hover:bg-[#12254f] disabled:opacity-50">Review package & checkout →</button>
           </div>
         </section>}
       </div>
