@@ -43,6 +43,14 @@ function Filters({ country, setCountry, budget, setBudget, budgetLabel, sort, se
   return (
     <div className="mt-8 grid gap-4 rounded-2xl border border-[#e2e8f0] bg-white p-5 shadow-sm md:grid-cols-2 lg:grid-cols-3">
       <label className="block">
+        <span className="mb-2 block text-sm font-semibold">Country</span>
+        <select value={country} onChange={(e) => setCountry(e.target.value as "All" | Country)} className="w-full rounded-xl border border-[#e2e8f0] bg-white px-4 py-3 transition focus:border-[#203b72]">
+          <option value="All">All</option>
+          <option value="Austria">Austria</option>
+          <option value="Italy">Italy</option>
+        </select>
+      </label>
+      <label className="block">
         <span className="mb-2 block text-sm font-semibold">{budgetLabel}</span>
         <input type="number" min="0" value={budget} onChange={(e) => setBudget(e.target.value)} placeholder="No price limit" className="w-full rounded-xl border border-[#e2e8f0] bg-white px-4 py-3 transition focus:border-[#203b72]" />
       </label>
@@ -109,6 +117,15 @@ function SearchResults() {
   const providerTerm = ["home4students", "wiener linien", "spusu", "fitinn", "netflix", "a1"].find((term) => query.toLowerCase().includes(term)) ?? "";
 
   const [country, setCountry] = useState<"All" | Country>(() => detectCountry(query));
+  useEffect(() => {
+    const marketParam = params.get("market");
+    const saved = typeof window !== "undefined" ? localStorage.getItem("comparex-market") : null;
+    const fromMarket = marketParam === "italy" || saved === "italy" ? "Italy" : marketParam === "austria" || saved === "austria" ? "Austria" : null;
+    if (fromMarket && country === "All") setCountry(fromMarket);
+  }, [params]);
+  useEffect(() => {
+    if (country !== "All") localStorage.setItem("comparex-market", country.toLowerCase());
+  }, [country]);
   const [budget, setBudget] = useState(() => getInitialBudget(query));
   const [sort, setSort] = useState<"price-asc" | "price-desc" | "data">("price-asc");
 
@@ -315,12 +332,7 @@ function SearchResults() {
         {!category && (
           <div className="mt-10 rounded-2xl border border-[#e2e8f0] bg-white p-8 text-center">
             <p className="text-lg font-semibold">Try searching for a category</p>
-            <p className="mt-2 text-slate-600">Examples: student room Vienna, mobile plan Austria, gym membership</p>
-            <div className="mt-6 flex flex-wrap justify-center gap-3">
-              {categories.map((c) => (
-                <button key={c.id} onClick={() => router.push(`/search?q=${c.id}`)} className="rounded-xl border border-[#e2e8f0] bg-white px-4 py-2 text-sm font-semibold hover:border-[#203b72] hover:text-[#203b72]">{c.icon} {c.title}</button>
-              ))}
-            </div>
+            <p className="mt-2 text-slate-600">Examples: student room Vienna, mobile plan Austria, gym Milan</p>
           </div>
         )}
       </section>
@@ -328,9 +340,9 @@ function SearchResults() {
   );
 }
 
-export default function SearchPage() {
+export default function Page() {
   return (
-    <Suspense fallback={<main className="flex min-h-screen items-center justify-center"><p className="text-slate-600">Loading search…</p></main>}>
+    <Suspense fallback={<div className="p-10 text-center">Loading search…</div>}>
       <SearchResults />
     </Suspense>
   );
