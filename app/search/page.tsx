@@ -61,7 +61,6 @@ function Filters({ country, setCountry, budget, setBudget, budgetLabel, sort, se
 }
 
 function OfferCard({ badge, title, subtitle, price, body, href, images = [], category = "", offerId = "" }: { badge: string; title: string; subtitle: string; price: string; body: ReactNode; href: string; images?: string[]; category?: string; offerId?: string; }) {
-  const [rating, setRating] = useState(0);
   const brand = subtitle.split(/\s+/).slice(0, 2).join(" ");
   return (
     <article className="card-hover flex flex-col overflow-hidden rounded-2xl border border-[#e2e8f0] bg-white shadow-sm transition hover:shadow-lg">
@@ -81,16 +80,6 @@ function OfferCard({ badge, title, subtitle, price, body, href, images = [], cat
         <p className="mt-1 text-sm text-slate-600">{subtitle}</p>
         <div className="mt-4 text-2xl font-bold text-[#203b72]">{price}</div>
         <div className="mt-3 text-sm leading-6 text-slate-600">{body}</div>
-        <div className="mt-4 rounded-xl bg-[#f8f9fc] p-3">
-          <p className="text-xs font-semibold text-slate-600">Rate this offer</p>
-          <div className="mt-1 flex items-center gap-1" aria-label="Rate this offer from one to five stars">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <button key={star} type="button" onClick={() => setRating(star)} aria-label={`Rate ${star} out of 5 stars`} aria-pressed={rating === star} className={`text-xl leading-none transition ${star <= rating ? "text-amber-400" : "text-slate-300"} hover:text-amber-400`}>★</button>
-            ))}
-            <span className="ml-2 text-xs text-slate-500">{rating ? `Your rating: ${rating}/5` : "Your feedback"}</span>
-          </div>
-          <p className="mt-1 text-[11px] text-slate-400">Local preview only — not saved.</p>
-        </div>
         <div className="mt-auto pt-5">
           <a href={`/offer?title=${encodeURIComponent(title)}&provider=${encodeURIComponent(subtitle)}&price=${encodeURIComponent(price)}&href=${encodeURIComponent(href)}&badge=${encodeURIComponent(badge)}&category=${encodeURIComponent(category)}&offerId=${encodeURIComponent(offerId)}`} className="block rounded-xl bg-[#203b72] px-4 py-3 text-center text-sm font-semibold text-white hover:bg-[#152a52]">View offer details →</a>
           <a href={href} target="_blank" rel="noreferrer" className="mt-2 block rounded-xl border border-[#e2e8f0] px-4 py-3 text-center text-sm font-semibold text-[#203b72] hover:bg-slate-50">Visit provider website ↗</a>
