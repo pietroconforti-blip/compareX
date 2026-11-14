@@ -12,17 +12,25 @@ function OfferDetails() {
   const provider = params.get("provider") || "Provider details";
   const price = params.get("price") || "Check current price";
   const badge = params.get("badge") || "Offer details";
-  const href = params.get("href") || "/";
+  const rawHref = params.get("href") || "/";
+  const href = (() => {
+    try {
+      const parsed = new URL(rawHref);
+      return parsed.protocol === "https:" || parsed.protocol === "http:" ? parsed.toString() : "/";
+    } catch {
+      return rawHref.startsWith("/") && !rawHref.startsWith("//") ? rawHref : "/";
+    }
+  })();
   const category = params.get("category") || "";
   const offerId = params.get("offerId") || "";
   const originalQuery = params.get("query") || "";
-  const budgetMatch = originalQuery.match(/(?:under|below|max|maximum|less than|unter|bis zu|sotto(?: i| a)?|meno di|around under)\s*€?\s*(\d+(?:[.,]\d+)?)/i);
+  const budgetMatch = originalQuery.match(/(?:under|below|up to|max|maximum|less than|unter|bis zu|sotto(?: i| a)?|meno di)\s*€?\s*(\d+(?:[.,]\d+)?)/i);
   const initialBudget = budgetMatch ? Number(budgetMatch[1].replace(",", ".")) : null;
   const [housing, setHousing] = useState<HousingListing[]>([]);
   const [housingLoading, setHousingLoading] = useState(true);
   const [housingError, setHousingError] = useState(false);
   const [savedIds, setSavedIds] = useState<string[]>([]);
-  const isHousing = category === "housing" || /residence|room|housing|student/i.test(badge + " " + title);
+  const isHousing = category === "housing" || /residence|room|housing|dorm/i.test(badge + " " + title);
   const isProviderHub = isHousing && provider.trim().toLowerCase() === "stuwo";
 
   useEffect(() => {
