@@ -55,7 +55,7 @@ export default function MobileSetupPage() {
       if (error) throw error;
       setMessage("Your selected mobile plan has been saved to your CompareX account. No contract has been submitted and no payment has been taken.");
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "The draft could not be saved. The CompareX One database migration may still be pending.");
+      setMessage(error instanceof Error ? error.message : "The draft could not be saved. The CompareX database migration may still be pending.");
     } finally { setSaving(false); }
   }
 
