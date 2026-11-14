@@ -35,7 +35,7 @@ function detectCountry(query: string): "All" | Country {
 }
 
 function getInitialBudget(query: string) {
-  const match = query.match(/(?:under|below|max|maximum|less than|unter|bis zu|sotto(?: i| a)?|meno di)\s*€?\s*(\d+(?:[.,]\d+)?)/i);
+  const match = query.match(/(?:under|below|up to|max|maximum|less than|unter|bis zu|sotto(?: i| a)?|meno di)\s*€?\s*(\d+(?:[.,]\d+)?)/i);
   return match ? match[1].replace(",", ".") : "";
 }
 
@@ -60,7 +60,7 @@ function Filters({ country, setCountry, budget, setBudget, budgetLabel, sort, se
   );
 }
 
-function OfferCard({ badge, title, subtitle, price, body, href, images = [], category = "", offerId = "" }: { badge: string; title: string; subtitle: string; price: string; body: ReactNode; href: string; images?: string[]; category?: string; offerId?: string; }) {
+function OfferCard({ badge, title, subtitle, price, body, href, images = [], category = "", offerId = "", originalQuery = "" }: { badge: string; title: string; subtitle: string; price: string; body: ReactNode; href: string; images?: string[]; category?: string; offerId?: string; originalQuery?: string; }) {
   const brand = subtitle.split(/\s+/).slice(0, 2).join(" ");
   return (
     <article className="card-hover flex flex-col overflow-hidden rounded-2xl border border-[#e2e8f0] bg-white shadow-sm transition hover:shadow-lg">
@@ -81,7 +81,7 @@ function OfferCard({ badge, title, subtitle, price, body, href, images = [], cat
         <div className="mt-4 text-2xl font-bold text-[#203b72]">{price}</div>
         <div className="mt-3 text-sm leading-6 text-slate-600">{body}</div>
         <div className="mt-auto pt-5">
-          <a href={`/offer?title=${encodeURIComponent(title)}&provider=${encodeURIComponent(subtitle)}&price=${encodeURIComponent(price)}&href=${encodeURIComponent(href)}&badge=${encodeURIComponent(badge)}&category=${encodeURIComponent(category)}&offerId=${encodeURIComponent(offerId)}`} className="block rounded-xl bg-[#203b72] px-4 py-3 text-center text-sm font-semibold text-white hover:bg-[#152a52]">View offer details →</a>
+          <a href={`/offer?title=${encodeURIComponent(title)}&provider=${encodeURIComponent(subtitle)}&price=${encodeURIComponent(price)}&href=${encodeURIComponent(href)}&badge=${encodeURIComponent(badge)}&category=${encodeURIComponent(category)}&offerId=${encodeURIComponent(offerId)}&query=${encodeURIComponent(originalQuery)}`} className="block rounded-xl bg-[#203b72] px-4 py-3 text-center text-sm font-semibold text-white hover:bg-[#152a52]">View offer details →</a>
           <a href={href} target="_blank" rel="noreferrer" className="mt-2 block rounded-xl border border-[#e2e8f0] px-4 py-3 text-center text-sm font-semibold text-[#203b72] hover:bg-slate-50">Visit provider website ↗</a>
         </div>
       </div>
@@ -212,15 +212,16 @@ function SearchResults() {
   const filteredHousing = useMemo(() => {
     let result = housingOffers.filter((o) => (country === "All" || o.country === country) && (!providerTerm || `${o.provider} ${o.property}`.toLowerCase().includes(providerTerm)));
     const max = Number(budget);
-    if (budget.trim() !== "" && Number.isFinite(max)) result = result.filter((o) => o.pricePeriod === "year" || o.priceValue <= max);
+    if (budget.trim() !== "" && Number.isFinite(max)) result = result.filter((o) => (o.pricePeriod === "year" ? o.priceValue / 12 : o.priceValue) <= max);
     return [...result].sort((a, b) => {
       // Search-only marketplace links have no comparable price (priceValue = 0).
       // Keep them visible, but never rank them as the cheapest option.
       const aUnpriced = a.priceValue <= 0;
       const bUnpriced = b.priceValue <= 0;
       if (aUnpriced !== bUnpriced) return aUnpriced ? 1 : -1;
-      if (a.pricePeriod !== b.pricePeriod) return a.pricePeriod === "month" ? -1 : 1;
-      return a.priceValue - b.priceValue;
+      const aMonthly = a.pricePeriod === "year" ? a.priceValue / 12 : a.priceValue;
+      const bMonthly = b.pricePeriod === "year" ? b.priceValue / 12 : b.priceValue;
+      return aMonthly - bMonthly;
     });
   }, [housingOffers, country, budget, providerTerm]);
 
@@ -229,7 +230,8 @@ function SearchResults() {
     return genericOffers.filter((o) => {
       const matchProvider = !providerTerm || `${o.provider} ${o.name}`.toLowerCase().includes(providerTerm);
       const matchCountry = (country === "All" || o.country === country) && matchProvider;
-      const matchBudget = !Number.isFinite(max) || o.priceValue <= max;
+      const monthlyEquivalent = o.pricePeriod === "year" ? o.priceValue / 12 : o.priceValue;
+      const matchBudget = !Number.isFinite(max) || monthlyEquivalent <= max;
       return matchCountry && matchBudget;
     });
   }, [genericOffers, country, budget, providerTerm]);
@@ -268,7 +270,7 @@ function SearchResults() {
             {!loading && !loadError && filteredMobile.length === 0 && <div className="mt-5 rounded-2xl border border-[#e2e8f0] bg-white p-6">No mobile plans match these filters. Try another country or budget.</div>}
             <div className="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
               {filteredMobile.map((o) => (
-                <OfferCard key={o.id} badge={o.country} title={o.plan} subtitle={o.provider} price={`€${o.monthlyPrice}/month`} href={o.officialUrl} category="mobile" offerId={o.id} body={
+                <OfferCard key={o.id} badge={o.country} title={o.plan} subtitle={o.provider} price={`€${o.monthlyPrice}/month`} href={o.officialUrl} category="mobile" offerId={o.id} originalQuery={query} body={
                   <ul className="space-y-1">
                     <li>{o.dataGB} GB data</li>
                     {o.maxSpeed && <li>Max speed: {o.maxSpeed}</li>}
@@ -292,7 +294,7 @@ function SearchResults() {
             {!housingLoading && !housingError && filteredHousing.length === 0 && <div className="mt-5 rounded-2xl border border-[#e2e8f0] bg-white p-6">No housing matches these filters.</div>}
             <div className="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
               {filteredHousing.map((o) => (
-                <OfferCard key={o.id} badge={`${o.country} · ${o.city}`} title={o.property} subtitle={o.provider} price={o.priceLabel} href={o.officialUrl} images={o.images} category="housing" offerId={o.id} body={
+                <OfferCard key={o.id} badge={`${o.country} · ${o.city}`} title={o.property} subtitle={o.provider} price={o.priceLabel} href={o.officialUrl} images={o.images} category="housing" offerId={o.id} originalQuery={query} body={
                   <ul className="space-y-1">
                     <li>{o.roomType}</li>
                     <li>{o.availability}</li>
@@ -313,7 +315,7 @@ function SearchResults() {
             {!genericLoading && !genericError && filteredGeneric.length === 0 && <div className="mt-5 rounded-2xl border border-[#e2e8f0] bg-white p-6">No offers match these filters.</div>}
             <div className="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
               {filteredGeneric.map((o) => (
-                <OfferCard key={o.id} badge={o.country} title={o.name} subtitle={o.provider} price={o.priceLabel} href={o.url} category={category} offerId={o.id} body={<p>{o.details}</p>} />
+                <OfferCard key={o.id} badge={o.country} title={o.name} subtitle={o.provider} price={o.priceLabel} href={o.url} category={category} offerId={o.id} originalQuery={query} body={<p>{o.details}</p>} />
               ))}
             </div>
           </>
