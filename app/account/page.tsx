@@ -27,7 +27,7 @@ export default function AccountPage() {
         .eq("id", userId).maybeSingle();
       if (!active) return;
       if (error) {
-        setMessage("Your account is active, but the CompareX One database migration still needs to be applied before profile sync is available.");
+        setMessage("Your account is active, but the CompareX database migration still needs to be applied before profile sync is available.");
         return;
       }
       if (data) setProfile({ ...emptyProfile, ...data });
@@ -103,17 +103,17 @@ export default function AccountPage() {
         <header className="flex items-center justify-between gap-4">
           <a href="/" className="text-xl font-bold text-[#1a3470]">CompareX</a>
           <nav className="flex flex-wrap gap-2 text-sm font-semibold">
-            <a href="/mobile" className="rounded-xl border border-[#d5dceb] bg-white px-4 py-2">Mobile setup</a>
+            <a href="/mobile" className="rounded-xl border border-[#d5dceb] bg-white px-4 py-2">Mobile plans</a>
             <a href="/dashboard" className="rounded-xl border border-[#d5dceb] bg-white px-4 py-2">Dashboard</a>
           </nav>
         </header>
         <section className="mt-10 grid gap-8 lg:grid-cols-[.9fr_1.1fr]">
           <div className="rounded-3xl bg-[#142b59] p-7 text-white md:p-9">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-200">CompareX One</p>
-            <h1 className="mt-4 text-4xl font-bold tracking-tight">One profile.<br />Less paperwork.</h1>
-            <p className="mt-4 leading-7 text-blue-100">Create your account once. Reuse your details for supported student services and keep your applications together in one place.</p>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-200">Your CompareX account</p>
+            <h1 className="mt-4 text-4xl font-bold tracking-tight">Your services.<br />All in one place.</h1>
+            <p className="mt-4 leading-7 text-blue-100">Create one account to save your favourite offers, build your student package and keep your service applications together.</p>
             <div className="mt-8 space-y-4 text-sm text-blue-50">
-              <p>✓ One reusable customer profile</p><p>✓ Your selected mobile plan saved to your account</p><p>✓ Application status in one dashboard</p><p>✓ You remain in control of what is shared</p>
+              <p>✓ One reusable customer profile</p><p>✓ Your selected offers saved to your account</p><p>✓ Your saved services in one dashboard</p><p>✓ You remain in control of what is shared</p>
             </div>
             <p className="mt-8 text-xs leading-5 text-blue-200">CompareX does not currently activate mobile contracts or collect provider payments. Those functions require a live, authorised provider integration.</p>
           </div>
