@@ -37,7 +37,7 @@ export default function DashboardPage() {
         const { data: cloudPackage, error } = await supabase.from("comparex_customer_packages")
           .select("id, destination, budget, items, created_at")
           .eq("user_id", data.user.id).order("created_at", { ascending: false }).limit(1).maybeSingle();
-        if (error) { setCloudNotice("Cloud package sync is waiting for the CompareX One database migration."); return; }
+        if (error) { setCloudNotice("Cloud package sync is waiting for the CompareX database migration."); return; }
         if (cloudPackage) {
           const nextSaved = { id: cloudPackage.id, items: cloudPackage.items as SavedItem[], destination: cloudPackage.destination, budget: cloudPackage.budget, savedAt: cloudPackage.created_at };
           setSaved(nextSaved);
@@ -68,9 +68,9 @@ export default function DashboardPage() {
   const total = saved?.items.reduce((sum, item) => sum + item.price, 0) ?? 0;
   return <main className="min-h-screen bg-[#f7f9fd] px-5 py-10 text-[#0c1222]">
     <div className="mx-auto max-w-6xl">
-      <div className="flex flex-wrap items-center justify-between gap-4"><a href="/" className="text-xl font-bold text-[#1a3470]">CompareX</a><nav className="flex flex-wrap gap-3 text-sm font-semibold"><a href="/package-builder" className="rounded-xl bg-[#1a3470] px-4 py-2.5 text-white">Build a package</a><a href="/account" className="rounded-xl border border-slate-200 bg-white px-4 py-2.5">My profile</a><a href="/mobile" className="rounded-xl border border-slate-200 bg-white px-4 py-2.5">Mobile setup</a><a href="/moving" className="rounded-xl border border-slate-200 bg-white px-4 py-2.5">Moving guide</a></nav></div>
-      <p className="mt-10 text-xs font-bold uppercase tracking-[0.18em] text-blue-700">Your student life</p>{accountEmail && <p className="mt-2 text-sm text-slate-500">Signed in as {accountEmail}</p>}{cloudNotice && <p role="status" className="mt-4 rounded-xl bg-blue-50 p-3 text-sm text-[#1a3470]">{cloudNotice}</p>}<h1 className="mt-3 text-4xl font-bold tracking-tight md:text-5xl">Your CompareX dashboard</h1>
-      <p className="mt-4 max-w-2xl leading-7 text-slate-600">Keep your package and moving checklist together. Sign in to CompareX One to sync your saved package to your account; checklist progress remains on this device in this preview.</p>
+      <div className="flex flex-wrap items-center justify-between gap-4"><a href="/" className="text-xl font-bold text-[#1a3470]">CompareX</a><nav className="flex flex-wrap gap-3 text-sm font-semibold"><a href="/package-builder" className="rounded-xl bg-[#1a3470] px-4 py-2.5 text-white">Build a package</a><a href="/account" className="rounded-xl border border-slate-200 bg-white px-4 py-2.5">My profile</a><a href="/mobile" className="rounded-xl border border-slate-200 bg-white px-4 py-2.5">Mobile plans</a><a href="/moving" className="rounded-xl border border-slate-200 bg-white px-4 py-2.5">Moving guide</a></nav></div>
+      <p className="mt-10 text-xs font-bold uppercase tracking-[0.18em] text-blue-700">Your CompareX account</p>{accountEmail && <p className="mt-2 text-sm text-slate-500">Signed in as {accountEmail}</p>}{cloudNotice && <p role="status" className="mt-4 rounded-xl bg-blue-50 p-3 text-sm text-[#1a3470]">{cloudNotice}</p>}<h1 className="mt-3 text-4xl font-bold tracking-tight md:text-5xl">Your dashboard</h1>
+      <p className="mt-4 max-w-2xl leading-7 text-slate-600">Keep your package and moving checklist together. Sign in to your CompareX account to sync your saved package; checklist progress remains on this device in this preview.</p>
       {!ready ? <p className="mt-8">Loading your dashboard…</p> : <div className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_.9fr]">
         <section className="rounded-3xl border border-[#d5dceb] bg-white p-6 shadow-sm md:p-8">
           <div className="flex items-start justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-wider text-blue-700">Saved package</p><h2 className="mt-2 text-2xl font-bold">{saved ? `${saved.destination} student package` : "No package saved yet"}</h2></div>{saved && <button onClick={removePackage} className="text-sm font-semibold text-slate-500 underline">Remove</button>}</div>
