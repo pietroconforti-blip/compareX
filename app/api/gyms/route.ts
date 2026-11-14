@@ -1,5 +1,5 @@
 
-const lastVerified = "2026-10-21";
+const lastVerified = "2026-11-14";
 
 const offers = [
   {
@@ -8,11 +8,11 @@ const offers = [
     city: "Austria-wide",
     name: "PREMIUM Membership",
     provider: "FITINN",
-    priceValue: 19.9,
+    priceValue: 39.9,
     pricePeriod: "month",
-    priceLabel: "€19.90/month until 31 Dec 2026",
+    priceLabel: "€39.90/month (regular rate)",
     details:
-      "Promotion for new contracts signed from 1 September to 29 October 2026. From 1 January 2027 the monthly fee becomes €39.90. Minimum contract duration: 12 months. Check the official terms before joining.",
+      "The €19.90 promotion ended for new contracts on 29 October 2026. The current regular PREMIUM fee is €39.90/month. Minimum contract duration: 12 months. Confirm any studio-specific terms with FITINN.",
     url: "https://fitinn.at/mitgliedschaft/",
   },
   {
@@ -49,9 +49,9 @@ const offers = [
     provider: "McFIT",
     priceValue: 34.9,
     pricePeriod: "month",
-    priceLabel: "From €34.90/month after promotion",
+    priceLabel: "€34.90–€39.90/month + €39 activation fee",
     details:
-      "For eligible new members joining by 4 November 2026, the current promotion offers the first two months free, followed by the regular monthly fee of €34.90 or €39.90 depending on the studio. Minimum contract duration: 12 months. A €39 activation fee applies. Check the conditions on the official site.",
+      "The two-month-free promotion ended on 4 November 2026. The current STANDARD monthly fee is €34.90 or €39.90 depending on the studio. Minimum contract duration: 12 months; a €39 Membercard activation fee applies. Confirm the exact studio price and contract terms before joining.",
     url: "https://www.mcfit.com/it/abbonamento",
   },
 ];
