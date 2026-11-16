@@ -152,8 +152,8 @@ export default function Home() {
             <div className="mt-5 flex flex-wrap items-center gap-2">
               <span className="mr-1 text-xs font-medium text-[#64748b]">Popular:</span>
               {(city === "Vienna"
-                ? ["Room under €450", "Mobile under €15", "Near FHWien"]
-                : ["Room under €650", "Mobile under €15", "Near Bocconi"]
+                ? ["Room under €450", "Mobile under €15", "Student room near FHWien"]
+                : ["Room under €650", "Mobile under €15", "Student room near Bocconi"]
               ).map((suggestion) => (
                 <button key={suggestion} type="button" onClick={() => goSearch(suggestion)} className="rounded-full border border-[#e2e8f0] bg-white px-3 py-1.5 text-xs font-medium text-[#475569] transition hover:border-[#1e40af] hover:text-[#1e40af]">
                   {suggestion}
