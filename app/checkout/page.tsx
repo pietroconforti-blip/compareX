@@ -69,6 +69,12 @@ export default function CheckoutPage() {
   const total = useMemo(() => saved?.items.reduce((sum, item) => sum + item.price, 0) ?? 0, [saved]);
   const budget = saved?.budget ? Number(saved.budget) : Number.NaN;
   const hasBudget = Number.isFinite(budget) && budget > 0;
+  const hasOldSampleOffers = saved?.items.some((item) =>
+    ["Premium Mobile Plan", "Fit4Students", "Spusu Student", "A1 Basic Mobile"].includes(item.name)
+  ) ?? false;
+  const rebuildUrl = saved
+    ? `/package-builder?location=${encodeURIComponent(saved.destination)}&categories=${encodeURIComponent(saved.items.map((item) => item.category).join(","))}${saved.budget ? `&budget=${encodeURIComponent(saved.budget)}` : ""}`
+    : "/package-builder";
 
   useEffect(() => {
     setSaved(parseSavedPackage(localStorage.getItem("comparex-saved-package")));
@@ -146,6 +152,13 @@ export default function CheckoutPage() {
               <p className={`mt-2 text-sm font-semibold ${total <= budget ? "text-emerald-700" : "text-amber-700"}`}>
                 {total <= budget ? `Within budget · ${euro(budget - total)} remaining` : `Over budget by ${euro(total - budget)}`}
               </p>
+            )}
+            {hasOldSampleOffers && (
+              <div className="mt-6 rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm leading-6 text-blue-950">
+                <p className="font-bold">This package contains older sample offers.</p>
+                <p className="mt-1">Refresh it to replace generic entries with the current provider-backed catalogue and updated links.</p>
+                <a href={rebuildUrl} className="mt-3 inline-flex rounded-lg bg-[#1a3470] px-4 py-2.5 font-bold text-white">Refresh package offers →</a>
+              </div>
             )}
             <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
               Prices are estimates until confirmed by each provider. CompareX does not collect payment for these third-party services. Each provider remains responsible for its contract, final price and payment.
