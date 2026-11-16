@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import {
   type Category,
   offers,
-  categoryLabels,
   categoryIcons,
   calculateScore,
   createBundles,
