@@ -166,9 +166,9 @@ export default function CheckoutPage() {
                         <p className="mt-1 font-semibold">{item.name}</p>
                       </div>
                       {safeProviderUrl(item.sourceUrl) ? (
-                        <a href={safeProviderUrl(item.sourceUrl)!} target="_blank" rel="noopener noreferrer" className="rounded-lg bg-[#1a3470] px-4 py-2.5 text-sm font-bold text-white">Continue ↗</a>
+                        <a href={safeProviderUrl(item.sourceUrl)!} target="_blank" rel="noopener noreferrer" className="rounded-lg bg-[#1a3470] px-4 py-2.5 text-sm font-bold text-white">Visit provider ↗</a>
                       ) : (
-                        <span className="text-xs text-slate-500">Provider link not available yet</span>
+                        <a href={providerSearchUrl(item)} target="_blank" rel="noopener noreferrer" className="rounded-lg border border-[#d5dceb] bg-white px-4 py-2.5 text-sm font-bold text-[#1a3470] hover:bg-blue-50">Find provider website ↗</a>
                       )}
                     </div>
                   ))}
