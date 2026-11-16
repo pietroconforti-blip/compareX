@@ -75,6 +75,11 @@ export default function CheckoutPage() {
     setReady(true);
   }, []);
 
+  function providerSearchUrl(item: CheckoutItem) {
+    const query = [item.name, item.location || saved?.destination || "", "official website"].filter(Boolean).join(" ");
+    return `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+  }
+
   function removeItem(indexToRemove: number) {
     if (!saved) return;
     const items = saved.items.filter((_, index) => index !== indexToRemove);
@@ -147,12 +152,12 @@ export default function CheckoutPage() {
             </div>
             {!showProviders ? (
               <button type="button" onClick={() => setShowProviders(true)} className="mt-6 w-full rounded-xl bg-[#1a3470] px-6 py-4 font-bold text-white shadow-md hover:bg-[#12254f]">
-                Continue to provider checkout →
+                Show provider options →
               </button>
             ) : (
               <div className="mt-6">
                 <h3 className="text-lg font-bold">Complete each service with its provider</h3>
-                <p className="mt-1 text-sm leading-6 text-slate-600">Each link opens the provider website. Your contract and payment are handled directly by that provider.</p>
+                <p className="mt-1 text-sm leading-6 text-slate-600">Verified links open the provider website. If a direct link is not yet verified, you can search for the provider website. Your contract and payment are always handled by the provider.</p>
                 <div className="mt-4 space-y-3">
                   {saved.items.map((item, index) => (
                     <div key={item.category + item.name + index} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 p-4">
